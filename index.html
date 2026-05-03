@@ -7,13 +7,14 @@
     <style>
         :root { --red: #ff0000; --bg: #0f0f0f; --card: #1a1a1a; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
-        .box { background: var(--card); padding: 25px; border-radius: 20px; width: 100%; max-width: 420px; text-align: center; display: none; border: 1px solid #333; }
-        .thumb-container { width: 100%; border-radius: 12px; margin-bottom: 20px; overflow: hidden; background: #000; border: 1px solid #444; display: none; }
+        .box { background: var(--card); padding: 25px; border-radius: 20px; width: 100%; max-width: 420px; text-align: center; display: none; border: 1px solid #333; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
+        .thumb-container { width: 100%; border-radius: 12px; margin-bottom: 20px; overflow: hidden; background: #000; border: 1px solid #444; }
         .thumb { width: 100%; height: auto; display: block; }
+        .progress-container { background: #333; height: 10px; border-radius: 10px; margin: 15px 0; overflow: hidden; }
+        .progress-bar { background: var(--red); height: 100%; width: 0%; transition: 0.8s; }
         input, textarea, .file-label { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #333; background: #252525; color: white; text-align: right; box-sizing: border-box; outline: none; }
         .file-label { background: #333; border: 2px dashed #555; text-align: center; cursor: pointer; display: block; color: #aaa; }
         #fileInput { display: none; }
-        /* مربع النص للنسخ اليدوي */
         textarea { height: 120px; font-size: 10px; text-align: left; direction: ltr; display: none; margin-top: 15px; background: #000; color: #2ecc71; border: 1px solid #2ecc71; }
         button { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-red { background: var(--red); color: white; }
@@ -29,6 +30,18 @@
 </head>
 <body>
 
+<!-- واجهة المشاهد (ليها الأولوية في الكود) -->
+<div id="viewBox" class="box" dir="ltr">
+    <div class="thumb-container"><img id="tm" class="thumb" src=""></div>
+    <h3 id="nm">Unlock Content</h3>
+    <div id="stText" style="color:var(--red); font-weight:bold;">Steps: 0/2</div>
+    <div class="progress-container"><div id="pBar" class="progress-bar"></div></div>
+    <button class="btn-red btn-task" id="b1" onclick="go('s')"><div class="spinner"></div><span class="btn-text">🔴 Subscribe to channel</span></button>
+    <button class="btn-red btn-task" id="b2" onclick="go('l')"><div class="spinner"></div><span class="btn-text">👍 Like a video</span></button>
+    <button id="unBtn" class="btn-unlock" disabled>Unlock Link</button>
+</div>
+
+<!-- لوحة التحكم -->
 <div id="genBox" class="box" dir="rtl">
     <h3 style="color:var(--red)">لوحة تحكم MX_SASUKE</h3>
     <label for="fileInput" class="file-label" id="fLabel">📁 ارفع الصورة أولاً</label>
@@ -37,21 +50,9 @@
     <input type="text" id="sUrl" placeholder="رابط قناتك">
     <input type="text" id="vUrl" placeholder="رابط فيديو المهمة">
     <input type="text" id="tUrl" placeholder="رابط التحميل النهائي">
-    
     <button class="btn-red" onclick="make()">إنشاء الرابط</button>
-    <p id="hint" style="display:none; font-size:12px; color:#aaa; margin-top:10px;">إذا فشل الزر الأخضر، انسخ النص من المربع بالأسفل يدوياً:</p>
     <textarea id="copyArea" readonly></textarea>
-    <button id="cpBtn" style="background:#2ecc71; color:#fff; display:none;" onclick="copy()">📋 نسخ الرابط تلقائياً</button>
-</div>
-
-<div id="viewBox" class="box" dir="ltr">
-    <div class="thumb-container" id="tmCont"><img id="tm" class="thumb" src=""></div>
-    <h3 id="nm">Unlock Content</h3>
-    <div id="stText" style="color:var(--red); font-weight:bold;">Steps: 0/2</div>
-    <div style="background:#333; height:8px; border-radius:10px; margin:10px 0; overflow:hidden;"><div id="pBar" style="background:var(--red); height:100%; width:0%; transition:0.5s;"></div></div>
-    <button class="btn-red btn-task" id="b1" onclick="go('s')"><div class="spinner"></div><span class="btn-text">🔴 Subscribe to channel</span></button>
-    <button class="btn-red btn-task" id="b2" onclick="go('l')"><div class="spinner"></div><span class="btn-text">👍 Like a video</span></button>
-    <button id="unBtn" class="btn-unlock" disabled>Unlock Link</button>
+    <button id="cpBtn" style="background:#2ecc71; color:#fff; display:none;" onclick="copy()">📋 نسخ الرابط</button>
 </div>
 
 <script>
@@ -59,19 +60,22 @@
     const params = new URLSearchParams(window.location.search);
     const i = params.get('i'), n = params.get('n'), s = params.get('s'), l = params.get('l'), t = params.get('t');
 
+    // كود فحص الأولوية: لو في بيانات افتح واجهة المشاهد فوراً
+    window.onload = function() {
+        if (s && t) {
+            document.getElementById('viewBox').classList.add('active');
+            if(i) { document.getElementById('tm').src = decodeURIComponent(atob(i)); }
+            if(n) { document.getElementById('nm').innerText = decodeURIComponent(atob(n)); }
+        } else {
+            document.getElementById('genBox').classList.add('active');
+        }
+    };
+
     document.getElementById('fileInput').onchange = function(e) {
         const reader = new FileReader();
         reader.onload = (ev) => { imgData = ev.target.result; document.getElementById('fLabel').innerText = "✅ الصورة جاهزة"; };
         reader.readAsDataURL(e.target.files[0]);
     };
-
-    if (s && t) {
-        document.getElementById('viewBox').classList.add('active');
-        if(i) { document.getElementById('tm').src = decodeURIComponent(atob(i)); document.getElementById('tmCont').style.display = 'block'; }
-        if(n) document.getElementById('nm').innerText = decodeURIComponent(atob(n));
-    } else {
-        document.getElementById('genBox').classList.add('active');
-    }
 
     function make() {
         if(!imgData) return alert("ارفع صورة أولاً!");
@@ -80,19 +84,13 @@
         const area = document.getElementById('copyArea');
         area.value = finalLink; area.style.display = 'block';
         document.getElementById('cpBtn').style.display = 'flex';
-        document.getElementById('hint').style.display = 'block';
     }
 
     function copy() {
         const area = document.getElementById('copyArea');
         area.select();
-        area.setSelectionRange(0, 99999);
-        try {
-            document.execCommand('copy');
-            alert("تم النسخ بنجاح!");
-        } catch (err) {
-            alert("تعذر النسخ التلقائي بسبب طول الرابط. يرجى النسخ يدوياً من المربع.");
-        }
+        document.execCommand('copy');
+        alert("تم النسخ!");
     }
 
     let doneCount = 0;
