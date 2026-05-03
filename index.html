@@ -10,36 +10,17 @@
         .box { background: var(--card); padding: 25px; border-radius: 20px; width: 100%; max-width: 420px; text-align: center; display: none; border: 1px solid #333; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
         .thumb-container { width: 100%; border-radius: 12px; margin-bottom: 20px; overflow: hidden; background: #000; border: 1px solid #444; }
         .thumb { width: 100%; height: auto; display: block; }
-        .progress-container { background: #333; height: 10px; border-radius: 10px; margin: 15px 0; overflow: hidden; }
-        .progress-bar { background: var(--red); height: 100%; width: 0%; transition: 0.8s; }
         input, textarea, .file-label { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #333; background: #252525; color: white; text-align: right; box-sizing: border-box; outline: none; }
         .file-label { background: #333; border: 2px dashed #555; text-align: center; cursor: pointer; display: block; color: #aaa; }
         #fileInput { display: none; }
-        textarea { height: 120px; font-size: 10px; text-align: left; direction: ltr; display: none; margin-top: 15px; background: #000; color: #2ecc71; border: 1px solid #2ecc71; }
+        /* المربع اللي هيظهر فيه الرابط عشان تنسخه يدوي */
+        textarea { height: 150px; font-size: 11px; text-align: left; direction: ltr; display: none; margin-top: 15px; background: #000; color: #fff; border: 1px solid var(--red); word-break: break-all; }
         button { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; font-size: 16px; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-red { background: var(--red); color: white; }
-        .btn-task.done { background: #333 !important; color: #777 !important; pointer-events: none; }
-        .spinner { display: none; width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: #fff; animation: spin 0.8s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .loading .spinner { display: block; }
-        .loading .btn-text { display: none; }
-        .btn-unlock { background: #444; color: #888; cursor: not-allowed; margin-top: 20px; }
-        .btn-unlock.enabled { background: #2ecc71; color: white; cursor: pointer; }
         .active { display: block !important; }
     </style>
 </head>
 <body>
-
-<!-- واجهة المشاهد (ليها الأولوية في الكود) -->
-<div id="viewBox" class="box" dir="ltr">
-    <div class="thumb-container"><img id="tm" class="thumb" src=""></div>
-    <h3 id="nm">Unlock Content</h3>
-    <div id="stText" style="color:var(--red); font-weight:bold;">Steps: 0/2</div>
-    <div class="progress-container"><div id="pBar" class="progress-bar"></div></div>
-    <button class="btn-red btn-task" id="b1" onclick="go('s')"><div class="spinner"></div><span class="btn-text">🔴 Subscribe to channel</span></button>
-    <button class="btn-red btn-task" id="b2" onclick="go('l')"><div class="spinner"></div><span class="btn-text">👍 Like a video</span></button>
-    <button id="unBtn" class="btn-unlock" disabled>Unlock Link</button>
-</div>
 
 <!-- لوحة التحكم -->
 <div id="genBox" class="box" dir="rtl">
@@ -50,26 +31,33 @@
     <input type="text" id="sUrl" placeholder="رابط قناتك">
     <input type="text" id="vUrl" placeholder="رابط فيديو المهمة">
     <input type="text" id="tUrl" placeholder="رابط التحميل النهائي">
-    <button class="btn-red" onclick="make()">إنشاء الرابط</button>
+    
+    <button class="btn-red" onclick="make()">إنشاء الرابط الطويل</button>
+    <p id="msg" style="display:none; color:#2ecc71; font-size:12px; margin-top:10px;">اضغط ضغطة مطولة داخل المربع بالأسفل واعمل "تحديد الكل" ثم "نسخ":</p>
     <textarea id="copyArea" readonly></textarea>
-    <button id="cpBtn" style="background:#2ecc71; color:#fff; display:none;" onclick="copy()">📋 نسخ الرابط</button>
+</div>
+
+<!-- واجهة المشاهد -->
+<div id="viewBox" class="box" dir="ltr">
+    <div class="thumb-container"><img id="tm" class="thumb" src=""></div>
+    <h3 id="nm">Unlock Content</h3>
+    <button class="btn-red" onclick="alert('اتبع الخطوات...')">🔴 Subscribe & Like</button>
+    <p style="font-size:12px; margin-top:20px; color:#555;">MX_SASUKE System</p>
 </div>
 
 <script>
     let imgData = "";
     const params = new URLSearchParams(window.location.search);
-    const i = params.get('i'), n = params.get('n'), s = params.get('s'), l = params.get('l'), t = params.get('t');
-
-    // كود فحص الأولوية: لو في بيانات افتح واجهة المشاهد فوراً
-    window.onload = function() {
-        if (s && t) {
-            document.getElementById('viewBox').classList.add('active');
-            if(i) { document.getElementById('tm').src = decodeURIComponent(atob(i)); }
-            if(n) { document.getElementById('nm').innerText = decodeURIComponent(atob(n)); }
-        } else {
-            document.getElementById('genBox').classList.add('active');
-        }
-    };
+    
+    // التحقق من وجود بيانات في الرابط فوراً
+    if (params.get('s') && params.get('t')) {
+        document.getElementById('viewBox').classList.add('active');
+        const i = params.get('i'), n = params.get('n');
+        if(i) { document.getElementById('tm').src = decodeURIComponent(atob(i)); }
+        if(n) { document.getElementById('nm').innerText = decodeURIComponent(atob(n)); }
+    } else {
+        document.getElementById('genBox').classList.add('active');
+    }
 
     document.getElementById('fileInput').onchange = function(e) {
         const reader = new FileReader();
@@ -80,34 +68,17 @@
     function make() {
         if(!imgData) return alert("ارفع صورة أولاً!");
         const base = window.location.href.split('?')[0];
+        // بناء الرابط المشفر
         const finalLink = `${base}?i=${btoa(encodeURIComponent(imgData))}&n=${btoa(encodeURIComponent(document.getElementById('fName').value))}&s=${btoa(document.getElementById('sUrl').value)}&l=${btoa(document.getElementById('vUrl').value)}&t=${btoa(document.getElementById('tUrl').value)}`;
+        
         const area = document.getElementById('copyArea');
-        area.value = finalLink; area.style.display = 'block';
-        document.getElementById('cpBtn').style.display = 'flex';
-    }
-
-    function copy() {
-        const area = document.getElementById('copyArea');
+        area.value = finalLink;
+        area.style.display = 'block';
+        document.getElementById('msg').style.display = 'block';
+        
+        // محاولة تحديد النص تلقائياً لتسهيل النسخ اليدوي
         area.select();
-        document.execCommand('copy');
-        alert("تم النسخ!");
-    }
-
-    let doneCount = 0;
-    function go(type) {
-        window.open(atob(type === 's' ? s : l), '_blank');
-        const btn = document.getElementById(type === 's' ? 'b1' : 'b2');
-        btn.classList.add('loading');
-        setTimeout(() => {
-            btn.classList.remove('loading'); btn.classList.add('done'); btn.innerHTML = "Done ✅";
-            doneCount++; 
-            document.getElementById('pBar').style.width = (doneCount/2)*100 + '%';
-            document.getElementById('stText').innerText = `Steps: ${doneCount}/2`;
-            if(doneCount >= 2) { 
-                const un = document.getElementById('unBtn'); un.disabled = false; un.classList.add('enabled'); un.innerText = "Unlock Now ✅"; 
-                un.onclick = () => location.href = atob(t);
-            }
-        }, 5000);
+        area.setSelectionRange(0, 999999);
     }
 </script>
 </body>
