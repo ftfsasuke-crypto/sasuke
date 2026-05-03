@@ -19,7 +19,7 @@
             overflow: hidden;
         }
 
-        /* الخلفية المشوشة الثابتة لوجو النينجا */
+        /* الخلفية المشوشة الثابتة */
         .bg-blur { 
             position: fixed; 
             top: 0; left: 0; right: 0; bottom: 0; 
@@ -114,7 +114,6 @@
     const app = document.getElementById('app');
     const params = new URLSearchParams(window.location.search);
 
-    // واجهة المتابع
     if (params.has('data')) {
         const raw = params.get('data').split('|');
         const config = {
@@ -156,24 +155,18 @@
                 if(completed === 2) document.getElementById('final').style.display = 'block';
             }, 5000);
         };
-    } 
-    // واجهة المصنع
-    else {
+    } else {
         app.innerHTML = `
             <div class="card" style="text-align:right">
                 <h2 style="color:var(--accent); text-align:center; margin-bottom:30px;">MX_SASUKE Generator 🛠️</h2>
                 <label>عنوان الصفحة:</label>
                 <input type="text" id="title" value="هاك دلتا">
-                
                 <label>رابط قناتك:</label>
                 <input type="url" id="c" placeholder="https://youtube.com/...">
-                
                 <label>رابط الفيديو:</label>
                 <input type="url" id="v" placeholder="https://youtube.com/watch...">
-                
-                <label>رابط التحميل النهائي:</label>
+                <label>رابط التحميل:</label>
                 <input type="url" id="f" placeholder="https://...">
-                
                 <button class="task-btn" style="background:var(--accent); margin-top:10px" onclick="generate()">إنشاء ودخول الصفحة</button>
             </div>
         `;
