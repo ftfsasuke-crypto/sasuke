@@ -12,27 +12,28 @@
         h3 { margin: 10px 0; font-size: 22px; }
         p { color: #888; font-size: 14px; margin-bottom: 20px; }
         
-        /* Step Counter & Progress */
         .progress-container { background: #333; height: 8px; border-radius: 10px; margin: 20px 0; position: relative; overflow: hidden; }
         .progress-bar { background: var(--primary); height: 100%; width: 0%; transition: 0.5s ease; }
         .counter { font-size: 14px; font-weight: bold; color: var(--primary); margin-bottom: 10px; }
 
-        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #333; background: #252525; color: white; box-sizing: border-box; outline: none; }
+        input, .file-label { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #333; background: #252525; color: white; box-sizing: border-box; outline: none; display: block; cursor: pointer; }
+        .file-label { background: #333; border: 1px dashed #555; text-align: center; color: #aaa; }
+        .file-label:hover { border-color: var(--primary); color: white; }
+        #fileInput { display: none; }
+
         button { width: 100%; padding: 15px; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; position: relative; }
-        
         .btn-gen { background: var(--primary); color: white; }
         .btn-task { background: var(--primary); color: white; }
         .btn-task.done { background: #333; color: #777; pointer-events: none; }
         .btn-unlock { background: #444; color: #888; cursor: not-allowed; margin-top: 25px; }
         .btn-unlock.enabled { background: #2ecc71; color: white; cursor: pointer; transform: scale(1.05); }
 
-        /* Loading Spinner */
         .loader { width: 18px; height: 18px; border: 2px solid #ffffff33; border-top: 2px solid #fff; border-radius: 50%; animation: spin 0.8s linear infinite; display: none; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
         .loading .loader { display: block; }
         .loading .btn-text { display: none; }
 
-        .result { margin-top: 20px; padding: 15px; background: #2ecc71; border-radius: 10px; display: none; word-break: break-all; color: #000; font-weight: bold; cursor: pointer; }
+        .result { margin-top: 20px; padding: 15px; background: #2ecc71; border-radius: 10px; display: none; word-break: break-all; color: #000; font-weight: bold; cursor: pointer; font-size: 11px; }
         .active { display: block !important; }
     </style>
 </head>
@@ -41,11 +42,17 @@
 <!-- GENERATOR INTERFACE (For You) -->
 <div id="generator" class="box">
     <h3 style="color:var(--primary)">MX_SASUKE Panel</h3>
-    <input type="text" id="thumbUrl" placeholder="Thumbnail URL (Image link)">
+    <p>Upload a photo and fill links</p>
+    
+    <label for="fileInput" class="file-label" id="fileLabel">📁 Click to Upload Thumbnail</label>
+    <input type="file" id="fileInput" accept="image/*">
+    <img id="genPreview" class="thumb" style="max-height: 150px; margin: 10px auto;">
+
     <input type="text" id="fileName" placeholder="File Title (e.g., Delta Executor)">
     <input type="text" id="channelUrl" placeholder="YouTube Channel Link">
     <input type="text" id="videoUrl" placeholder="Video Link (for Like)">
     <input type="text" id="targetUrl" placeholder="Final Download Link">
+    
     <button class="btn-gen" onclick="generateLink()">Create Pro Link</button>
     <div id="finalLink" class="result" onclick="copyText()"></div>
 </div>
@@ -73,20 +80,43 @@
 </div>
 
 <script>
+    let base64Image = "";
     const urlParams = new URLSearchParams(window.location.search);
-    const img = urlParams.get('img'); const n = urlParams.get('n'); 
-    const s = urlParams.get('s'); const l = urlParams.get('l'); const t = urlParams.get('t');
+    const imgData = urlParams.get('img'); 
+    const n = urlParams.get('n'); 
+    const s = urlParams.get('s'); 
+    const l = urlParams.get('l'); 
+    const t = urlParams.get('t');
+
+    // Handle File Upload Preview
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                base64Image = event.target.result;
+                const preview = document.getElementById('genPreview');
+                preview.src = base64Image;
+                preview.style.display = 'block';
+                document.getElementById('fileLabel').innerText = "✅ Photo Selected";
+            };
+            reader.readAsDataURL(file);
+        }
+    });
 
     if (s && t) {
         document.getElementById('viewer').classList.add('active');
-        if(img) { const thumb = document.getElementById('displayThumb'); thumb.src = atob(img); thumb.style.display = 'block'; }
+        if(imgData) { 
+            const thumb = document.getElementById('displayThumb'); 
+            thumb.src = decodeURIComponent(atob(imgData)); 
+            thumb.style.display = 'block'; 
+        }
         if(n) document.getElementById('displayFileName').innerText = decodeURIComponent(atob(n));
     } else {
         document.getElementById('generator').classList.add('active');
     }
 
     function generateLink() {
-        const thumb = document.getElementById('thumbUrl').value;
         const name = document.getElementById('fileName').value;
         const sub = document.getElementById('channelUrl').value;
         const like = document.getElementById('videoUrl').value;
@@ -94,7 +124,8 @@
         if(!sub || !target) return alert("Links missing!");
         
         const base = window.location.href.split('?')[0];
-        const final = `${base}?img=${btoa(thumb)}&n=${btoa(encodeURIComponent(name))}&s=${btoa(sub)}&l=${btoa(like)}&t=${btoa(target)}`;
+        // Compressing the link by using short param names
+        const final = `${base}?img=${btoa(encodeURIComponent(base64Image))}&n=${btoa(encodeURIComponent(name))}&s=${btoa(sub)}&l=${btoa(like)}&t=${btoa(target)}`;
         
         const resDiv = document.getElementById('finalLink');
         resDiv.innerText = final; resDiv.style.display = 'block';
@@ -112,10 +143,8 @@
         if(tasks[type]) return;
         const btn = document.getElementById(type === 'sub' ? 'subBtn' : 'likeBtn');
         const url = type === 'sub' ? atob(s) : atob(l);
-        
         window.open(url, '_blank');
         btn.classList.add('loading');
-        
         setTimeout(() => {
             btn.classList.remove('loading');
             btn.classList.add('done');
@@ -123,7 +152,7 @@
             tasks[type] = true;
             completed++;
             updateProgress();
-        }, 5000); // 5 seconds verification simulation
+        }, 4000);
     }
 
     function updateProgress() {
@@ -131,7 +160,6 @@
         const percent = (completed / total) * 100;
         document.getElementById('progressBar').style.width = percent + '%';
         document.getElementById('stepText').innerText = `Steps Completed: ${completed}/${total}`;
-        
         if (completed === total) {
             const ub = document.getElementById('unlockBtn');
             ub.disabled = false;
