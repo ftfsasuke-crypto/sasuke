@@ -7,35 +7,35 @@
         body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .box { background: #1e293b; padding: 30px; border-radius: 15px; width: 100%; max-width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
         input { width: 100%; padding: 12px; margin: 10px 0 20px 0; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; }
-        button { width: 100%; padding: 15px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.3s; }
+        button { width: 100%; padding: 15px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
         button:hover { background: #0056b3; }
-        h2 { text-align: center; margin-top: 0; color: #38bdf8; }
+        h2 { text-align: center; color: #38bdf8; }
     </style>
 </head>
 <body>
     <div class="box">
-        <h2>إنشاء رابط جديد 🔗</h2>
+        <h2>إنشاء صفحة الشروط 🛠️</h2>
         
-        <label>1. رابط قناتك (للاشتراك):</label>
+        <label>رابط قناتك (للاشتراك):</label>
         <input type="url" id="ytChannel" placeholder="https://youtube.com/@...">
         
-        <label>2. رابط الفيديو (للايك):</label>
+        <label>رابط الفيديو (للايك):</label>
         <input type="url" id="ytVideo" placeholder="https://youtube.com/watch?v=...">
         
-        <label>3. الرابط المراد قفله (التحميل):</label>
+        <label>الرابط المراد فتحه (التحميل):</label>
         <input type="url" id="finalUrl" placeholder="https://...">
         
-        <button onclick="createAndGo()">إنشاء الرابط والذهاب إليه</button>
+        <button onclick="generateAndRedirect()">إنشاء ودخول الصفحة فوراً</button>
     </div>
 
     <script>
-        function createAndGo() {
+        function generateAndRedirect() {
             const ch = btoa(document.getElementById('ytChannel').value);
             const vi = btoa(document.getElementById('ytVideo').value);
             const fi = btoa(document.getElementById('finalUrl').value);
             
-            // التحويل التلقائي لصفحة العرض مع البيانات في الرابط
-            window.location.href = `view.html?c=${ch}&v=${vi}&f=${fi}`;
+            // تحويل فوري لصفحة العرض مع تمرير البيانات في الرابط
+            window.location.href = `view.html?data=${ch}|${vi}|${fi}`;
         }
     </script>
 </body>
