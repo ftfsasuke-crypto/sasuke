@@ -3,66 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Link Unlocker</title>
+    <title>Link Unlocker Pro</title>
     <style>
         body { background: #0b1120; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
         .card { background: #1e293b; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; }
-        .btn { background: #007bff; color: white; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; font-size: 14px; }
+        .btn { background: #007bff; color: white; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
+        .btn:hover { background: #0056b3; }
         .task { background: #2d3748; padding: 15px; margin: 10px 0; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
         .done-icon { color: #22c55e; display: none; font-size: 1.2rem; }
         .unlock-btn { background: #16a34a; margin-top: 20px; display: none; }
-        h2 { color: #38bdf8; margin-bottom: 20px; }
+        h2 { color: #38bdf8; margin-bottom: 20px; line-height: 1.4; }
+        label { display: block; text-align: right; font-size: 13px; color: #94a3b8; margin-top: 5px; }
     </style>
 </head>
 <body>
 
 <div id="app" class="card">
-    <!-- المحتوى بيتغير تلقائياً هنا -->
+    <!-- المحتوى يتم توليده هنا -->
 </div>
 
 <script>
     const app = document.getElementById('app');
     const params = new URLSearchParams(window.location.search);
 
-    // لو الرابط فيه بيانات (عرض الشروط)
+    // حالة عرض الشروط للمتابع
     if (params.has('data')) {
         const raw = params.get('data').split('|');
-        const links = { c: atob(raw[0]), v: atob(raw[1]), f: atob(raw[2]) };
+        // فك التشفير: العنوان | قناة | فيديو | تحميل
+        const title = decodeURIComponent(atob(raw[0]));
+        const links = { c: atob(raw[1]), v: atob(raw[2]), f: atob(raw[3]) };
         let count = 0;
 
         app.innerHTML = `
-            <h2>أكمل المهام لفتح الرابط</h2>
+            <h2>${title}</h2>
             <div class="task" id="t1"><span>1. اشترك في القناة</span><button class="btn" style="width:auto" onclick="verify('${links.c}', 't1')">اشتراك</button><span class="done-icon">✔</span></div>
             <div class="task" id="t2"><span>2. لايك للفيديو</span><button class="btn" style="width:auto" onclick="verify('${links.v}', 't2')">لايك</button><span class="done-icon">✔</span></div>
-            <button id="final" class="btn unlock-btn" onclick="window.location.href='${links.f}'">تحميل الآن 📥</button>
+            <button id="final" class="btn unlock-btn" onclick="window.location.href='${links.f}'">تحميل الملف الآن 📥</button>
         `;
 
         window.verify = function(url, id) {
             window.open(url, '_blank');
+            const row = document.getElementById(id);
+            const btn = row.querySelector('.btn');
+            btn.innerText = "جاري...";
             setTimeout(() => {
-                document.querySelector(`#${id} .btn`).style.display = 'none';
-                document.querySelector(`#${id} .done-icon`).style.display = 'block';
+                btn.style.display = 'none';
+                row.querySelector('.done-icon').style.display = 'block';
                 count++;
                 if(count === 2) document.getElementById('final').style.display = 'block';
             }, 5000);
         };
     } 
-    // لو الرابط فاضي (صفحة الإنشاء)
+    // حالة صفحة الإنشاء (المصنع)
     else {
         app.innerHTML = `
-            <h2>إنشاء رابط قفل 🛠️</h2>
-            <input type="url" id="c" placeholder="رابط قناتك">
-            <input type="url" id="v" placeholder="رابط الفيديو">
-            <input type="url" id="f" placeholder="رابط التحميل">
-            <button class="btn" onclick="generate()">إنشاء ودخول الصفحة</button>
+            <h2 style="margin-bottom:10px">صانع روابط ساسوكي 🛠️</h2>
+            <p style="font-size:12px; color:#94a3b8; margin-bottom:20px">اصنع صفحة احترافية بدون إعلانات</p>
+            
+            <label>عنوان الصفحة (مثلاً: اشترك لفتح الهاك):</label>
+            <input type="text" id="title" placeholder="اكتب العنوان هنا..." value="أكمل المهام لفتح الرابط">
+            
+            <label>رابط قناتك:</label>
+            <input type="url" id="c" placeholder="https://youtube.com/@...">
+            
+            <label>رابط فيديو اللايك:</label>
+            <input type="url" id="v" placeholder="https://youtube.com/watch?v=...">
+            
+            <label>رابط التحميل النهائي:</label>
+            <input type="url" id="f" placeholder="https://...">
+            
+            <button class="btn" style="margin-top:10px" onclick="generate()">إنشاء ودخول الصفحة</button>
         `;
 
         window.generate = function() {
+            const titleVal = encodeURIComponent(document.getElementById('title').value);
+            const t = btoa(titleVal);
             const ch = btoa(document.getElementById('c').value);
             const vi = btoa(document.getElementById('v').value);
             const fi = btoa(document.getElementById('f').value);
-            window.location.href = `?data=${ch}|${vi}|${fi}`;
+            
+            // تحويل لنفس الصفحة مع البيانات
+            window.location.href = `?data=${t}|${ch}|${vi}|${fi}`;
         };
     }
 </script>
