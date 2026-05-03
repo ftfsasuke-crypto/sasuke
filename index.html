@@ -3,29 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Link Unlocker | Image Processor</title>
+    <title>Link Unlocker | Pro Edition</title>
     <style>
         :root { --p: #ff0000; --bg: #0a0a0b; --accent: #22c55e; }
-        body { background-color: var(--bg); color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden; }
+        body { background-color: var(--bg); color: white; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
         
-        .bg-blur { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-size: cover; background-position: center; filter: blur(50px) brightness(0.4); z-index: -1; transform: scale(1.1); }
-        .container { width: 90%; max-width: 450px; text-align: center; z-index: 1; padding: 20px 0; }
+        /* تصميم كرت العرض */
+        .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; }
+        .card { background: #1e293b; padding: 30px 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 15px 35px rgba(0,0,0,0.6); }
         
-        /* تنسيق كرت المهام والعرض */
-        .card { background: rgba(15, 15, 18, 0.95); padding: 25px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .thumb { width: 100%; border-radius: 15px; margin-bottom: 20px; border: 2px solid rgba(255,255,255,0.1); }
-        .title { font-size: 22px; font-weight: bold; margin-bottom: 25px; }
-        .task-btn { background: var(--p); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; margin-bottom: 12px; cursor: pointer; transition: 0.3s; }
+        .verified { background: rgba(34, 197, 94, 0.1); border: 1px solid #22c55e; color: #22c55e; padding: 5px 15px; border-radius: 20px; font-size: 12px; display: inline-flex; align-items: center; margin-bottom: 25px; }
+        .verified::before { content: '●'; margin-left: 8px; }
+
+        .title { font-size: 24px; font-weight: bold; margin-bottom: 30px; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
         
-        /* شريط التحميل (Processing Bar) */
-        .proc-container { display: none; margin-top: 15px; }
-        .proc-bar-bg { background: #1e293b; height: 10px; border-radius: 5px; overflow: hidden; margin-bottom: 5px; }
-        .proc-bar-fill { background: var(--accent); height: 100%; width: 0%; transition: 0.2s; box-shadow: 0 0 10px var(--accent); }
-        
+        .task-btn { background: var(--p); color: white; border: none; width: 100%; padding: 16px; border-radius: 12px; font-weight: bold; margin-bottom: 15px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; font-size: 15px; }
+        .task-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 0, 0, 0.3); }
+        .task-btn.done { background: #334155; color: #94a3b8; cursor: default; box-shadow: none; transform: none; }
+
+        .progress-box { margin-top: 25px; text-align: right; }
+        .progress-text { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 10px; color: #94a3b8; }
+        .bar-bg { background: #0f172a; height: 10px; border-radius: 10px; overflow: hidden; }
+        .bar-fill { background: var(--accent); height: 100%; width: 0%; transition: 0.5s; box-shadow: 0 0 15px var(--accent); }
+
+        .final-btn { background: var(--accent); width: 100%; padding: 18px; border-radius: 12px; color: white; border: none; margin-top: 25px; font-weight: bold; font-size: 1.1rem; display: none; cursor: pointer; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
         /* ستايل الصانع */
-        input { width: 100%; padding: 12px; margin: 8px 0 15px; border-radius: 8px; border: 1px solid #334155; background: #0a0a0b; color: white; box-sizing: border-box; }
-        label { display: block; text-align: right; font-size: 13px; color: #94a3b8; }
-        .file-label { display: block; background: #1e293b; padding: 15px; border-radius: 8px; border: 1px dashed #4a5568; cursor: pointer; margin-bottom: 15px; text-align: center; }
+        input { width: 100%; padding: 14px; margin: 8px 0 20px; border-radius: 10px; border: 1px solid #334155; background: #0a0a0b; color: white; box-sizing: border-box; }
+        label { display: block; text-align: right; font-size: 14px; color: #94a3b8; }
     </style>
 </head>
 <body>
@@ -36,104 +42,78 @@
     const app = document.getElementById('app');
     const params = new URLSearchParams(window.location.search);
 
-    // واجهة العرض (View Mode)
+    // واجهة العرض (المتابع)
     if (params.has('data')) {
         const raw = params.get('data').split('|');
         const config = {
             t: decodeURIComponent(atob(raw[0])),
-            img: raw[1],
-            c: atob(raw[2]),
-            v: atob(raw[3]),
-            f: atob(raw[4])
+            c: atob(raw[1]),
+            v: atob(raw[2]),
+            f: atob(raw[3])
         };
         let completed = 0;
 
         app.innerHTML = `
-            <div class="bg-blur" style="background-image: url('${config.img}')"></div>
-            <img src="${config.img}" class="thumb">
+            <div class="verified">This account is verified</div>
             <div class="title">${config.t}</div>
             <div class="card">
+                <div style="color:#94a3b8; font-size:14px; margin-bottom:20px;">Complete the actions to unlock</div>
                 <button class="task-btn" id="b1" onclick="verify('${config.c}', 'b1')">Subscribe to channel</button>
                 <button class="task-btn" id="b2" onclick="verify('${config.v}', 'b2')">Like a video</button>
-                <button id="final" class="task-btn" style="background:var(--accent); display:none;" onclick="window.location.href='${config.f}'">Unlock Link 🔓</button>
+                
+                <div class="progress-box">
+                    <div class="progress-text"><span>Unlock progress</span><span id="p-num">0/2</span></div>
+                    <div class="bar-bg"><div class="bar-fill" id="bar"></div></div>
+                </div>
+                <button id="final" class="final-btn" onclick="window.location.href='${config.f}'">Unlock Link 🔓</button>
             </div>
         `;
 
         window.verify = function(url, id) {
             window.open(url, '_blank');
             const btn = document.getElementById(id);
+            if(btn.classList.contains('done')) return;
+            
             btn.innerText = "Verifying...";
             setTimeout(() => {
-                btn.innerText = "Done ✓";
-                btn.style.background = "#1e293b";
-                btn.disabled = true;
+                btn.innerText = "Completed ✓";
+                btn.classList.add('done');
                 completed++;
+                document.getElementById('p-num').innerText = completed + "/2";
+                document.getElementById('bar').style.width = (completed/2)*100 + "%";
                 if(completed === 2) document.getElementById('final').style.display = 'block';
-            }, 4000);
+            }, 5000);
         };
     } 
-    // واجهة الإنشاء (Generator Mode)
+    // واجهة الإنشاء (المصنع)
     else {
         app.innerHTML = `
-            <div class="card">
-                <h2 style="color:var(--accent)">صانع الروابط الاحترافي 🛠️</h2>
-                <label>عنوان الصفحة:</label>
-                <input type="text" id="title" value="هاك دلتا اخر اصدار">
+            <div class="card" style="text-align:right">
+                <h2 style="color:var(--accent); text-align:center;">صانع الروابط الاحترافي 🛠️</h2>
+                <label>عنوان الصفحة (يظهر للمتابع):</label>
+                <input type="text" id="title" value="أكمل المهام لفتح الرابط">
                 
-                <label>اختر صورة من جهازك:</label>
-                <input type="file" id="imgFile" style="display:none" accept="image/*" onchange="updateFileName(this)">
-                <label for="imgFile" class="file-label" id="fileNameDisplay">📁 اضغط هنا لاختيار الصورة</label>
+                <label>رابط القناة (اشتراك):</label>
+                <input type="url" id="c" placeholder="https://youtube.com/...">
                 
-                <label>رابط القناة:</label><input type="url" id="c" placeholder="https://youtube.com/...">
-                <label>رابط الفيديو:</label><input type="url" id="v" placeholder="https://youtube.com/watch...">
-                <label>رابط التحميل:</label><input type="url" id="f" placeholder="https://...">
+                <label>رابط الفيديو (لايك):</label>
+                <input type="url" id="v" placeholder="https://youtube.com/watch...">
                 
-                <button class="task-btn" style="background:var(--accent)" onclick="processAndGenerate()">إنشاء الرابط النهائي</button>
+                <label>رابط التحميل النهائي:</label>
+                <input type="url" id="f" placeholder="https://...">
                 
-                <div id="procZone" class="proc-container">
-                    <div class="progress-text" style="font-size:12px; margin-bottom:5px;">جاري معالجة الصورة...</div>
-                    <div class="proc-bar-bg"><div id="procFill" class="proc-bar-fill"></div></div>
-                </div>
+                <button class="task-btn" style="background:var(--accent); margin-top:10px" onclick="generate()">إنشاء ودخول الصفحة</button>
             </div>
         `;
 
-        window.updateFileName = function(input) {
-            if(input.files[0]) document.getElementById('fileNameDisplay').innerText = "✅ تم اختيار: " + input.files[0].name;
-        };
-
-        window.processAndGenerate = function() {
-            const file = document.getElementById('imgFile').files[0];
-            if (!file) return alert("من فضلك اختر صورة أولاً!");
-
-            const procZone = document.getElementById('procZone');
-            const procFill = document.getElementById('procFill');
-            procZone.style.display = "block";
-
-            const reader = new FileReader();
+        window.generate = function() {
+            const t = btoa(encodeURIComponent(document.getElementById('title').value));
+            const c = btoa(document.getElementById('c').value);
+            const v = btoa(document.getElementById('v').value);
+            const f = btoa(document.getElementById('f').value);
             
-            // تحديث شريط التحميل أثناء القراءة
-            reader.onprogress = function(data) {
-                if (data.lengthComputable) {
-                    const progress = (data.loaded / data.total) * 100;
-                    procFill.style.width = progress + "%";
-                }
-            };
-
-            reader.onload = function() {
-                procFill.style.width = "100%";
-                setTimeout(() => {
-                    const data = [
-                        btoa(encodeURIComponent(document.getElementById('title').value)),
-                        reader.result,
-                        btoa(document.getElementById('c').value),
-                        btoa(document.getElementById('v').value),
-                        btoa(document.getElementById('f').value)
-                    ].join('|');
-                    window.location.href = `?data=${data}`;
-                }, 500);
-            };
-
-            reader.readAsDataURL(file);
+            // تحويل فوري ومضمون لأن الحجم صغير جداً
+            window.location.href = `?data=${t}|${c}|${v}|${f}`;
         };
     }
 </script>
