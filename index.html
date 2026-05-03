@@ -5,67 +5,102 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Unlock Link | MX_SASUKE</title>
     <style>
-        :root { --red: #ff0000; --dark: #0f0f0f; }
-        body { font-family: sans-serif; background: var(--dark); color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: #1a1a1a; padding: 25px; border-radius: 15px; width: 100%; max-width: 380px; text-align: center; border: 1px solid #333; display: none; }
-        input { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid #333; background: #222; color: white; }
-        button { width: 100%; padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
-        .btn-red { background: var(--red); color: white; }
-        .btn-green { background: #2ecc71; color: white; }
+        :root { --primary: #ff0000; --bg: #0f0f0f; --card: #1a1a1a; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .box { background: var(--card); padding: 25px; border-radius: 20px; width: 100%; max-width: 400px; text-align: center; display: none; border: 1px solid #333; }
+        .thumb { width: 100%; border-radius: 15px; margin-bottom: 20px; display: none; }
+        .progress-container { background: #333; height: 8px; border-radius: 10px; margin: 20px 0; overflow: hidden; }
+        .progress-bar { background: var(--primary); height: 100%; width: 0%; transition: 0.5s; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #333; background: #252525; color: white; box-sizing: border-box; }
+        button { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+        .btn-gen { background: var(--primary); color: white; }
+        .btn-task { background: var(--primary); color: white; }
+        .btn-task.done { background: #333; color: #777; pointer-events: none; }
+        .btn-unlock { background: #444; color: #888; cursor: not-allowed; margin-top: 20px; }
+        .btn-unlock.enabled { background: #2ecc71; color: white; cursor: pointer; }
+        .result { margin-top: 20px; padding: 15px; background: #2ecc71; border-radius: 10px; display: none; color: #000; font-weight: bold; cursor: pointer; word-break: break-all; }
         .active { display: block !important; }
-        .res { margin-top: 15px; word-break: break-all; font-size: 10px; background: #000; padding: 10px; display: none; }
     </style>
 </head>
 <body>
 
-<div id="gen" class="card">
-    <h2 style="color:var(--red)">MX_SASUKE Panel</h2>
-    <input type="text" id="v" placeholder="YouTube Video ID (Only the code)">
-    <input type="text" id="s" placeholder="Channel Link">
-    <input type="text" id="t" placeholder="Download Link">
-    <button class="btn-red" onclick="make()">Generate Link</button>
-    <div id="out" class="res" onclick="copy()"></div>
+<!-- لوحة التحكم بتاعتك -->
+<div id="generator" class="box">
+    <h3 style="color:var(--primary)">MX_SASUKE Panel</h3>
+    <input type="text" id="videoUrlGen" placeholder="YouTube Video Link (To get Thumbnail)">
+    <input type="text" id="fileName" placeholder="File Title">
+    <input type="text" id="channelUrl" placeholder="Sub Link (Channel)">
+    <input type="text" id="targetUrl" placeholder="Final Download Link">
+    <button class="btn-gen" onclick="generateLink()">Create Small Link</button>
+    <div id="finalLink" class="result" onclick="copyText()">Click to copy small link</div>
 </div>
 
-<div id="view" class="card">
-    <img id="tm" style="width:100%; border-radius:10px; display:none;">
-    <h3>Unlock Your Link</h3>
-    <p id="st">Steps: 0/2</p>
-    <button class="btn-red" id="b1" onclick="go('s')">🔴 Subscribe</button>
-    <button class="btn-red" id="b2" onclick="go('l')">👍 Like Video</button>
-    <button id="un" style="background:#444; color:#888" disabled>Unlock Now</button>
+<!-- واجهة المشاهد -->
+<div id="viewer" class="box">
+    <img id="displayThumb" class="thumb" src="">
+    <h3 id="displayFileName">Complete Actions</h3>
+    <div id="stepText" style="color:var(--primary); font-size: 14px;">Steps: 0/2</div>
+    <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
+    <button class="btn-task" id="subBtn" onclick="doTask('sub')">🔴 Subscribe to channel</button>
+    <button class="btn-task" id="likeBtn" onclick="doTask('like')">👍 Like a video</button>
+    <button id="unlockBtn" class="btn-unlock" disabled>Unlock link</button>
 </div>
 
 <script>
-    const p = new URLSearchParams(location.search);
-    const v = p.get('v'), s = p.get('s'), t = p.get('t');
+    const urlParams = new URLSearchParams(window.location.search);
+    const vID = urlParams.get('v'); // Video ID for thumb
+    const n = urlParams.get('n'); const s = urlParams.get('s'); const t = urlParams.get('t');
 
     if (s && t) {
-        document.getElementById('view').className += ' active';
-        if(v) { const i = document.getElementById('tm'); i.src = `https://img.youtube.com/vi/${v}/0.jpg`; i.style.display = 'block'; }
+        document.getElementById('viewer').classList.add('active');
+        if(vID) { 
+            const thumb = document.getElementById('displayThumb');
+            thumb.src = `https://img.youtube.com/vi/${vID}/mqdefault.jpg`;
+            thumb.style.display = 'block';
+        }
+        if(n) document.getElementById('displayFileName').innerText = decodeURIComponent(atob(n));
     } else {
-        document.getElementById('gen').className += ' active';
+        document.getElementById('generator').classList.add('active');
     }
 
-    function make() {
-        const v_id = document.getElementById('v').value, sub = document.getElementById('s').value, tg = document.getElementById('t').value;
-        const link = `${location.href.split('?')[0]}?v=${v_id}&s=${btoa(sub)}&t=${btoa(tg)}`;
-        document.getElementById('out').innerText = link;
-        document.getElementById('out').style.display = 'block';
+    function generateLink() {
+        const vUrl = document.getElementById('videoUrlGen').value;
+        const name = document.getElementById('fileName').value;
+        const sub = document.getElementById('channelUrl').value;
+        const target = document.getElementById('targetUrl').value;
+        
+        let videoID = "";
+        try { videoID = vUrl.split('v=')[1].split('&')[0]; } catch(e) { 
+            try { videoID = vUrl.split('be/')[1].split('?')[0]; } catch(e) { alert("Invalid YouTube Link!"); return; }
+        }
+
+        const base = window.location.href.split('?')[0];
+        const final = `${base}?v=${videoID}&n=${btoa(encodeURIComponent(name))}&s=${btoa(sub)}&t=${btoa(target)}`;
+        
+        document.getElementById('finalLink').innerText = final;
+        document.getElementById('finalLink').style.display = 'block';
+        window.tempLink = final;
     }
 
-    function copy() { navigator.clipboard.writeText(document.getElementById('out').innerText); alert("Copied!"); }
+    function copyText() {
+        navigator.clipboard.writeText(window.tempLink);
+        alert("Link Copied!");
+    }
 
-    let count = 0;
-    function go(type) {
-        window.open(type === 's' ? atob(s) : `https://youtube.com/watch?v=${v}`, '_blank');
+    let completed = 0;
+    function doTask(type) {
+        window.open(type === 'sub' ? atob(s) : `https://www.youtube.com/watch?v=${vID}`, '_blank');
         setTimeout(() => {
-            count++; document.getElementById('st').innerText = `Steps: ${count}/2`;
-            if(count >= 2) { 
-                const u = document.getElementById('un'); u.disabled = false; u.className = 'btn-green';
-                u.onclick = () => location.href = atob(t);
+            document.getElementById(type === 'sub' ? 'subBtn' : 'likeBtn').classList.add('done');
+            completed++;
+            document.getElementById('progressBar').style.width = (completed/2)*100 + '%';
+            document.getElementById('stepText').innerText = `Steps: ${completed}/2`;
+            if(completed >= 2) {
+                const ub = document.getElementById('unlockBtn');
+                ub.disabled = false; ub.classList.add('enabled');
+                ub.onclick = () => window.location.href = atob(t);
             }
-        }, 3000);
+        }, 4000);
     }
 </script>
 </body>
