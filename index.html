@@ -2,41 +2,70 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>Generator | صانع الروابط</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Link Unlocker</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #0f172a; color: white; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .box { background: #1e293b; padding: 30px; border-radius: 15px; width: 100%; max-width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
-        input { width: 100%; padding: 12px; margin: 10px 0 20px 0; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; }
-        button { width: 100%; padding: 15px; background: #007bff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.3s; }
-        button:hover { background: #0056b3; }
-        h2 { text-align: center; color: #38bdf8; }
+        body { background: #0b1120; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: #1e293b; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; }
+        .btn { background: #007bff; color: white; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; }
+        .task { background: #2d3748; padding: 15px; margin: 10px 0; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
+        .done-icon { color: #22c55e; display: none; font-size: 1.2rem; }
+        .unlock-btn { background: #16a34a; margin-top: 20px; display: none; }
+        h2 { color: #38bdf8; margin-bottom: 20px; }
     </style>
 </head>
 <body>
-    <div class="box">
-        <h2>إنشاء صفحة الشروط 🛠️</h2>
-        
-        <label>رابط قناتك (للاشتراك):</label>
-        <input type="url" id="ytChannel" placeholder="https://youtube.com/@...">
-        
-        <label>رابط الفيديو (للايك):</label>
-        <input type="url" id="ytVideo" placeholder="https://youtube.com/watch?v=...">
-        
-        <label>الرابط المراد فتحه (التحميل):</label>
-        <input type="url" id="finalUrl" placeholder="https://...">
-        
-        <button onclick="generateAndRedirect()">إنشاء ودخول الصفحة فوراً</button>
-    </div>
 
-    <script>
-        function generateAndRedirect() {
-            const ch = btoa(document.getElementById('ytChannel').value);
-            const vi = btoa(document.getElementById('ytVideo').value);
-            const fi = btoa(document.getElementById('finalUrl').value);
-            
-            // تحويل فوري لصفحة العرض مع تمرير البيانات في الرابط
-            window.location.href = `view.html?data=${ch}|${vi}|${fi}`;
-        }
-    </script>
+<div id="app" class="card">
+    <!-- المحتوى بيتغير تلقائياً هنا -->
+</div>
+
+<script>
+    const app = document.getElementById('app');
+    const params = new URLSearchParams(window.location.search);
+
+    // لو الرابط فيه بيانات (عرض الشروط)
+    if (params.has('data')) {
+        const raw = params.get('data').split('|');
+        const links = { c: atob(raw[0]), v: atob(raw[1]), f: atob(raw[2]) };
+        let count = 0;
+
+        app.innerHTML = `
+            <h2>أكمل المهام لفتح الرابط</h2>
+            <div class="task" id="t1"><span>1. اشترك في القناة</span><button class="btn" style="width:auto" onclick="verify('${links.c}', 't1')">اشتراك</button><span class="done-icon">✔</span></div>
+            <div class="task" id="t2"><span>2. لايك للفيديو</span><button class="btn" style="width:auto" onclick="verify('${links.v}', 't2')">لايك</button><span class="done-icon">✔</span></div>
+            <button id="final" class="btn unlock-btn" onclick="window.location.href='${links.f}'">تحميل الآن 📥</button>
+        `;
+
+        window.verify = function(url, id) {
+            window.open(url, '_blank');
+            setTimeout(() => {
+                document.querySelector(`#${id} .btn`).style.display = 'none';
+                document.querySelector(`#${id} .done-icon`).style.display = 'block';
+                count++;
+                if(count === 2) document.getElementById('final').style.display = 'block';
+            }, 5000);
+        };
+    } 
+    // لو الرابط فاضي (صفحة الإنشاء)
+    else {
+        app.innerHTML = `
+            <h2>إنشاء رابط قفل 🛠️</h2>
+            <input type="url" id="c" placeholder="رابط قناتك">
+            <input type="url" id="v" placeholder="رابط الفيديو">
+            <input type="url" id="f" placeholder="رابط التحميل">
+            <button class="btn" onclick="generate()">إنشاء ودخول الصفحة</button>
+        `;
+
+        window.generate = function() {
+            const ch = btoa(document.getElementById('c').value);
+            const vi = btoa(document.getElementById('v').value);
+            const fi = btoa(document.getElementById('f').value);
+            window.location.href = `?data=${ch}|${vi}|${fi}`;
+        };
+    }
+</script>
+
 </body>
 </html>
