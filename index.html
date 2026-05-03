@@ -2,133 +2,48 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>فتح الرابط | Unlock Link</title>
+    <title>صانع روابط القفل</title>
     <style>
-        :root {
-            --primary-color: #007bff;
-            --bg-color: #0f172a;
-            --card-bg: #1e293b;
-            --text-color: #f8fafc;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .container {
-            background-color: var(--card-bg);
-            padding: 2rem;
-            border-radius: 1rem;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-            text-align: center;
-            width: 90%;
-            max-width: 400px;
-        }
-
-        h2 { margin-bottom: 1.5rem; font-size: 1.5rem; }
-
-        .step {
-            background: #334155;
-            margin-bottom: 1rem;
-            padding: 1rem;
-            border-radius: 0.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: 0.3s;
-        }
-
-        .btn {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .btn:disabled {
-            background-color: #64748b;
-            cursor: not-allowed;
-        }
-
-        .unlock-btn {
-            background-color: #22c55e;
-            width: 100%;
-            margin-top: 1rem;
-            padding: 15px;
-            font-size: 1.1rem;
-            display: none; /* مخفي في البداية */
-        }
-
-        .check-mark { color: #22c55e; display: none; }
+        body { font-family: sans-serif; background: #0f172a; color: white; display: flex; justify-content: center; padding: 20px; }
+        .box { background: #1e293b; padding: 20px; border-radius: 10px; width: 100%; max-width: 500px; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; box-sizing: border-box; }
+        button { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        #result { margin-top: 20px; word-break: break-all; background: #334155; padding: 10px; display: none; border-radius: 5px; }
     </style>
 </head>
 <body>
-
-<div class="container">
-    <h2>أكمل المهام لفتح الرابط</h2>
-
-    <!-- المهمة الأولى: يوتيوب -->
-    <div class="step" id="step1">
-        <span>1. اشترك في القناة</span>
-        <button class="btn" onclick="completeTask('https://youtube.com/@YOUR_CHANNEL_LINK', 'step1')">اشتراك</button>
-        <span class="check-mark">✔</span>
-    </div>
-
-    <!-- المهمة الثانية: ديسكورد -->
-    <div class="step" id="step2">
-        <span>2. انضم لسيرفر الديسكورد</span>
-        <button class="btn" onclick="completeTask('https://discord.gg/YOUR_INVITE', 'step2')">انضمام</button>
-        <span class="check-mark">✔</span>
-    </div>
-
-    <!-- زر التحميل النهائي -->
-    <button id="finalLink" class="btn unlock-btn" onclick="location.href='رابط_التحميل_هنا'">
-        فتح الرابط الآن 🚀
-    </button>
-</div>
-
-<script>
-    let completedTasks = 0;
-    const totalTasks = 2;
-
-    function completeTask(url, stepId) {
-        // فتح الرابط في نافذة جديدة
-        window.open(url, '_blank');
+    <div class="box">
+        <h2>إعداد صفحة القفل 🛠️</h2>
+        <label>رابط القناة (للاشتراك):</label>
+        <input type="text" id="ytChannel" placeholder="https://youtube.com/c/...">
         
-        // محاكاة التحقق (بعد 5 ثواني يعتبر المهمة تمت)
-        const step = document.getElementById(stepId);
-        const btn = step.querySelector('.btn');
-        const check = step.querySelector('.check-mark');
+        <label>رابط الفيديو (للايك):</label>
+        <input type="text" id="ytVideo" placeholder="https://youtube.com/watch?v=...">
+        
+        <label>رابط الملف النهائي (التحميل):</label>
+        <input type="text" id="finalUrl" placeholder="https://example.com/file">
+        
+        <button onclick="generateLink()">إنشاء الرابط النهائي</button>
+        
+        <div id="result">
+            <p>انسخ هذا الرابط وضعه في وصف الفيديو:</p>
+            <strong id="linkOutput"></strong>
+        </div>
+    </div>
 
-        btn.innerText = "جاري التحقق...";
-        btn.disabled = true;
-
-        setTimeout(() => {
-            btn.style.display = 'none';
-            check.style.display = 'inline';
-            completedTasks++;
-            checkStatus();
-        }, 5000);
-    }
-
-    function checkStatus() {
-        if (completedTasks === totalTasks) {
-            document.getElementById('finalLink').style.display = 'block';
+    <script>
+        function generateLink() {
+            const data = {
+                c: btoa(document.getElementById('ytChannel').value),
+                v: btoa(document.getElementById('ytVideo').value),
+                f: btoa(document.getElementById('finalUrl').value)
+            };
+            // استبدل الرابط التالي برابط موقعك على جيت هوب
+            const baseUrl = window.location.href.replace('index.html', 'view.html');
+            const finalLink = `${baseUrl}?data=${data.c}|${data.v}|${data.f}`;
+            document.getElementById('result').style.display = 'block';
+            document.getElementById('linkOutput').innerText = finalLink;
         }
-    }
-</script>
-
+    </script>
 </body>
 </html>
