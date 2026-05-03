@@ -19,7 +19,7 @@
             overflow: hidden;
         }
 
-        /* الخلفية المشوشة الثابتة */
+        /* الخلفية المشوشة الثابتة لوجو النينجا */
         .bg-blur { 
             position: fixed; 
             top: 0; left: 0; right: 0; bottom: 0; 
@@ -131,7 +131,7 @@
             <div class="card">
                 <div style="color:#94a3b8; font-size:14px; margin-bottom:20px; text-align:center;">Complete the actions to unlock</div>
                 <button class="task-btn" id="b1" onclick="verify('${config.c}', 'b1')">Subscribe to channel</button>
-                <button class="task-btn" id="b2" onclick="verify('${config.v}', 'b2')">Like a video</button>
+                <button class="task-btn" id="b2" onclick="verify('${config.v}', 'b2')">Like & comment on video</button>
                 
                 <div class="progress-box">
                     <div class="progress-text"><span>Unlock progress</span><span id="p-num">0/2</span></div>
@@ -168,10 +168,10 @@
                 <label>رابط قناتك:</label>
                 <input type="url" id="c" placeholder="https://youtube.com/...">
                 
-                <label>رابط فيديو اللايك:</label>
+                <label>رابط الفيديو:</label>
                 <input type="url" id="v" placeholder="https://youtube.com/watch...">
                 
-                <label>رابط التحميل:</label>
+                <label>رابط التحميل النهائي:</label>
                 <input type="url" id="f" placeholder="https://...">
                 
                 <button class="task-btn" style="background:var(--accent); margin-top:10px" onclick="generate()">إنشاء ودخول الصفحة</button>
