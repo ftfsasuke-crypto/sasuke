@@ -3,19 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Link Unlocker | Fix Block</title>
+    <title>Link Unlocker | Image Processor</title>
     <style>
         :root { --p: #ff0000; --bg: #0a0a0b; --accent: #22c55e; }
-        body { background-color: var(--bg); color: white; font-family: 'Segoe UI', Tahoma, sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        body { background-color: var(--bg); color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden; }
+        
         .bg-blur { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-size: cover; background-position: center; filter: blur(50px) brightness(0.4); z-index: -1; transform: scale(1.1); }
         .container { width: 90%; max-width: 450px; text-align: center; z-index: 1; padding: 20px 0; }
+        
+        /* تنسيق كرت المهام والعرض */
         .card { background: rgba(15, 15, 18, 0.95); padding: 25px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .thumb { width: 100%; border-radius: 15px; margin-bottom: 20px; border: 2px solid rgba(255,255,255,0.1); }
         .title { font-size: 22px; font-weight: bold; margin-bottom: 25px; }
-        .task-btn { background: var(--p); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; margin-bottom: 12px; cursor: pointer; }
+        .task-btn { background: var(--p); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; margin-bottom: 12px; cursor: pointer; transition: 0.3s; }
+        
+        /* شريط التحميل (Processing Bar) */
+        .proc-container { display: none; margin-top: 15px; }
+        .proc-bar-bg { background: #1e293b; height: 10px; border-radius: 5px; overflow: hidden; margin-bottom: 5px; }
+        .proc-bar-fill { background: var(--accent); height: 100%; width: 0%; transition: 0.2s; box-shadow: 0 0 10px var(--accent); }
+        
+        /* ستايل الصانع */
         input { width: 100%; padding: 12px; margin: 8px 0 15px; border-radius: 8px; border: 1px solid #334155; background: #0a0a0b; color: white; box-sizing: border-box; }
-        #copyBox { display: none; background: #1e293b; padding: 15px; border-radius: 10px; margin-top: 15px; border: 1px solid var(--accent); }
-        #urlRes { width: 100%; background: transparent; color: #94a3b8; border: none; font-size: 10px; overflow: hidden; text-overflow: ellipsis; }
+        label { display: block; text-align: right; font-size: 13px; color: #94a3b8; }
+        .file-label { display: block; background: #1e293b; padding: 15px; border-radius: 8px; border: 1px dashed #4a5568; cursor: pointer; margin-bottom: 15px; text-align: center; }
     </style>
 </head>
 <body>
@@ -26,6 +36,7 @@
     const app = document.getElementById('app');
     const params = new URLSearchParams(window.location.search);
 
+    // واجهة العرض (View Mode)
     if (params.has('data')) {
         const raw = params.get('data').split('|');
         const config = {
@@ -60,52 +71,69 @@
                 if(completed === 2) document.getElementById('final').style.display = 'block';
             }, 4000);
         };
-    } else {
+    } 
+    // واجهة الإنشاء (Generator Mode)
+    else {
         app.innerHTML = `
             <div class="card">
                 <h2 style="color:var(--accent)">صانع الروابط الاحترافي 🛠️</h2>
-                <label>عنوان الصفحة:</label><input type="text" id="title" value="هاك دلتا اخر اصدار">
-                <label>الصورة:</label><input type="file" id="imgFile" accept="image/*">
+                <label>عنوان الصفحة:</label>
+                <input type="text" id="title" value="هاك دلتا اخر اصدار">
+                
+                <label>اختر صورة من جهازك:</label>
+                <input type="file" id="imgFile" style="display:none" accept="image/*" onchange="updateFileName(this)">
+                <label for="imgFile" class="file-label" id="fileNameDisplay">📁 اضغط هنا لاختيار الصورة</label>
+                
                 <label>رابط القناة:</label><input type="url" id="c" placeholder="https://youtube.com/...">
                 <label>رابط الفيديو:</label><input type="url" id="v" placeholder="https://youtube.com/watch...">
                 <label>رابط التحميل:</label><input type="url" id="f" placeholder="https://...">
-                <button class="task-btn" style="background:var(--accent)" onclick="generateLink()">إنشاء الرابط</button>
                 
-                <div id="copyBox">
-                    <p style="font-size:12px; color:var(--accent)">✅ تم الإنشاء بنجاح!</p>
-                    <p style="font-size:10px; color:#94a3b8">انسخ الرابط ده واختصره في (Bitly) عشان يشتغل:</p>
-                    <textarea id="urlRes" readonly rows="3"></textarea>
-                    <button class="task-btn" style="background:#334155; margin-top:10px" onclick="copyUrl()">نسخ الرابط</button>
+                <button class="task-btn" style="background:var(--accent)" onclick="processAndGenerate()">إنشاء الرابط النهائي</button>
+                
+                <div id="procZone" class="proc-container">
+                    <div class="progress-text" style="font-size:12px; margin-bottom:5px;">جاري معالجة الصورة...</div>
+                    <div class="proc-bar-bg"><div id="procFill" class="proc-bar-fill"></div></div>
                 </div>
             </div>
         `;
 
-        window.generateLink = function() {
-            const file = document.getElementById('imgFile').files[0];
-            if (!file) return alert("اختر صورة!");
-
-            const reader = new FileReader();
-            reader.onload = function() {
-                const data = [
-                    btoa(encodeURIComponent(document.getElementById('title').value)),
-                    reader.result,
-                    btoa(document.getElementById('c').value),
-                    btoa(document.getElementById('v').value),
-                    btoa(document.getElementById('f').value)
-                ].join('|');
-                
-                const finalLink = window.location.origin + window.location.pathname + "?data=" + data;
-                document.getElementById('urlRes').value = finalLink;
-                document.getElementById('copyBox').style.display = "block";
-            };
-            reader.readAsDataURL(file);
+        window.updateFileName = function(input) {
+            if(input.files[0]) document.getElementById('fileNameDisplay').innerText = "✅ تم اختيار: " + input.files[0].name;
         };
 
-        window.copyUrl = function() {
-            const copyText = document.getElementById("urlRes");
-            copyText.select();
-            document.execCommand("copy");
-            alert("تم النسخ! روح اختصره دلوقتي.");
+        window.processAndGenerate = function() {
+            const file = document.getElementById('imgFile').files[0];
+            if (!file) return alert("من فضلك اختر صورة أولاً!");
+
+            const procZone = document.getElementById('procZone');
+            const procFill = document.getElementById('procFill');
+            procZone.style.display = "block";
+
+            const reader = new FileReader();
+            
+            // تحديث شريط التحميل أثناء القراءة
+            reader.onprogress = function(data) {
+                if (data.lengthComputable) {
+                    const progress = (data.loaded / data.total) * 100;
+                    procFill.style.width = progress + "%";
+                }
+            };
+
+            reader.onload = function() {
+                procFill.style.width = "100%";
+                setTimeout(() => {
+                    const data = [
+                        btoa(encodeURIComponent(document.getElementById('title').value)),
+                        reader.result,
+                        btoa(document.getElementById('c').value),
+                        btoa(document.getElementById('v').value),
+                        btoa(document.getElementById('f').value)
+                    ].join('|');
+                    window.location.href = `?data=${data}`;
+                }, 500);
+            };
+
+            reader.readAsDataURL(file);
         };
     }
 </script>
