@@ -16,40 +16,45 @@
         .progress-bar { background: var(--primary); height: 100%; width: 0%; transition: 0.5s ease; }
         .counter { font-size: 14px; font-weight: bold; color: var(--primary); margin-bottom: 10px; }
 
-        input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #333; background: #252525; color: white; box-sizing: border-box; outline: none; }
+        input, .file-label { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #333; background: #252525; color: white; box-sizing: border-box; outline: none; text-align: right; }
+        .file-label { background: #333; border: 1px dashed #555; text-align: center; color: #aaa; cursor: pointer; display: block; }
+        #fileInput { display: none; }
+
         button { width: 100%; padding: 15px; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 12px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        
         .btn-gen { background: var(--primary); color: white; }
-        .btn-task { background: var(--primary); color: white; }
+        .btn-task { background: var(--primary); color: white; text-align: center; }
         .btn-task.done { background: #333; color: #777; pointer-events: none; }
         .btn-unlock { background: #444; color: #888; cursor: not-allowed; margin-top: 25px; }
-        .btn-unlock.enabled { background: #2ecc71; color: white; cursor: pointer; transform: scale(1.05); }
+        .btn-unlock.enabled { background: #2ecc71; color: white; cursor: pointer; }
 
-        /* زر النسخ الجديد */
-        #copyBtn { background: #27ae60; color: white; display: none; margin-top: 15px; }
+        #copyBtn { background: #27ae60; color: white; display: none; }
         .active { display: block !important; }
+        #genPreview { max-height: 150px; margin: 10px auto; display: none; border-radius: 10px; }
     </style>
 </head>
 <body>
 
-<!-- لوحة التحكم (Generator) -->
-<div id="generator" class="box">
-    <h3 style="color:var(--primary)">MX_SASUKE Panel</h3>
-    <input type="text" id="thumbUrl" placeholder="Thumbnail Image Link (URL)">
-    <input type="text" id="fileName" placeholder="File Title (e.g., Delta Executor)">
-    <input type="text" id="channelUrl" placeholder="YouTube Channel Link">
-    <input type="text" id="videoUrl" placeholder="Video Link (for Like)">
-    <input type="text" id="targetUrl" placeholder="Final Download Link">
+<!-- لوحة التحكم باللغة العربية (Generator) -->
+<div id="generator" class="box" dir="rtl">
+    <h3 style="color:var(--primary)">لوحة تحكم MX_SASUKE</h3>
+    <p>قم برفع صورة وتعبئة الروابط لإنشاء الرابط السحري</p>
     
-    <button class="btn-gen" onclick="generateLink()">Create Pro Link</button>
+    <label for="fileInput" class="file-label" id="fileLabel">📁 اضغط لاختيار صورة من جهازك</label>
+    <input type="file" id="fileInput" accept="image/*">
+    <img id="genPreview" src="">
+
+    <input type="text" id="fileName" placeholder="عنوان الملف (مثلاً: تحميل هكر دلتا)">
+    <input type="text" id="channelUrl" placeholder="رابط قناتك على يوتيوب">
+    <input type="text" id="videoUrl" placeholder="رابط الفيديو (لعمل لايك)">
+    <input type="text" id="targetUrl" placeholder="رابط التحميل النهائي">
     
-    <!-- زر النسخ بيظهر هنا -->
-    <button id="copyBtn" onclick="copyText()">📋 Click to Copy Link</button>
+    <button class="btn-gen" onclick="generateLink()">إنشاء رابط احترافي</button>
+    <button id="copyBtn" onclick="copyText()">📋 اضغط هنا لنسخ الرابط</button>
 </div>
 
-<!-- واجهة المشاهد (Viewer) -->
-<div id="viewer" class="box">
-    <img id="displayThumb" class="thumb" src="" alt="thumbnail">
+<!-- واجهة المشاهد باللغة الإنجليزية (Viewer) -->
+<div id="viewer" class="box" dir="ltr">
+    <img id="displayThumb" class="thumb" src="">
     <h3 id="displayFileName">Complete Actions</h3>
     <div class="counter" id="stepText">Steps Completed: 0/2</div>
     <div class="progress-container"><div class="progress-bar" id="progressBar"></div></div>
@@ -61,31 +66,53 @@
 </div>
 
 <script>
+    let base64Image = "";
     let finalOutputLink = "";
     const urlParams = new URLSearchParams(window.location.search);
-    const img = urlParams.get('img'), n = urlParams.get('n'), s = urlParams.get('s'), l = urlParams.get('l'), t = urlParams.get('t');
+    const imgData = urlParams.get('img'), n = urlParams.get('n'), s = urlParams.get('s'), l = urlParams.get('l'), t = urlParams.get('t');
+
+    // معالجة رفع الصورة
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                base64Image = event.target.result;
+                const preview = document.getElementById('genPreview');
+                preview.src = base64Image;
+                preview.style.display = 'block';
+                document.getElementById('fileLabel').innerText = "✅ تم اختيار الصورة";
+            };
+            reader.readAsDataURL(file);
+        }
+    });
 
     if (s && t) {
         document.getElementById('viewer').classList.add('active');
-        if(img) { const thumb = document.getElementById('displayThumb'); thumb.src = atob(img); thumb.style.display = 'block'; }
+        if(imgData) { 
+            const thumb = document.getElementById('displayThumb'); 
+            thumb.src = decodeURIComponent(atob(imgData)); 
+            thumb.style.display = 'block'; 
+        }
         if(n) document.getElementById('displayFileName').innerText = decodeURIComponent(atob(n));
     } else {
         document.getElementById('generator').classList.add('active');
     }
 
     function generateLink() {
-        const thumb = document.getElementById('thumbUrl').value;
         const name = document.getElementById('fileName').value;
         const sub = document.getElementById('channelUrl').value;
         const like = document.getElementById('videoUrl').value;
         const target = document.getElementById('targetUrl').value;
         
-        if(!sub || !target) return alert("Links missing!");
+        if(!sub || !target) return alert("يرجى ملء الروابط الأساسية!");
         
         const base = window.location.href.split('?')[0];
-        finalOutputLink = `${base}?img=${btoa(thumb)}&n=${btoa(encodeURIComponent(name))}&s=${btoa(sub)}&l=${btoa(like)}&t=${btoa(target)}`;
+        // تم استخدام btoa لتشفير البيانات وتقصير الرابط قدر الإمكان
+        finalOutputLink = `${base}?img=${btoa(encodeURIComponent(base64Image))}&n=${btoa(encodeURIComponent(name))}&s=${btoa(sub)}&l=${btoa(like)}&t=${btoa(target)}`;
         
         document.getElementById('copyBtn').style.display = 'flex';
+        alert("تم إنشاء الرابط! اضغط على زر النسخ الأخضر.");
     }
 
     function copyText() {
@@ -95,7 +122,7 @@
         el.select();
         document.execCommand('copy');
         document.body.removeChild(el);
-        alert("Link Copied Successfully! Now paste it in Bitly or Cutt.ly to shorten it.");
+        alert("تم النسخ بنجاح! الرابط طويل بسبب الصورة، يرجى اختصاره في موقع Bitly أو Cutt.ly.");
     }
 
     let completed = 0;
@@ -120,6 +147,7 @@
             const ub = document.getElementById('unlockBtn');
             ub.disabled = false;
             ub.classList.add('enabled');
+            ub.innerText = "Unlock link Now ✅";
             ub.onclick = () => window.location.href = atob(t);
         }
     }
