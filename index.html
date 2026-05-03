@@ -7,53 +7,58 @@
     <style>
         :root { --red: #ff0000; --bg: #0f0f0f; --card: #1a1a1a; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
-        .box { background: var(--card); padding: 25px; border-radius: 20px; width: 100%; max-width: 400px; text-align: center; border: 1px solid #333; display: none; }
-        .thumb { width: 100%; border-radius: 15px; margin-bottom: 20px; display: none; }
+        .box { background: var(--card); padding: 25px; border-radius: 20px; width: 100%; max-width: 400px; text-align: center; display: none; border: 1px solid #333; }
+        .thumb { width: 100%; border-radius: 15px; margin-bottom: 20px; display: none; object-fit: cover; }
+        .progress-container { background: #333; height: 10px; border-radius: 10px; margin: 20px 0; overflow: hidden; }
+        .progress-bar { background: var(--red); height: 100%; width: 0%; transition: 0.5s ease-in-out; }
         input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 10px; border: 1px solid #333; background: #252525; color: white; text-align: right; box-sizing: border-box; }
         button { width: 100%; padding: 15px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
         .btn-red { background: var(--red); color: white; }
-        .btn-task { background: var(--red); color: white; }
+        .btn-task { background: var(--red); color: white; position: relative; overflow: hidden; }
         .btn-task.done { background: #333; color: #777; pointer-events: none; }
         .btn-unlock { background: #444; color: #888; cursor: not-allowed; margin-top: 20px; }
-        .btn-unlock.enabled { background: #2ecc71; color: white; cursor: pointer; }
-        #resArea { margin-top: 15px; background: #000; font-size: 11px; padding: 10px; word-break: break-all; display: none; border: 1px dashed #555; }
+        .btn-unlock.enabled { background: #2ecc71; color: white; cursor: pointer; transform: scale(1.05); }
+        #resArea { margin-top: 15px; background: #000; font-size: 11px; padding: 10px; word-break: break-all; display: none; border: 1px dashed #555; cursor: pointer; }
         .active { display: block !important; }
     </style>
 </head>
 <body>
 
-<!-- لوحة التحكم بالعربي (Generator) -->
+<!-- لوحة التحكم بالعربي -->
 <div id="gen" class="box" dir="rtl">
     <h3 style="color:var(--red)">لوحة تحكم MX_SASUKE</h3>
-    <p>ضع رابط الفيديو لجلب الصورة تلقائياً</p>
-    <input type="text" id="vUrl" placeholder="رابط فيديو يوتيوب (Thumbnail)">
-    <input type="text" id="fName" placeholder="اسم الملف (مثل: هكر دلتا)">
-    <input type="text" id="sUrl" placeholder="رابط قناتك (للاشتراك)">
-    <input type="text" id="tUrl" placeholder="رابط الملف النهائي">
-    <button class="btn-red" onclick="make()">إنشاء رابط قصير للنسخ</button>
-    <div id="resArea" onclick="copy()">اضغط هنا لنسخ الرابط بعد ظهوره</div>
+    <input type="text" id="imgUrl" placeholder="رابط الصورة المصغرة (Direct Link)">
+    <input type="text" id="fName" placeholder="عنوان الملف">
+    <input type="text" id="sUrl" placeholder="رابط القناة (للاشتراك)">
+    <input type="text" id="vUrl" placeholder="رابط الفيديو (للايك)">
+    <input type="text" id="tUrl" placeholder="رابط التحميل النهائي">
+    <button class="btn-red" onclick="make()">إنشاء الرابط</button>
+    <div id="resArea" onclick="copy()">اضغط هنا لنسخ الرابط</div>
 </div>
 
-<!-- واجهة المشاهد (Viewer) -->
+<!-- واجهة المشاهد -->
 <div id="view" class="box" dir="ltr">
     <img id="tm" class="thumb" src="">
     <h3 id="nm">Unlock Content</h3>
-    <div id="st" style="color:var(--red); font-size: 14px; margin-bottom: 10px;">Steps Completed: 0/2</div>
+    <div id="st" style="color:var(--red); font-size: 14px; margin-bottom: 5px;">Progress: 0/2</div>
+    <div class="progress-container"><div class="progress-bar" id="pBar"></div></div>
+    
     <button class="btn-task" id="b1" onclick="go('s')">🔴 Subscribe to channel</button>
     <button class="btn-task" id="b2" onclick="go('l')">👍 Like a video</button>
+    
     <button id="un" class="btn-unlock" disabled>Unlock Link</button>
 </div>
 
 <script>
     const p = new URLSearchParams(location.search);
-    const vID = p.get('v'), n = p.get('n'), s = p.get('s'), t = p.get('t');
+    const img = p.get('i'), n = p.get('n'), s = p.get('s'), l = p.get('l'), t = p.get('t');
 
     if (s && t) {
         document.getElementById('view').classList.add('active');
-        if(vID) { 
-            const img = document.getElementById('tm');
-            img.src = `https://img.youtube.com/vi/${vID}/mqdefault.jpg`;
-            img.style.display = 'block';
+        if(img) { 
+            const pic = document.getElementById('tm');
+            pic.src = atob(img);
+            pic.style.display = 'block';
         }
         if(n) document.getElementById('nm').innerText = decodeURIComponent(atob(n));
     } else {
@@ -61,12 +66,8 @@
     }
 
     function make() {
-        const vLink = document.getElementById('vUrl').value;
-        let id = "";
-        try { id = vLink.split('v=')[1].split('&')[0]; } catch(e) { id = vLink.split('be/')[1].split('?')[0]; }
-        
         const base = location.href.split('?')[0];
-        const final = `${base}?v=${id}&n=${btoa(encodeURIComponent(document.getElementById('fName').value))}&s=${btoa(document.getElementById('sUrl').value)}&t=${btoa(document.getElementById('tUrl').value)}`;
+        const final = `${base}?i=${btoa(document.getElementById('imgUrl').value)}&n=${btoa(encodeURIComponent(document.getElementById('fName').value))}&s=${btoa(document.getElementById('sUrl').value)}&l=${btoa(document.getElementById('vUrl').value)}&t=${btoa(document.getElementById('tUrl').value)}`;
         
         const res = document.getElementById('resArea');
         res.innerText = final; res.style.display = 'block';
@@ -75,16 +76,19 @@
 
     function copy() {
         navigator.clipboard.writeText(window.finalLink);
-        alert("تم النسخ! دلوقتى روح لـ Bitly وهيقبله فوراً.");
+        alert("تم النسخ بنجاح! الرابط دلوقتي قصير وتقدر تختصره بسهولة.");
     }
 
     let done = 0;
     function go(type) {
-        window.open(type === 's' ? atob(s) : `https://youtube.com/watch?v=${vID}`, '_blank');
+        window.open(atob(type === 's' ? s : l), '_blank');
         setTimeout(() => {
-            done++; document.getElementById('st').innerText = `Steps Completed: ${done}/2`;
+            done++;
+            document.getElementById(type === 's' ? 'b1' : 'b2').classList.add('done');
+            document.getElementById('pBar').style.width = (done/2)*100 + '%';
+            document.getElementById('st').innerText = `Progress: ${done}/2`;
             if(done >= 2) { 
-                const u = document.getElementById('un'); u.disabled = false; u.classList.add('enabled'); u.innerText = "Unlock Link Now ✅";
+                const u = document.getElementById('un'); u.disabled = false; u.classList.add('enabled'); u.innerText = "Get Link ✅";
                 u.onclick = () => location.href = atob(t);
             }
         }, 4000);
