@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sub2Unlock | صانع الروابط</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: #0f0f0f; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+        .box { background: #1e1e1e; padding: 30px; border-radius: 15px; width: 100%; max-width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
+        h3 { margin-top: 0; color: #ff0000; }
+        p { color: #aaa; font-size: 14px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #333; background: #2a2a2a; color: white; box-sizing: border-box; outline: none; }
+        input:focus { border-color: #ff0000; }
+        button { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        .btn-gen { background-color: #ff0000; color: white; }
+        .btn-gen:hover { background-color: #cc0000; }
+        .result { margin-top: 20px; padding: 15px; background: #27ae60; border-radius: 8px; display: none; word-break: break-all; color: white; font-size: 12px; cursor: pointer; }
+        
+        /* واجهة المشاهد */
+        .user-view { display: none; }
+        .active { display: block !important; }
+        .btn-sub { background-color: #ff0000; color: white; }
+        .btn-like { background-color: #0056b3; color: white; }
+        .btn-unlock { background-color: #444; color: #888; cursor: not-allowed; }
+        .btn-unlock.enabled { background-color: #27ae60; color: white; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<!-- 1. واجهة المولد (ليك أنت) -->
+<div id="generator" class="box active">
+    <h3>صانع الروابط (بدون إعلانات)</h3>
+    <p>أدخل الروابط بالأسفل لإنشاء رابط القفل الخاص بك</p>
+    <input type="text" id="channelUrl" placeholder="رابط قناتك على يوتيوب">
+    <input type="text" id="videoUrl" placeholder="رابط الفيديو (عشان اللايك)">
+    <input type="text" id="targetUrl" placeholder="الرابط المراد قفله (لينك التحميل)">
+    <button class="btn-gen" onclick="generateLink()">إنشاء رابط القفل</button>
+    <div id="finalLink" class="result" title="اضغط للنسخ" onclick="copyText()"></div>
+</div>
+
+<!-- 2. واجهة المشاهد (اللي الناس هتشوفها) -->
+<div id="viewer" class="box user-view">
+    <h3>فتح محتوى الفيديو</h3>
+    <p>اشترك ولايك لفتح الرابط مباشرة</p>
+    <button class="btn-sub" id="subBtn" onclick="doTask('sub')">1. إشترك في القناة</button>
+    <button class="btn-like" id="likeBtn" onclick="doTask('like')">2. لايك للفيديو</button>
+    <button id="unlockBtn" class="btn-unlock" disabled>3. خذ الرابط الآن</button>
+</div>
+
+<script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const sParam = urlParams.get('s');
+    const lParam = urlParams.get('l');
+    const tParam = urlParams.get('t');
+
+    // إذا كان الرابط يحتوي على بيانات، اظهر واجهة المشاهد
+    if (sParam && tParam) {
+        document.getElementById('generator').classList.remove('active');
+        document.getElementById('viewer').classList.add('active');
+    }
+
+    function generateLink() {
+        const s = document.getElementById('channelUrl').value;
+        const l = document.getElementById('videoUrl').value;
+        const t = document.getElementById('targetUrl').value;
+        
+        if(!s || !t) return alert("من فضلك ضع رابط القناة ورابط التحميل!");
+
+        const base = window.location.href.split('?')[0];
+        // تشفير الروابط للحماية بشكل بسيط
+        const final = `${base}?s=${btoa(s)}&l=${btoa(l)}&t=${btoa(t)}`;
+        
+        const resDiv = document.getElementById('finalLink');
+        resDiv.innerText = final;
+        resDiv.style.display = 'block';
+    }
+
+    function copyText() {
+        const text = document.getElementById('finalLink').innerText;
+        navigator.clipboard.writeText(text);
+        alert("تم نسخ الرابط بنجاح!");
+    }
+
+    let tasks = { sub: false, like: false };
+
+    function doTask(type) {
+        if (type === 'sub') {
+            window.open(atob(sParam), '_blank');
+            tasks.sub = true;
+        } else if (type === 'like') {
+            window.open(atob(lParam), '_blank');
+            tasks.like = true;
+        }
+
+        // تفعيل زر الفتح إذا تمت المهام
+        if (tasks.sub && (lParam ? tasks.like : true)) {
+            setTimeout(() => {
+                const ub = document.getElementById('unlockBtn');
+                ub.disabled = false;
+                ub.classList.add('enabled');
+                ub.innerText = "انقر هنا للذهاب للرابط";
+                ub.onclick = () => window.location.href = atob(tParam);
+            }, 2000);
+        }
+    }
+</script>
+
+</body>
+</html>
