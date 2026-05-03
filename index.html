@@ -3,88 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Link Unlocker Pro</title>
+    <title>Link Unlocker | Premium</title>
     <style>
-        body { background: #0b1120; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .card { background: #1e293b; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; box-sizing: border-box; font-size: 14px; }
-        .btn { background: #007bff; color: white; border: none; padding: 12px 25px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; transition: 0.3s; }
-        .btn:hover { background: #0056b3; }
-        .task { background: #2d3748; padding: 15px; margin: 10px 0; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .done-icon { color: #22c55e; display: none; font-size: 1.2rem; }
-        .unlock-btn { background: #16a34a; margin-top: 20px; display: none; }
-        h2 { color: #38bdf8; margin-bottom: 20px; line-height: 1.4; }
-        label { display: block; text-align: right; font-size: 13px; color: #94a3b8; margin-top: 5px; }
+        :root { --p: #ff0000; --bg: #0a0a0b; }
+        body { background-color: var(--bg); color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden; }
+        
+        /* الخلفية المشوشة */
+        .bg-blur { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-size: cover; background-position: center; filter: blur(50px) brightness(0.4); z-index: -1; transform: scale(1.1); }
+
+        .container { width: 90%; max-width: 450px; text-align: center; z-index: 1; }
+        
+        .verified { background: rgba(34, 197, 94, 0.1); border: 1px solid #22c55e; color: #22c55e; padding: 5px 15px; border-radius: 20px; font-size: 12px; display: inline-flex; align-items: center; margin-bottom: 20px; }
+        .verified::before { content: '●'; margin-left: 8px; }
+
+        .thumb { width: 100%; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); margin-bottom: 20px; border: 2px solid rgba(255,255,255,0.1); }
+
+        .title { font-size: 22px; font-weight: bold; margin-bottom: 25px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+
+        .card { background: rgba(15, 15, 18, 0.95); padding: 25px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        .sub-title { font-size: 14px; color: #94a3b8; margin-bottom: 20px; }
+
+        .task-btn { background: var(--p); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; margin-bottom: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: 0.3s; }
+        .task-btn.done { background: #1e293b; color: #64748b; cursor: default; }
+
+        .progress-box { margin-top: 20px; text-align: right; }
+        .progress-text { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 8px; color: #94a3b8; }
+        .bar-bg { background: #1e293b; height: 8px; border-radius: 10px; overflow: hidden; }
+        .bar-fill { background: #22c55e; height: 100%; width: 0%; transition: 0.5s; box-shadow: 0 0 10px #22c55e; }
+
+        .final-btn { background: #22c55e; opacity: 0.5; cursor: not-allowed; width: 100%; padding: 15px; border-radius: 10px; color: white; border: none; margin-top: 20px; font-weight: bold; transition: 0.3s; }
+        .final-btn.ready { opacity: 1; cursor: pointer; box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4); }
+
+        /* ستايل الصانع */
+        .gen-box { text-align: right; background: #1e293b; padding: 20px; border-radius: 15px; }
+        input { width: 100%; padding: 12px; margin: 8px 0 15px; border-radius: 8px; border: 1px solid #334155; background: #0a0a0b; color: white; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-<div id="app" class="card">
-    <!-- المحتوى يتم توليده هنا -->
-</div>
+<div id="app" class="container"></div>
 
 <script>
     const app = document.getElementById('app');
     const params = new URLSearchParams(window.location.search);
 
-    // حالة عرض الشروط للمتابع
     if (params.has('data')) {
         const raw = params.get('data').split('|');
-        // فك التشفير: العنوان | قناة | فيديو | تحميل
-        const title = decodeURIComponent(atob(raw[0]));
-        const links = { c: atob(raw[1]), v: atob(raw[2]), f: atob(raw[3]) };
-        let count = 0;
+        const config = {
+            t: decodeURIComponent(atob(raw[0])),
+            img: atob(raw[1]),
+            c: atob(raw[2]),
+            v: atob(raw[3]),
+            f: atob(raw[4])
+        };
+        
+        let completed = 0;
 
         app.innerHTML = `
-            <h2>${title}</h2>
-            <div class="task" id="t1"><span>1. اشترك في القناة</span><button class="btn" style="width:auto" onclick="verify('${links.c}', 't1')">اشتراك</button><span class="done-icon">✔</span></div>
-            <div class="task" id="t2"><span>2. لايك للفيديو</span><button class="btn" style="width:auto" onclick="verify('${links.v}', 't2')">لايك</button><span class="done-icon">✔</span></div>
-            <button id="final" class="btn unlock-btn" onclick="window.location.href='${links.f}'">تحميل الملف الآن 📥</button>
+            <div class="bg-blur" style="background-image: url('${config.img}')"></div>
+            <div class="verified">This account is verified</div>
+            <img src="${config.img}" class="thumb">
+            <div class="title">${config.t}</div>
+            
+            <div class="card">
+                <div class="sub-title">Complete the actions to unlock</div>
+                <button class="task-btn" id="btn1" onclick="doTask('${config.c}', 'btn1')">Subscribe to channel</button>
+                <button class="task-btn" id="btn2" onclick="doTask('${config.v}', 'btn2')">Like a video</button>
+                
+                <div class="progress-box">
+                    <div class="progress-text"><span>Unlock progress</span><span id="p-num">0/2</span></div>
+                    <div class="bar-bg"><div class="bar-fill" id="bar"></div></div>
+                </div>
+                
+                <button id="unlock" class="final-btn" onclick="if(this.classList.contains('ready')) window.location.href='${config.f}'">🔓 Unlock link</button>
+            </div>
         `;
 
-        window.verify = function(url, id) {
+        window.doTask = function(url, id) {
             window.open(url, '_blank');
-            const row = document.getElementById(id);
-            const btn = row.querySelector('.btn');
-            btn.innerText = "جاري...";
+            const btn = document.getElementById(id);
+            if(btn.classList.contains('done')) return;
+            
+            btn.innerText = "Verifying...";
             setTimeout(() => {
-                btn.style.display = 'none';
-                row.querySelector('.done-icon').style.display = 'block';
-                count++;
-                if(count === 2) document.getElementById('final').style.display = 'block';
+                btn.innerText = "Completed ✓";
+                btn.classList.add('done');
+                completed++;
+                updateProgress();
             }, 5000);
         };
-    } 
-    // حالة صفحة الإنشاء (المصنع)
-    else {
+
+        function updateProgress() {
+            document.getElementById('p-num').innerText = `${completed}/2`;
+            document.getElementById('bar').style.width = `${(completed/2)*100}%`;
+            if(completed === 2) document.getElementById('unlock').classList.add('ready');
+        }
+    } else {
         app.innerHTML = `
-            <h2 style="margin-bottom:10px">صانع روابط ساسوكي 🛠️</h2>
-            <p style="font-size:12px; color:#94a3b8; margin-bottom:20px">اصنع صفحة احترافية بدون إعلانات</p>
-            
-            <label>عنوان الصفحة (مثلاً: اشترك لفتح الهاك):</label>
-            <input type="text" id="title" placeholder="اكتب العنوان هنا..." value="أكمل المهام لفتح الرابط">
-            
-            <label>رابط قناتك:</label>
-            <input type="url" id="c" placeholder="https://youtube.com/@...">
-            
-            <label>رابط فيديو اللايك:</label>
-            <input type="url" id="v" placeholder="https://youtube.com/watch?v=...">
-            
-            <label>رابط التحميل النهائي:</label>
-            <input type="url" id="f" placeholder="https://...">
-            
-            <button class="btn" style="margin-top:10px" onclick="generate()">إنشاء ودخول الصفحة</button>
+            <div class="gen-box card">
+                <h2>صانع الروابط الاحترافي 🥷</h2>
+                <label>عنوان الصفحة:</label>
+                <input type="text" id="title" value="هاك دلتا اخر اصدار">
+                <label>رابط الصورة (Thumbnail URL):</label>
+                <input type="url" id="img" placeholder="اربط صورة الفيديو هنا">
+                <label>رابط القناة:</label>
+                <input type="url" id="c" placeholder="https://youtube.com/...">
+                <label>رابط الفيديو:</label>
+                <input type="url" id="v" placeholder="https://youtube.com/watch...">
+                <label>رابط التحميل:</label>
+                <input type="url" id="f" placeholder="https://...">
+                <button class="task-btn" style="background:#22c55e" onclick="generate()">إنشاء ودخول الصفحة</button>
+            </div>
         `;
 
         window.generate = function() {
-            const titleVal = encodeURIComponent(document.getElementById('title').value);
-            const t = btoa(titleVal);
-            const ch = btoa(document.getElementById('c').value);
-            const vi = btoa(document.getElementById('v').value);
-            const fi = btoa(document.getElementById('f').value);
-            
-            // تحويل لنفس الصفحة مع البيانات
-            window.location.href = `?data=${t}|${ch}|${vi}|${fi}`;
+            const data = [
+                btoa(encodeURIComponent(document.getElementById('title').value)),
+                btoa(document.getElementById('img').value),
+                btoa(document.getElementById('c').value),
+                btoa(document.getElementById('v').value),
+                btoa(document.getElementById('f').value)
+            ].join('|');
+            window.location.href = `?data=${data}`;
         };
     }
 </script>
