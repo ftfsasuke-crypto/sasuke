@@ -60,21 +60,31 @@
             color: white; 
             border: none; 
             width: 100%; 
-            padding: 16px; 
+            padding: 12px; 
             border-radius: 12px; 
             font-weight: bold; 
             margin-bottom: 15px; 
             cursor: pointer; 
             font-size: 16px;
             transition: 0.3s;
+            line-height: 1.2;
         }
-        /* ستايل الزرار المقفول */
+
+        .task-btn span { 
+            font-size: 12px; 
+            font-weight: normal; 
+            display: block; 
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+
         .task-btn:disabled { 
             background: rgba(51, 65, 85, 0.5); 
             color: rgba(255, 255, 255, 0.3); 
             cursor: not-allowed; 
         }
-        .task-btn.done { background: rgba(51, 65, 85, 0.9); color: #accent; cursor: default; }
+        
+        .task-btn.done { background: rgba(51, 65, 85, 0.9); color: var(--accent); cursor: default; }
 
         .progress-box { margin-top: 25px; }
         .progress-text { display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8; margin-bottom: 8px; }
@@ -128,8 +138,16 @@
             <div class="title">${config.t}</div>
             <div class="card">
                 <div style="color:#94a3b8; font-size:14px; margin-bottom:20px; text-align:center;">Complete the actions to unlock</div>
-                <button class="task-btn" id="b1" onclick="verify('${config.c}', 'b1')">Subscribe to channel</button>
-                <button class="task-btn" id="b2" onclick="verify('${config.v}', 'b2')" disabled>Like & comment on video</button>
+                
+                <button class="task-btn" id="b1" onclick="verify('${config.c}', 'b1')">
+                    Subscribe to channel
+                    <span>اشترك بالقناة</span>
+                </button>
+                
+                <button class="task-btn" id="b2" onclick="verify('${config.v}', 'b2')" disabled>
+                    Like & comment on video
+                    <span>اعمل لايك وكومنت</span>
+                </button>
                 
                 <div class="progress-box">
                     <div class="progress-text"><span>Unlock progress</span><span id="p-num">0/2</span></div>
@@ -144,23 +162,21 @@
             const btn = document.getElementById(id);
             if(btn.classList.contains('done')) return;
             
-            btn.innerText = "...Verifying";
+            btn.innerHTML = "...Verifying<br><span>جاري التحقق</span>";
+            
             setTimeout(() => {
-                btn.innerText = "✓ Completed";
+                btn.innerHTML = "✓ Completed<br><span>تم بنجاح</span>";
                 btn.classList.add('done');
                 btn.disabled = true;
                 completed++;
                 
-                // تحديث الـ Progress Bar
                 document.getElementById('p-num').innerText = completed + "/2";
                 document.getElementById('bar').style.width = (completed/2)*100 + "%";
                 
-                // لو خلصنا الأولى، نفتح التانية
                 if(completed === 1) {
                     document.getElementById('b2').disabled = false;
                 }
                 
-                // لو خلصنا كله، نظهر زر التحميل
                 if(completed === 2) {
                     document.getElementById('final').style.display = 'block';
                 }
