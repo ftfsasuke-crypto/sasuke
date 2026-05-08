@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Link Unlocker | YouTube Edition</title>
+    <title>Link Unlocker | Ninja Edition</title>
     <style>
         :root { --p: #ff0000; --bg: #0a0a0b; --accent: #22c55e; }
         
         body { 
             background-color: var(--bg); 
             color: white; 
-            font-family: 'Cairo', sans-serif; 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
             margin: 0; 
             display: flex; 
             justify-content: center; 
@@ -22,109 +22,124 @@
         .bg-blur { 
             position: fixed; 
             top: 0; left: 0; right: 0; bottom: 0; 
-            background: url('https://p16-capcut-va.ibyteimg.com/tos-alisg-i-7306 VA/5a1b3263720f4f9f8c6f37648f57276a~tplv-nhvf8v017r-1.image') no-repeat center center;
+            background: url('https://p16-capcut-va.ibyteimg.com/tos-alisg-i-7306232532/5a1b3263720f4f9f8c6f37648f57276a~tplv-nhvf8v017r-1.image') no-repeat center center;
             background-size: cover; 
-            filter: blur(20px) brightness(0.2); 
+            filter: blur(15px) brightness(0.3); 
             z-index: -1; 
             transform: scale(1.1); 
         }
 
-        .container { width: 90%; max-width: 400px; text-align: center; z-index: 1; padding: 20px 0; }
+        .container { width: 90%; max-width: 420px; text-align: center; z-index: 1; }
         
         .card { 
-            background: rgba(18, 18, 20, 0.95); 
-            padding: 30px; 
-            border-radius: 25px; 
-            border: 1px solid rgba(255,255,255,0.03); 
-            box-shadow: 0 20px 60px rgba(0,0,0,0.8); 
+            background: rgba(30, 41, 59, 0.8); 
+            padding: 30px 20px; 
+            border-radius: 24px; 
+            border: 1px solid rgba(255,255,255,0.1); 
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
         }
 
-        /* شعار يوتيوب والعنوان الجديد */
-        .header-zone { margin-bottom: 25px; text-align: center; }
-        .yt-logo { width: 60px; margin-bottom: 15px; }
-        .new-title { font-size: 16px; color: #fff; font-weight: normal; line-height: 1.6; margin: 0 auto; max-width: 300px; }
-
-        /* ستايل صورة الفيديو المصغرة */
-        .thumb-box { position: relative; width: 100%; border-radius: 15px; overflow: hidden; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.7); cursor: pointer; transition: 0.3s; border: 2px solid transparent; }
-        .thumb-box:hover { transform: scale(1.02); border-color: var(--p); }
-        .thumb-box img { width: 100%; display: block; }
-        .play-icon { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; opacity: 0.9; }
-        .thumb-overlay { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.8), transparent); padding: 15px; text-align: right; font-size: 13px; color: #fff; display: flex; align-items: center; gap: 8px; }
-        .thumb-overlay::after { content: '✓ Opened'; color: var(--accent); display: none; margin-right: auto; }
-        .thumb-box.done .thumb-overlay::after { display: block; }
-        .thumb-box.done .play-icon { display: none; }
+        /* ستايل شعار يوتيوب والعنوان */
+        .yt-header { margin-bottom: 25px; }
+        .yt-logo { width: 50px; margin-bottom: 10px; }
+        .main-title { font-size: 18px; font-weight: bold; line-height: 1.6; color: #fff; margin: 0; }
 
         .task-btn { 
-            background: rgba(255,255,255,0.05); color: #fff; border: none; width: 100%; padding: 16px; 
-            border-radius: 14px; font-weight: bold; margin-bottom: 15px; cursor: pointer; 
-            font-size: 15px; transition: 0.3s; line-height: 1.2; text-align: center;
+            background: var(--p); 
+            color: white; 
+            border: none; 
+            width: 100%; 
+            padding: 14px; 
+            border-radius: 12px; 
+            font-weight: bold; 
+            margin-bottom: 15px; 
+            cursor: pointer; 
+            font-size: 16px;
+            transition: 0.3s;
+            line-height: 1.2;
         }
-        .task-btn.active { background: var(--p); }
-        .task-btn.active:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(255, 0, 0, 0.4); }
-        .task-btn span { font-size: 12px; font-weight: normal; display: block; opacity: 0.8; margin-top: 5px; }
-        .task-btn:disabled { background: rgba(255,255,255,0.02); color: rgba(255,255,255,0.2); cursor: not-allowed; }
-        .task-btn.done { background: #1a1a1c; color: var(--accent); cursor: default; }
+
+        .task-btn span { 
+            font-size: 12px; 
+            font-weight: normal; 
+            display: block; 
+            opacity: 0.8;
+            margin-top: 4px;
+        }
+
+        .task-btn:disabled { 
+            background: rgba(51, 65, 85, 0.5); 
+            color: rgba(255, 255, 255, 0.3); 
+            cursor: not-allowed; 
+        }
+        
+        .task-btn.done { background: rgba(51, 65, 85, 0.9); color: var(--accent); cursor: default; }
 
         .progress-box { margin-top: 25px; }
-        .progress-text { display: flex; justify-content: space-between; font-size: 13px; color: #666; margin-bottom: 8px; }
-        .bar-bg { background: #1a1a1c; height: 10px; border-radius: 10px; overflow: hidden; }
+        .progress-text { display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8; margin-bottom: 8px; }
+        .bar-bg { background: #0f172a; height: 10px; border-radius: 10px; overflow: hidden; }
         .bar-fill { background: var(--accent); height: 100%; width: 0%; transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 15px var(--accent); }
 
         .final-btn { 
-            background: var(--accent); width: 100%; padding: 18px; border-radius: 14px; 
-            color: white; border: none; margin-top: 20px; font-weight: bold; font-size: 17px; 
-            display: none; cursor: pointer; animation: fadeIn 0.5s;
+            background: var(--accent); 
+            width: 100%; 
+            padding: 18px; 
+            border-radius: 12px; 
+            color: white; 
+            border: none; 
+            margin-top: 20px; 
+            font-weight: bold; 
+            font-size: 18px; 
+            display: none; 
+            cursor: pointer; 
+            box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);
         }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        /* ستايل الصانع */
-        .gen-box { text-align: right; display: block; }
-        input { width: 100%; padding: 14px; margin: 10px 0 20px; border-radius: 12px; border: 1px solid #222; background: #0a0a0c; color: white; box-sizing: border-box; }
-        label { display: block; text-align: right; font-size: 14px; color: #666; }
+        input { 
+            width: 100%; padding: 14px; margin: 10px 0 20px; border-radius: 10px; border: 1px solid #475569; 
+            background: #0f172a; color: white; box-sizing: border-box; 
+        }
+        label { display: block; text-align: right; font-size: 14px; color: #cbd5e1; }
     </style>
 </head>
 <body>
 
 <div class="bg-blur"></div>
+
 <div id="app" class="container"></div>
 
 <script>
     const app = document.getElementById('app');
     const params = new URLSearchParams(window.location.search);
 
-    // واجهة المتابع
     if (params.has('data')) {
         const raw = params.get('data').split('|');
         const config = {
             t: decodeURIComponent(atob(raw[0])),
-            v: atob(raw[1]),
-            c: atob(raw[2]),
+            c: atob(raw[1]),
+            v: atob(raw[2]),
             f: atob(raw[3])
         };
-        
-        // استخراج الـ ID من رابط يوتيوب للصورة المصغرة
-        let videoId = config.v.match(/(?:https?:\/{2})?(?:w{3}\.)?youtu(?:be)?\.(?:com|be)(?:\/watch\?v=|\/)([^\s&]+)/);
-        const thumbUrl = videoId ? `https://img.youtube.com/vi/${videoId[1]}/maxresdefault.jpg` : 'https://p16-capcut-va.ibyteimg.com/tos-alisg-i-7306232532/5a1b3263720f4f9f8c6f37648f57276a~tplv-nhvf8v017r-1.image';
-
         let completed = 0;
 
         app.innerHTML = `
-            <div class="header-zone">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png?20220706172052" class="yt-logo" alt="YouTube">
-                <div class="new-title">${config.t}</div>
+            <div class="yt-header">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png?20220706172052" class="yt-logo">
+                <p class="main-title">${config.t}</p>
             </div>
             
             <div class="card">
-                <div class="thumb-box" id="tBox" onclick="verifyVideo('${config.v}')">
-                    <img src="${thumbUrl}" alt="Video Thumbnail">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/e/e0/Icon_Play_Default.png" class="play-icon">
-                    <div class="thumb-overlay"><span>1. Like & comment on video</span></div>
-                </div>
-
-                <button class="task-btn" id="b2" onclick="verifySub('${config.c}')" disabled>
-                    2. Subscribe to channel
+                <div style="color:#94a3b8; font-size:14px; margin-bottom:20px; text-align:center;">Complete the actions to unlock</div>
+                
+                <button class="task-btn" id="b1" onclick="verify('${config.c}', 'b1')">
+                    Subscribe to channel
                     <span>اشترك بالقناة</span>
+                </button>
+                
+                <button class="task-btn" id="b2" onclick="verify('${config.v}', 'b2')" disabled>
+                    Like & comment on video
+                    <span>اعمل لايك وكومنت</span>
                 </button>
                 
                 <div class="progress-box">
@@ -135,76 +150,53 @@
             </div>
         `;
 
-        // دالة فتح الفيديو من الصورة
-        window.verifyVideo = function(url) {
-            const tBox = document.getElementById('tBox');
-            if(tBox.classList.contains('done')) {
-                window.open(url, '_blank'); // فتح الفيديو مرة تانية لو حب
-                return;
-            }
-            
+        window.verify = function(url, id) {
             window.open(url, '_blank');
-            tBox.querySelector('.play-icon').style.opacity = '0.2';
-            
-            setTimeout(() => {
-                tBox.classList.add('done');
-                document.getElementById('b2').disabled = false;
-                document.getElementById('b2').classList.add('active'); // تفعيل زر الاشتراك
-                completed++;
-                updateProgress();
-            }, 6000); // 6 ثواني تحقق
-        };
-
-        // دالة الاشتراك
-        window.verifySub = function(url) {
-            const btn = document.getElementById('b2');
+            const btn = document.getElementById(id);
             if(btn.classList.contains('done')) return;
             
-            window.open(url, '_blank');
             btn.innerHTML = "...Verifying<br><span>جاري التحقق</span>";
-            btn.classList.remove('active');
-
+            
             setTimeout(() => {
                 btn.innerHTML = "✓ Completed<br><span>تم بنجاح</span>";
                 btn.classList.add('done');
                 btn.disabled = true;
                 completed++;
-                updateProgress();
-            }, 6000);
+                
+                document.getElementById('p-num').innerText = completed + "/2";
+                document.getElementById('bar').style.width = (completed/2)*100 + "%";
+                
+                if(completed === 1) {
+                    document.getElementById('b2').disabled = false;
+                }
+                
+                if(completed === 2) {
+                    document.getElementById('final').style.display = 'block';
+                }
+            }, 5000);
         };
-
-        function updateProgress() {
-            document.getElementById('p-num').innerText = completed + "/2";
-            document.getElementById('bar').style.width = (completed/2)*100 + "%";
-            if(completed === 2) {
-                document.getElementById('final').style.display = 'block';
-            }
-        }
-
-    } 
-    // واجهة الإنشاء
-    else {
+    } else {
         app.innerHTML = `
-            <div class="card gen-box">
+            <div class="card" style="text-align:right">
                 <h2 style="color:var(--accent); text-align:center; margin-bottom:30px;">MX_SASUKE Generator 🛠️</h2>
-                <label>عنوان الصفحة (يظهر فوق الصورة):</label>
+                <label>عنوان الصفحة:</label>
                 <input type="text" id="title" value="افتح الرابط بلايك وكومنت واشتراك في القناه">
-                <label>رابط الفيديو (لصورة الـ Thumbnail واللايك):</label>
-                <input type="url" id="v" placeholder="https://youtube.com/watch...">
-                <label>رابط قناتك (للاشتراك):</label>
+                <label>رابط قناتك:</label>
                 <input type="url" id="c" placeholder="https://youtube.com/...">
-                <label>رابط التحميل النهائي:</label>
+                <label>رابط الفيديو:</label>
+                <input type="url" id="v" placeholder="https://youtube.com/watch...">
+                <label>رابط التحميل:</label>
                 <input type="url" id="f" placeholder="https://...">
-                <button class="task-btn active" style="background:var(--accent); margin-top:10px" onclick="generate()">إنشاء ودخول الصفحة</button>
+                <button class="task-btn" style="background:var(--accent); margin-top:10px" onclick="generate()">إنشاء الرابط</button>
             </div>
         `;
 
         window.generate = function() {
             const t = btoa(encodeURIComponent(document.getElementById('title').value));
-            const v = btoa(document.getElementById('v').value);
             const c = btoa(document.getElementById('c').value);
+            const v = btoa(document.getElementById('v').value);
             const f = btoa(document.getElementById('f').value);
-            window.location.href = `?data=${t}|${v}|${c}|${f}`;
+            window.location.href = `?data=${t}|${c}|${v}|${f}`;
         };
     }
 </script>
