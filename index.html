@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MX_SASUKE | Unlocker</title>
+    <title>MX_SASUKE | Pro Unlocker</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; }
@@ -11,7 +11,6 @@
         .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; }
         
         .yt-logo { width: 50px; margin-bottom: 10px; }
-        /* حماية عشان الكلام الطويل ماينزلش بره الشاشة */
         .page-title { font-size: 22px; font-weight: bold; margin-bottom: 5px; word-wrap: break-word; }
         .sub-title { font-size: 14px; color: #888; margin-bottom: 30px; word-wrap: break-word; }
         
@@ -57,11 +56,21 @@
     const app = document.getElementById('app');
     const urlParams = new URLSearchParams(window.location.search);
 
-    // نظام التشفير الذكي اللي بيفهم عربي
+    // نظام التشفير
     function safeEncode(str) { return btoa(encodeURIComponent(str)); }
     function safeDecode(str) { 
         try { return decodeURIComponent(atob(str.replace(/ /g, '+'))); } 
-        catch(e) { return "خطأ في النص"; } 
+        catch(e) { return ""; } 
+    }
+
+    // مصحح الروابط الذكي (يمنع إيرور 404 نهائياً)
+    function fixUrl(url) {
+        if (!url) return "#";
+        url = url.trim();
+        if (!/^https?:\/\//i.test(url)) {
+            return 'https://' + url;
+        }
+        return url;
     }
 
     function getStaticLikes(str) {
@@ -75,12 +84,12 @@
         const config = {
             t: safeDecode(raw[0]),
             s: safeDecode(raw[1]),
-            v: safeDecode(raw[2]),
-            c: safeDecode(raw[3]),
-            f: safeDecode(raw[4])
+            v: fixUrl(safeDecode(raw[2])), // رابط الفيديو
+            c: fixUrl(safeDecode(raw[3])), // رابط القناة
+            f: fixUrl(safeDecode(raw[4]))  // الرابط النهائي
         };
 
-        // سحب صورة اليوتيوب تلقائياً
+        // جلب صورة اليوتيوب
         let vId = config.v.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/ytscreeningroom\?v=|\/sandayat\?v=|\/condition_video_id\/|\/watch\?feature=player_embedded&v=))([^#\&\?]*)/);
         let thumb = vId && vId[1].length == 11 ? `https://img.youtube.com/vi/${vId[1]}/maxresdefault.jpg` : '';
 
@@ -127,13 +136,13 @@
                 sub = true; 
                 document.getElementById('tk1').classList.remove('active');
                 document.getElementById('tk1').classList.add('done'); 
-                document.getElementById('tk1').querySelector('span').innerText = '✓';
-                document.getElementById('tk2').classList.add('active'); // نور المهمة التانية
+                document.getElementById('tk1').querySelector('.step-num span').innerText = '✓';
+                document.getElementById('tk2').classList.add('active'); 
             } else { 
                 vid = true; 
                 document.getElementById('tk2').classList.remove('active');
                 document.getElementById('tk2').classList.add('done'); 
-                document.getElementById('tk2').querySelector('span').innerText = '✓';
+                document.getElementById('tk2').querySelector('.step-num span').innerText = '✓';
             }
         };
 
@@ -163,9 +172,16 @@
                 <h2 style="color:var(--accent)">MX_SASUKE Generator</h2>
                 <input type="text" id="it" class="gen-input" value="افتح الرابط بلايك وكومنت واشتراك في القناه">
                 <input type="text" id="is" class="gen-input" value="ساعدنا بلايك وخذ الرابط فوراً">
-                <input type="url" id="iv" class="gen-input" placeholder="رابط الفيديو (عشان يجيب الصورة)">
-                <input type="url" id="ic" class="gen-input" placeholder="رابط القناة">
-                <input type="url" id="if" class="gen-input" placeholder="رابط الملف النهائي">
+                
+                <label style="color:#22c55e; font-size:12px; margin-top:10px;">👇 رابط فيديو اليوتيوب للـ(لايك والصورة)</label>
+                <input type="url" id="iv" class="gen-input" placeholder="https://youtube.com/watch?v=...">
+                
+                <label style="color:#22c55e; font-size:12px; margin-top:10px;">👇 رابط قناتك للـ(اشتراك)</label>
+                <input type="url" id="ic" class="gen-input" placeholder="https://youtube.com/...">
+                
+                <label style="color:#ff0000; font-size:12px; margin-top:10px;">👇 الرابط النهائي (اللي المتابع هياخده)</label>
+                <input type="url" id="if" class="gen-input" placeholder="رابط ميديا فاير أو غيره...">
+                
                 <button class="verify-btn" onclick="gen()">إنشاء الصفحة</button>
             </div>
         `;
@@ -177,7 +193,6 @@
                 safeEncode(document.getElementById('ic').value),
                 safeEncode(document.getElementById('if').value)
             ].join('|');
-            // تأمين الرابط بالكامل
             window.location.href = "?data=" + encodeURIComponent(d);
         };
     }
