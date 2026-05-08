@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MX_SASUKE | Custom Unlocker</title>
+    <title>MX_SASUKE | Unlocker</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; }
@@ -12,159 +12,120 @@
         .yt-logo { width: 50px; margin-bottom: 10px; }
         .page-title { font-size: 22px; font-weight: bold; margin-bottom: 5px; }
         .sub-title { font-size: 14px; color: #888; margin-bottom: 30px; }
-
-        .video-card { position: relative; width: 100%; border-radius: 15px; overflow: hidden; margin-bottom: 20px; border: 1px solid #333; cursor: pointer; }
-        .video-card img { width: 100%; display: block; min-height: 150px; background: #111; }
-        
-        .task-box { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; border: 2px solid transparent; transition: 0.3s; text-align: right; cursor: pointer; }
+        .video-card { position: relative; width: 100%; border-radius: 15px; overflow: hidden; margin-bottom: 20px; border: 1px solid #333; cursor: pointer; background: #111; min-height: 180px; }
+        .video-card img { width: 100%; display: block; }
+        .task-box { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; border: 2px solid transparent; text-align: right; cursor: pointer; }
         .task-box.done { border-color: var(--accent); }
-        .task-info { flex-grow: 1; margin-right: 15px; }
-        .task-info h4 { margin: 0; font-size: 16px; }
-        .task-info p { margin: 5px 0 0; font-size: 12px; color: #777; }
         .step-num { width: 35px; height: 35px; background: #222; border: 2px solid #444; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--main); }
         .task-box.done .step-num { background: var(--accent); color: white; border-color: var(--accent); }
-
         .checker-card { background: #0f0f10; border: 1px solid #222; border-radius: 15px; padding: 15px; margin-top: 20px; }
-        #count-num { font-size: 32px; font-weight: bold; color: white; display: block; margin: 5px 0; }
-        .verify-btn { background: var(--main); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 10px; }
-        .verify-btn:disabled { background: #1a1a1c; color: #555; cursor: not-allowed; }
-
+        #count-num { font-size: 32px; font-weight: bold; display: block; margin: 5px 0; }
+        .verify-btn { background: var(--main); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
-        .circle-timer { width: 80px; height: 80px; border: 5px solid #222; border-top: 5px solid var(--main); border-radius: 50%; animation: spin 1s linear infinite; }
+        .circle-timer { width: 60px; height: 60px; border: 5px solid #222; border-top: 5px solid var(--main); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-
         .final-btn { background: var(--accent); width: 100%; padding: 18px; border-radius: 12px; color: white; border: none; margin-top: 20px; font-weight: bold; font-size: 18px; display: none; cursor: pointer; }
-        .gen-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #333; background: #111; color: white; box-sizing: border-box; }
+        .gen-input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #333; background: #111; color: white; box-sizing: border-box; text-align: right; }
     </style>
 </head>
 <body>
 
 <div id="loader">
     <div class="circle-timer"></div>
-    <h2 id="timer-text" style="font-size: 40px; margin: 20px 0;">3</h2>
-    <p style="font-size: 14px; color: #888;">انتظر قليلاً... النظام يتحقق ⏳</p>
+    <h2 id="timer-text" style="font-size: 30px; margin: 20px 0;">3</h2>
+    <p>جاري التحقق من الشروط... ⏳</p>
 </div>
 
 <div id="app" class="container"></div>
 
 <script>
     const app = document.getElementById('app');
-    const params = new URLSearchParams(window.location.search);
+    const urlParams = new URLSearchParams(window.location.search);
 
-    function getStaticLikes(str) {
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) {
-            hash = str.charCodeAt(i) + ((hash << 5) - hash);
-        }
-        return Math.abs(hash % 200) + 50;
+    // دالة آمنة لفك التشفير
+    function safeAtob(str) {
+        try { return decodeURIComponent(escape(window.atob(str))); } 
+        catch(e) { return str; }
     }
 
-    if (params.has('data')) {
-        const raw = params.get('data').split('|');
+    if (urlParams.has('data')) {
+        const raw = urlParams.get('data').split('|');
         const config = {
-            t: decodeURIComponent(atob(raw[0])),
-            s: decodeURIComponent(atob(raw[1])),
-            v: atob(raw[2]),
-            c: atob(raw[3]),
-            f: atob(raw[4])
+            t: safeAtob(raw[0]),
+            s: safeAtob(raw[1]),
+            v: safeAtob(raw[2]),
+            c: safeAtob(raw[3]),
+            f: safeAtob(raw[4])
         };
 
-        let videoId = config.v.match(/(?:https?:\/{2})?(?:w{3}\.)?youtu(?:be)?\.(?:com|be)(?:\/watch\?v=|\/)([^\s&]+)/);
-        const thumbUrl = videoId ? `https://img.youtube.com/vi/${videoId[1]}/maxresdefault.jpg` : '';
-        
-        let subDone = false;
-        let videoOpened = false;
-        let staticLikes = getStaticLikes(config.v);
+        let vId = config.v.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/ytscreeningroom\?v=|\/sandayat\?v=|\/condition_video_id\/|\/watch\?feature=player_embedded&v=))([^#\&\?]*)/);
+        let thumb = vId && vId[1].length == 11 ? `https://img.youtube.com/vi/${vId[1]}/maxresdefault.jpg` : 'https://via.placeholder.com/400x225/111/fff?text=Video+Thumbnail';
+
+        let sub = false, vid = false;
+        let likes = (config.v.length % 150) + 60;
 
         app.innerHTML = `
             <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" class="yt-logo">
             <div class="page-title">${config.t}</div>
             <div class="sub-title">${config.s}</div>
-
-            <div class="video-card" onclick="openTask('v')">
-                <img src="${thumbUrl}" alt="Thumbnail">
-            </div>
-
-            <div class="task-box" id="task1" onclick="openTask('c')">
-                <div class="task-info">
-                    <h4>Subscribe to channel</h4>
-                    <p>اضغط هنا للاشتراك في القناة</p>
-                </div>
+            <div class="video-card" onclick="openT('v')"><img src="${thumb}"></div>
+            <div class="task-box" id="tk1" onclick="openT('c')">
+                <div style="flex-grow:1; margin-right:15px;"><h4>Subscribe to channel</h4><p>اضغط للاشتراك</p></div>
                 <div class="step-num"><span>1</span></div>
             </div>
-
-            <div class="task-box" id="task2" onclick="openTask('v')">
-                <div class="task-info">
-                    <h4>Like & comment on video</h4>
-                    <p>اضغط لايك وكومنت على الفيديو</p>
-                </div>
+            <div class="task-box" id="tk2" onclick="openT('v')">
+                <div style="flex-grow:1; margin-right:15px;"><h4>Like & Comment</h4><p>لايك وكومنت على الفيديو</p></div>
                 <div class="step-num"><span>2</span></div>
             </div>
-
             <div class="checker-card">
-                <span style="font-size: 12px; color: #888;">عدد اللايكات الحالي</span>
-                <span id="count-num">${staticLikes}</span>
-                <button class="verify-btn" id="checkBtn" onclick="startVerification()">تحقق من الشروط 🔍</button>
+                <span style="color:#888; font-size:12px;">عدد اللايكات الحالي</span>
+                <span id="count-num">${likes}</span>
+                <button class="verify-btn" id="vBtn" onclick="verify()">تحقق من الشروط 🔍</button>
             </div>
-
-            <button id="finalBtn" class="final-btn" onclick="window.location.href='${config.f}'">دخول للرابط 🔓</button>
+            <button id="fBtn" class="final-btn" onclick="window.location.href='${config.f}'">فتح الرابط 🔓</button>
         `;
 
-        window.openTask = function(type) {
-            if(type === 'c') {
-                window.open(config.c, '_blank');
-                subDone = true;
-                document.getElementById('task1').classList.add('done');
-            } else {
-                window.open(config.v, '_blank');
-                videoOpened = true;
-                document.getElementById('task2').classList.add('done');
-            }
+        window.openT = function(type) {
+            window.open(type === 'c' ? config.c : config.v, '_blank');
+            if(type === 'c') { sub = true; document.getElementById('tk1').classList.add('done'); }
+            else { vid = true; document.getElementById('tk2').classList.add('done'); }
         };
 
-        window.startVerification = function() {
-            if(!videoOpened || !subDone) {
-                alert("يجب إكمال المهام أولاً!");
-                return;
-            }
-            const loader = document.getElementById('loader');
-            const timerText = document.getElementById('timer-text');
-            loader.style.display = 'flex';
-            let timeLeft = 3;
-            const interval = setInterval(() => {
-                timeLeft--;
-                timerText.innerText = timeLeft > 0 ? timeLeft : "تم!";
-                if(timeLeft < 0) {
-                    clearInterval(interval);
-                    loader.style.display = 'none';
-                    document.getElementById('count-num').innerText = staticLikes + 1;
+        window.verify = function() {
+            if(!sub || !vid) return alert("خلص المهام الأول يا بطل!");
+            const ld = document.getElementById('loader');
+            ld.style.display = 'flex';
+            let sec = 3;
+            const iv = setInterval(() => {
+                sec--;
+                document.getElementById('timer-text').innerText = sec > 0 ? sec : "تم!";
+                if(sec < 0) {
+                    clearInterval(iv);
+                    ld.style.display = 'none';
+                    document.getElementById('count-num').innerText = likes + 1;
                     document.getElementById('count-num').style.color = "#22c55e";
-                    document.getElementById('checkBtn').innerText = "تم التحقق ✓";
-                    document.getElementById('checkBtn').disabled = true;
-                    document.getElementById('finalBtn').style.display = 'block';
+                    document.getElementById('vBtn').innerText = "تم التحقق ✓";
+                    document.getElementById('vBtn').disabled = true;
+                    document.getElementById('fBtn').style.display = 'block';
                 }
             }, 1000);
         };
-
     } else {
         app.innerHTML = `
             <div class="task-box" style="display:block; text-align:center;">
-                <h2 style="color:var(--accent)">MX_SASUKE Generator 🛠️</h2>
-                <input type="text" id="t" class="gen-input" value="افتح الرابط بلايك">
-                <input type="text" id="s" class="gen-input" value="ساعدنا بلايك وخذ الرابط فوراً">
-                <input type="url" id="v" class="gen-input" placeholder="رابط الفيديو">
-                <input type="url" id="c" class="gen-input" placeholder="رابط القناة">
-                <input type="url" id="f" class="gen-input" placeholder="رابط الملف">
-                <button class="verify-btn" onclick="generate()">إنشاء الصفحة</button>
+                <h2 style="color:var(--accent)">SASUKE Generator</h2>
+                <input type="text" id="it" class="gen-input" value="افتح الرابط بلايك">
+                <input type="text" id="is" class="gen-input" value="ساعدنا بلايك وخذ الرابط فوراً">
+                <input type="url" id="iv" class="gen-input" placeholder="رابط الفيديو">
+                <input type="url" id="ic" class="gen-input" placeholder="رابط القناة">
+                <input type="url" id="if" class="gen-input" placeholder="رابط الملف">
+                <button class="verify-btn" onclick="gen()">إنشاء الصفحة</button>
             </div>
         `;
-        window.generate = function() {
-            const data = btoa(encodeURIComponent(document.getElementById('t').value)) + "|" + 
-                         btoa(encodeURIComponent(document.getElementById('s').value)) + "|" + 
-                         btoa(document.getElementById('v').value) + "|" + 
-                         btoa(document.getElementById('c').value) + "|" + 
-                         btoa(document.getElementById('f').value);
-            window.location.href = "?data=" + data;
+        window.gen = function() {
+            const safeB = (s) => window.btoa(unescape(encodeURIComponent(s)));
+            const d = `${safeB(document.getElementById('it').value)}|${safeB(document.getElementById('is').value)}|${safeB(document.getElementById('iv').value)}|${safeB(document.getElementById('ic').value)}|${safeB(document.getElementById('if').value)}`;
+            window.location.href = "?data=" + d;
         };
     }
 </script>
