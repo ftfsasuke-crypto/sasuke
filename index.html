@@ -3,58 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MX_SASUKE | Unlocker</title>
+    <title>MX_SASUKE | Verified Unlocker</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; }
-        body { background: var(--bg); color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; min-height: 100vh; overflow-x: hidden; }
+        body { background: var(--bg); color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; min-height: 100vh; }
         .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; }
-        
-        /* Header Area */
         .yt-logo { width: 50px; margin-bottom: 10px; }
         .page-title { font-size: 22px; font-weight: bold; margin-bottom: 5px; }
         .sub-title { font-size: 14px; color: #888; margin-bottom: 30px; }
 
-        /* Thumbnail Box */
         .video-card { position: relative; width: 100%; border-radius: 15px; overflow: hidden; margin-bottom: 20px; border: 1px solid #333; cursor: pointer; }
         .video-card img { width: 100%; display: block; }
         .play-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; }
         
-        /* Task Steps */
-        .task-box { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; border: 2px solid transparent; transition: 0.3s; text-align: right; }
-        .task-box.active { border-color: var(--main); }
+        .task-box { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; border: 2px solid transparent; transition: 0.3s; text-align: right; cursor: pointer; }
+        .task-box.done { border-color: var(--accent); }
         .task-info { flex-grow: 1; margin-right: 15px; }
         .task-info h4 { margin: 0; font-size: 16px; }
         .task-info p { margin: 5px 0 0; font-size: 12px; color: #777; }
         .step-num { width: 35px; height: 35px; background: #222; border: 2px solid #444; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--main); }
         .task-box.done .step-num { background: var(--accent); color: white; border-color: var(--accent); }
-        .task-box.done .step-num::after { content: '✓'; }
-        .task-box.done .step-num span { display: none; }
 
-        /* Likes Checker */
         .checker-card { background: #0f0f10; border: 1px solid #222; border-radius: 15px; padding: 15px; margin-top: 20px; }
-        .likes-count { font-size: 12px; color: #888; }
-        #count-num { font-size: 32px; font-weight: bold; color: white; display: block; margin: 5px 0; }
+        #count-num { font-size: 32px; font-weight: bold; color: white; display: block; margin: 5px 0; transition: 0.5s; }
         .verify-btn { background: var(--main); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 10px; }
-        .verify-btn:disabled { background: #333; cursor: not-allowed; }
+        .verify-btn:disabled { background: #1a1a1c; color: #555; cursor: not-allowed; }
 
-        /* Timer Overlay */
-        #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
+        #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
         .circle-timer { width: 80px; height: 80px; border: 5px solid #222; border-top: 5px solid var(--main); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        .final-btn { background: var(--accent); width: 100%; padding: 18px; border-radius: 12px; color: white; border: none; margin-top: 20px; font-weight: bold; font-size: 18px; display: none; }
-        
-        /* Generator Style */
-        .gen-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #333; background: #111; color: white; box-sizing: border-box; }
+        .final-btn { background: var(--accent); width: 100%; padding: 18px; border-radius: 12px; color: white; border: none; margin-top: 20px; font-weight: bold; font-size: 18px; display: none; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div id="loader">
     <div class="circle-timer"></div>
-    <h2 id="timer-text">جاري التحقق...</h2>
-    <p style="font-size: 12px; color: #888;">انتظر فقط، النظام يتحقق من اللايك</p>
+    <h2 id="timer-text" style="font-size: 40px; margin: 20px 0;">3</h2>
+    <p style="font-size: 14px; color: #888;">انتظر قليلاً... النظام يتحقق من اللايك ⏳</p>
 </div>
 
 <div id="app" class="container"></div>
@@ -62,6 +50,15 @@
 <script>
     const app = document.getElementById('app');
     const params = new URLSearchParams(window.location.search);
+
+    // دالة لتوليد رقم ثابت بناءً على رابط الفيديو
+    function getStaticLikes(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return Math.abs(hash % 200) + 50; // هيطلع رقم بين 50 و 250 ثابت لكل رابط
+    }
 
     if (params.has('data')) {
         const raw = params.get('data').split('|');
@@ -77,7 +74,7 @@
         
         let subDone = false;
         let videoOpened = false;
-        let randomLikes = Math.floor(Math.random() * (95 - 60 + 1)) + 60;
+        let staticLikes = getStaticLikes(config.v); // الرقم ثابت هنا
 
         app.innerHTML = `
             <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" class="yt-logo">
@@ -106,8 +103,8 @@
             </div>
 
             <div class="checker-card">
-                <span class="likes-count">عدد اللايكات الحالي</span>
-                <span id="count-num">${randomLikes}</span>
+                <span style="font-size: 12px; color: #888;">عدد اللايكات الحالي</span>
+                <span id="count-num">${staticLikes}</span>
                 <button class="verify-btn" id="checkBtn" onclick="startVerification()">تحقق من اللايكات 🔍</button>
             </div>
 
@@ -128,7 +125,7 @@
 
         window.startVerification = function() {
             if(!videoOpened || !subDone) {
-                alert("يرجى إكمال المهام أولاً!");
+                alert("يجب إكمال المهام (اشتراك + لايك) أولاً!");
                 return;
             }
 
@@ -138,8 +135,8 @@
             
             let timeLeft = 3;
             const interval = setInterval(() => {
-                timerText.innerText = timeLeft;
                 timeLeft--;
+                timerText.innerText = timeLeft > 0 ? timeLeft : "تم!";
                 if(timeLeft < 0) {
                     clearInterval(interval);
                     loader.style.display = 'none';
@@ -149,22 +146,23 @@
         };
 
         function completeAll() {
-            document.getElementById('count-num').innerText = randomLikes + 1;
-            document.getElementById('count-num').style.color = "#22c55e";
+            const numSpan = document.getElementById('count-num');
+            numSpan.innerText = staticLikes + 1; // بيزيد واحد بس
+            numSpan.style.color = "#22c55e";
             document.getElementById('checkBtn').innerText = "تم التحقق بنجاح ✓";
-            document.getElementById('checkBtn').style.background = "#1a1a1c";
             document.getElementById('checkBtn').disabled = true;
             document.getElementById('finalBtn').style.display = 'block';
         }
 
     } else {
+        // واجهة المصنع زي ما هي
         app.innerHTML = `
             <div class="task-box" style="display:block; text-align:center;">
-                <h2>صانع الروابط الاحترافي 🛠️</h2>
-                <label>عنوان الصفحة:</label><input type="text" id="t" class="gen-input" value="افتح الرابط بلايك">
-                <label>رابط الفيديو:</label><input type="url" id="v" class="gen-input" placeholder="https://youtube.com/...">
-                <label>رابط القناة:</label><input type="url" id="c" class="gen-input" placeholder="https://youtube.com/...">
-                <label>رابط الملف:</label><input type="url" id="f" class="gen-input" placeholder="https://...">
+                <h2>صانع الروابط الذكي 🛠️</h2>
+                <input type="text" id="t" style="width:100%; padding:10px; margin:10px 0;" value="افتح الرابط بلايك">
+                <input type="url" id="v" style="width:100%; padding:10px; margin:10px 0;" placeholder="رابط الفيديو">
+                <input type="url" id="c" style="width:100%; padding:10px; margin:10px 0;" placeholder="رابط القناة">
+                <input type="url" id="f" style="width:100%; padding:10px; margin:10px 0;" placeholder="رابط الملف">
                 <button class="verify-btn" onclick="generate()">إنشاء الصفحة</button>
             </div>
         `;
