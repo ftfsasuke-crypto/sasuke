@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MX_SASUKE | Live Unlocker</title>
+    <title>MX_SASUKE | Exact Live Unlocker</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; }
@@ -55,14 +55,12 @@
     const app = document.getElementById('app');
     const urlParams = new URLSearchParams(window.location.search);
 
-    // نظام التشفير
     function safeEncode(str) { return btoa(encodeURIComponent(str)); }
     function safeDecode(str) { 
         try { return decodeURIComponent(atob(str.replace(/ /g, '+'))); } 
         catch(e) { return ""; } 
     }
 
-    // مصحح الروابط
     function fixUrl(url) {
         if (!url || url === 'undefined') return "#";
         url = url.trim();
@@ -70,7 +68,6 @@
         return url;
     }
 
-    // رقم احتياطي لو النت ضعيف
     function getStaticLikes(str) {
         if(!str) return 74;
         let hash = 0;
@@ -82,25 +79,21 @@
         const raw = urlParams.get('data').split('|');
         let config = {};
 
-        // النظام الذكي لدعم الروابط
-        if (raw.length >= 5) {
-            config.t = safeDecode(raw[0]);
-            config.v = fixUrl(safeDecode(raw[2]));
-            config.c = fixUrl(safeDecode(raw[3]));
-            config.f = fixUrl(safeDecode(raw[4]));
-        } else {
-            config.t = safeDecode(raw[0]);
-            config.c = fixUrl(safeDecode(raw[1]));
-            config.v = fixUrl(safeDecode(raw[2]));
-            config.f = fixUrl(safeDecode(raw[3]));
+        config.t = safeDecode(raw[0]);
+        config.c = fixUrl(safeDecode(raw[1]));
+        config.v = fixUrl(safeDecode(raw[2]));
+        config.f = fixUrl(safeDecode(raw[3]));
+        
+        let offset = 0;
+        if (raw.length >= 5 && raw[4]) {
+            offset = parseInt(safeDecode(raw[4])) || 0;
         }
 
-        // استخراج ID الفيديو عشان الصورة واللايكات
         let vId = config.v.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/ytscreeningroom\?v=|\/sandayat\?v=|\/condition_video_id\/|\/watch\?feature=player_embedded&v=))([^#\&\?]*)/);
         let thumb = vId && vId[1].length == 11 ? `https://img.youtube.com/vi/${vId[1]}/maxresdefault.jpg` : '';
 
         let sub = false, vid = false;
-        let realLikes = getStaticLikes(config.v); // القيمة المبدئية
+        let realLikes = getStaticLikes(config.v); 
 
         app.innerHTML = `
             <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" class="yt-logo">
@@ -135,23 +128,21 @@
             <button id="fBtn" class="final-btn" onclick="window.location.href='${config.f}'">فتح الرابط 🔓</button>
         `;
 
-        // دالة سحب اللايكات الحقيقية (Live API Fetch)
+        // دالة سحب اللايكات الدقيقة من يوتيوب مباشر (عبر وسيط)
         if (vId && vId[1].length == 11) {
-            fetch('https://returnyoutubedislikeapi.com/votes?videoId=' + vId[1])
+            fetch('https://yt.lemnoslife.com/videos?part=statistics&id=' + vId[1])
             .then(res => res.json())
             .then(data => {
-                if (data && 'likes' in data) {
-                    realLikes = data.likes;
+                if (data && data.items && data.items.length > 0) {
+                    realLikes = parseInt(data.items[0].statistics.likeCount) + offset;
                 }
-                // عرض الرقم متفرمط (مثلاً 1,500)
                 document.getElementById('count-num').innerText = realLikes.toLocaleString('en-US');
             })
             .catch(() => {
-                // لو فشل يجيب الحقيقي هيشغل الاحتياطي
-                document.getElementById('count-num').innerText = realLikes.toLocaleString('en-US');
+                document.getElementById('count-num').innerText = (realLikes + offset).toLocaleString('en-US');
             });
         } else {
-            document.getElementById('count-num').innerText = realLikes.toLocaleString('en-US');
+            document.getElementById('count-num').innerText = (realLikes + offset).toLocaleString('en-US');
         }
 
         window.openT = function(type) {
@@ -181,7 +172,6 @@
                 if(sec < 0) {
                     clearInterval(iv);
                     ld.style.display = 'none';
-                    // إضافة اللايك بتاع المتابع للرقم الحقيقي
                     document.getElementById('count-num').innerText = (realLikes + 1).toLocaleString('en-US');
                     document.getElementById('count-num').style.color = "#22c55e";
                     document.getElementById('vBtn').innerText = "تم التحقق ✓";
@@ -194,12 +184,12 @@
     } else {
         app.innerHTML = `
             <div class="task-box" style="display:block; text-align:center; cursor:default;">
-                <h2 style="color:var(--accent)">MX_SASUKE Live Generator</h2>
+                <h2 style="color:var(--accent)">MX_SASUKE Generator</h2>
                 
                 <label style="color:#fff; font-size:13px; margin-top:10px;">عنوان الصفحة:</label>
                 <input type="text" id="it" class="gen-input" value="لازم تعمل اشتراك في القناة ولايك وتعليق على المقطع لكي تحصل على السكربت">
                 
-                <label style="color:#22c55e; font-size:13px; margin-top:10px;">👇 رابط فيديو اليوتيوب (لسحب الصورة واللايكات)</label>
+                <label style="color:#22c55e; font-size:13px; margin-top:10px;">👇 رابط فيديو اليوتيوب (اللايك والصورة)</label>
                 <input type="url" id="iv" class="gen-input" placeholder="https://youtube.com/watch?v=...">
                 
                 <label style="color:#22c55e; font-size:13px; margin-top:10px;">👇 رابط قناتك (اشتراك)</label>
@@ -208,6 +198,9 @@
                 <label style="color:#ff0000; font-size:13px; margin-top:10px;">👇 الرابط النهائي (ميديا فاير)</label>
                 <input type="url" id="if" class="gen-input" placeholder="رابط التحميل...">
                 
+                <label style="color:#888; font-size:13px; margin-top:10px;">معامل التصحيح (اكتب رقم لزيادة أو تقليل اللايكات، أو سيبه فاضي)</label>
+                <input type="number" id="io" class="gen-input" placeholder="مثال: 50">
+
                 <button class="verify-btn" onclick="gen()">إنشاء الصفحة</button>
             </div>
         `;
@@ -216,7 +209,8 @@
                 safeEncode(document.getElementById('it').value),
                 safeEncode(document.getElementById('ic').value),
                 safeEncode(document.getElementById('iv').value),
-                safeEncode(document.getElementById('if').value)
+                safeEncode(document.getElementById('if').value),
+                safeEncode(document.getElementById('io').value || '0')
             ].join('|');
             window.location.href = "?data=" + encodeURIComponent(d);
         };
