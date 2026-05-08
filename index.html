@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MX_SASUKE | Verified Unlocker</title>
+    <title>MX_SASUKE | Custom Unlocker</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; }
@@ -14,8 +14,7 @@
         .sub-title { font-size: 14px; color: #888; margin-bottom: 30px; }
 
         .video-card { position: relative; width: 100%; border-radius: 15px; overflow: hidden; margin-bottom: 20px; border: 1px solid #333; cursor: pointer; }
-        .video-card img { width: 100%; display: block; }
-        .play-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; }
+        .video-card img { width: 100%; display: block; min-height: 150px; background: #111; }
         
         .task-box { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; border: 2px solid transparent; transition: 0.3s; text-align: right; cursor: pointer; }
         .task-box.done { border-color: var(--accent); }
@@ -26,7 +25,7 @@
         .task-box.done .step-num { background: var(--accent); color: white; border-color: var(--accent); }
 
         .checker-card { background: #0f0f10; border: 1px solid #222; border-radius: 15px; padding: 15px; margin-top: 20px; }
-        #count-num { font-size: 32px; font-weight: bold; color: white; display: block; margin: 5px 0; transition: 0.5s; }
+        #count-num { font-size: 32px; font-weight: bold; color: white; display: block; margin: 5px 0; }
         .verify-btn { background: var(--main); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 10px; }
         .verify-btn:disabled { background: #1a1a1c; color: #555; cursor: not-allowed; }
 
@@ -35,6 +34,7 @@
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
         .final-btn { background: var(--accent); width: 100%; padding: 18px; border-radius: 12px; color: white; border: none; margin-top: 20px; font-weight: bold; font-size: 18px; display: none; cursor: pointer; }
+        .gen-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #333; background: #111; color: white; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -42,7 +42,7 @@
 <div id="loader">
     <div class="circle-timer"></div>
     <h2 id="timer-text" style="font-size: 40px; margin: 20px 0;">3</h2>
-    <p style="font-size: 14px; color: #888;">انتظر قليلاً... النظام يتحقق من اللايك ⏳</p>
+    <p style="font-size: 14px; color: #888;">انتظر قليلاً... النظام يتحقق ⏳</p>
 </div>
 
 <div id="app" class="container"></div>
@@ -51,22 +51,22 @@
     const app = document.getElementById('app');
     const params = new URLSearchParams(window.location.search);
 
-    // دالة لتوليد رقم ثابت بناءً على رابط الفيديو
     function getStaticLikes(str) {
         let hash = 0;
         for (let i = 0; i < str.length; i++) {
             hash = str.charCodeAt(i) + ((hash << 5) - hash);
         }
-        return Math.abs(hash % 200) + 50; // هيطلع رقم بين 50 و 250 ثابت لكل رابط
+        return Math.abs(hash % 200) + 50;
     }
 
     if (params.has('data')) {
         const raw = params.get('data').split('|');
         const config = {
             t: decodeURIComponent(atob(raw[0])),
-            v: atob(raw[1]),
-            c: atob(raw[2]),
-            f: atob(raw[3])
+            s: decodeURIComponent(atob(raw[1])),
+            v: atob(raw[2]),
+            c: atob(raw[3]),
+            f: atob(raw[4])
         };
 
         let videoId = config.v.match(/(?:https?:\/{2})?(?:w{3}\.)?youtu(?:be)?\.(?:com|be)(?:\/watch\?v=|\/)([^\s&]+)/);
@@ -74,16 +74,15 @@
         
         let subDone = false;
         let videoOpened = false;
-        let staticLikes = getStaticLikes(config.v); // الرقم ثابت هنا
+        let staticLikes = getStaticLikes(config.v);
 
         app.innerHTML = `
             <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" class="yt-logo">
-            <div class="page-title">افتح الرابط بلايك 👍</div>
-            <div class="sub-title">ساعدنا بلايك وخذ الرابط فوراً</div>
+            <div class="page-title">${config.t}</div>
+            <div class="sub-title">${config.s}</div>
 
             <div class="video-card" onclick="openTask('v')">
-                <img src="${thumbUrl}">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/e/e0/Icon_Play_Default.png" class="play-overlay">
+                <img src="${thumbUrl}" alt="Thumbnail">
             </div>
 
             <div class="task-box" id="task1" onclick="openTask('c')">
@@ -105,7 +104,7 @@
             <div class="checker-card">
                 <span style="font-size: 12px; color: #888;">عدد اللايكات الحالي</span>
                 <span id="count-num">${staticLikes}</span>
-                <button class="verify-btn" id="checkBtn" onclick="startVerification()">تحقق من اللايكات 🔍</button>
+                <button class="verify-btn" id="checkBtn" onclick="startVerification()">تحقق من الشروط 🔍</button>
             </div>
 
             <button id="finalBtn" class="final-btn" onclick="window.location.href='${config.f}'">دخول للرابط 🔓</button>
@@ -125,14 +124,12 @@
 
         window.startVerification = function() {
             if(!videoOpened || !subDone) {
-                alert("يجب إكمال المهام (اشتراك + لايك) أولاً!");
+                alert("يجب إكمال المهام أولاً!");
                 return;
             }
-
             const loader = document.getElementById('loader');
             const timerText = document.getElementById('timer-text');
             loader.style.display = 'flex';
-            
             let timeLeft = 3;
             const interval = setInterval(() => {
                 timeLeft--;
@@ -140,34 +137,33 @@
                 if(timeLeft < 0) {
                     clearInterval(interval);
                     loader.style.display = 'none';
-                    completeAll();
+                    document.getElementById('count-num').innerText = staticLikes + 1;
+                    document.getElementById('count-num').style.color = "#22c55e";
+                    document.getElementById('checkBtn').innerText = "تم التحقق ✓";
+                    document.getElementById('checkBtn').disabled = true;
+                    document.getElementById('finalBtn').style.display = 'block';
                 }
             }, 1000);
         };
 
-        function completeAll() {
-            const numSpan = document.getElementById('count-num');
-            numSpan.innerText = staticLikes + 1; // بيزيد واحد بس
-            numSpan.style.color = "#22c55e";
-            document.getElementById('checkBtn').innerText = "تم التحقق بنجاح ✓";
-            document.getElementById('checkBtn').disabled = true;
-            document.getElementById('finalBtn').style.display = 'block';
-        }
-
     } else {
-        // واجهة المصنع زي ما هي
         app.innerHTML = `
             <div class="task-box" style="display:block; text-align:center;">
-                <h2>صانع الروابط الذكي 🛠️</h2>
-                <input type="text" id="t" style="width:100%; padding:10px; margin:10px 0;" value="افتح الرابط بلايك">
-                <input type="url" id="v" style="width:100%; padding:10px; margin:10px 0;" placeholder="رابط الفيديو">
-                <input type="url" id="c" style="width:100%; padding:10px; margin:10px 0;" placeholder="رابط القناة">
-                <input type="url" id="f" style="width:100%; padding:10px; margin:10px 0;" placeholder="رابط الملف">
+                <h2 style="color:var(--accent)">MX_SASUKE Generator 🛠️</h2>
+                <input type="text" id="t" class="gen-input" value="افتح الرابط بلايك">
+                <input type="text" id="s" class="gen-input" value="ساعدنا بلايك وخذ الرابط فوراً">
+                <input type="url" id="v" class="gen-input" placeholder="رابط الفيديو">
+                <input type="url" id="c" class="gen-input" placeholder="رابط القناة">
+                <input type="url" id="f" class="gen-input" placeholder="رابط الملف">
                 <button class="verify-btn" onclick="generate()">إنشاء الصفحة</button>
             </div>
         `;
         window.generate = function() {
-            const data = btoa(encodeURIComponent(document.getElementById('t').value)) + "|" + btoa(document.getElementById('v').value) + "|" + btoa(document.getElementById('c').value) + "|" + btoa(document.getElementById('f').value);
+            const data = btoa(encodeURIComponent(document.getElementById('t').value)) + "|" + 
+                         btoa(encodeURIComponent(document.getElementById('s').value)) + "|" + 
+                         btoa(document.getElementById('v').value) + "|" + 
+                         btoa(document.getElementById('c').value) + "|" + 
+                         btoa(document.getElementById('f').value);
             window.location.href = "?data=" + data;
         };
     }
