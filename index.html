@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MX_SASUKE | Live Unlocker</title>
+    <title>MX_SASUKE | Pro Unlocker</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; }
@@ -28,25 +28,24 @@
         .task-box.active .step-num { border-color: var(--main); background: rgba(255,0,0,0.1); }
         .task-box.done .step-num { background: var(--accent); color: white; border-color: var(--accent); }
         
-        .checker-card { background: #0f0f10; border: 1px solid #222; border-radius: 15px; padding: 15px; margin-top: 20px; }
-        #count-num { font-size: 32px; font-weight: bold; display: block; margin: 5px 0; }
-        .verify-btn { background: var(--main); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; transition: 0.3s; }
-        .verify-btn:disabled { background: #1a1a1c; color: #555; cursor: not-allowed; }
+        .verify-btn { background: var(--main); color: white; border: none; width: 100%; padding: 18px; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 20px; font-size: 18px; transition: 0.3s; box-shadow: 0 10px 20px rgba(255,0,0,0.2); }
+        .verify-btn:disabled { background: #1a1a1c; color: #555; cursor: not-allowed; box-shadow: none; }
         
         #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
         .circle-timer { width: 60px; height: 60px; border: 5px solid #222; border-top: 5px solid var(--main); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         
-        .final-btn { background: var(--accent); width: 100%; padding: 18px; border-radius: 12px; color: white; border: none; margin-top: 20px; font-weight: bold; font-size: 18px; display: none; cursor: pointer; }
-        .gen-input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #333; background: #111; color: white; box-sizing: border-box; text-align: right; font-family: 'Cairo', sans-serif; }
+        .final-btn { background: var(--accent); width: 100%; padding: 18px; border-radius: 12px; color: white; border: none; margin-top: 20px; font-weight: bold; font-size: 18px; display: none; cursor: pointer; box-shadow: 0 10px 20px rgba(34,197,94,0.2); }
+        
+        .gen-input { width: 100%; padding: 12px; margin: 8px 0 15px; border-radius: 8px; border: 1px solid #333; background: #111; color: white; box-sizing: border-box; text-align: right; font-family: 'Cairo', sans-serif; }
     </style>
 </head>
 <body>
 
 <div id="loader">
     <div class="circle-timer"></div>
-    <h2 id="timer-text" style="font-size: 30px; margin: 20px 0;">3</h2>
-    <p>جاري التحقق من الشروط... ⏳</p>
+    <h2 id="timer-text" style="font-size: 40px; margin: 20px 0; color:var(--main);">3</h2>
+    <p style="color:#888; font-size:14px;">جاري التحقق من إكمال المهام... ⏳</p>
 </div>
 
 <div id="app" class="container"></div>
@@ -68,36 +67,22 @@
         return url;
     }
 
-    // رقم احتياطي محترم
-    function getStaticLikes(str) {
-        if(!str) return 150;
-        let hash = 0;
-        for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
-        return Math.abs(hash % 500) + 100;
-    }
-
     if (urlParams.has('data')) {
         const raw = urlParams.get('data').split('|');
         let config = {};
 
-        // دعم الروابط القديمة والجديدة
-        config.t = safeDecode(raw[0]);
-        config.c = fixUrl(safeDecode(raw[1]));
-        config.v = fixUrl(safeDecode(raw[2]));
-        config.f = fixUrl(safeDecode(raw[3]));
-        
-        // استدعاء معامل التصحيح
-        let offset = 0;
-        if (raw.length >= 5 && raw[4]) {
-            offset = parseInt(safeDecode(raw[4])) || 0;
+        // توافق مع الروابط القديمة والجديدة
+        if (raw.length >= 4) {
+            config.t = safeDecode(raw[0]);
+            config.c = fixUrl(safeDecode(raw[1]));
+            config.v = fixUrl(safeDecode(raw[2]));
+            config.f = fixUrl(safeDecode(raw[3]));
         }
 
         let vId = config.v.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/ytscreeningroom\?v=|\/sandayat\?v=|\/condition_video_id\/|\/watch\?feature=player_embedded&v=))([^#\&\?]*)/);
         let thumb = vId && vId[1].length == 11 ? `https://img.youtube.com/vi/${vId[1]}/maxresdefault.jpg` : '';
 
         let sub = false, vid = false;
-        let baseLikes = getStaticLikes(config.v); 
-        let displayLikes = baseLikes + offset;
 
         app.innerHTML = `
             <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" class="yt-logo">
@@ -123,31 +108,9 @@
                 <div class="step-num"><span>2</span></div>
             </div>
 
-            <div class="checker-card">
-                <span style="color:#888; font-size:12px;">عدد اللايكات الحالي بالفيديو</span>
-                <span id="count-num">جاري التحميل...</span>
-                <button class="verify-btn" id="vBtn" onclick="verify()">تحقق من الشروط 🔍</button>
-            </div>
-
+            <button class="verify-btn" id="vBtn" onclick="verify()">التحقق من الشروط 🔍</button>
             <button id="fBtn" class="final-btn" onclick="window.location.href='${config.f}'">فتح الرابط 🔓</button>
         `;
-
-        // الـ API اللي شغال وبيحس باللايكات + معامل التصحيح بتاعك
-        if (vId && vId[1].length == 11) {
-            fetch('https://returnyoutubedislikeapi.com/votes?videoId=' + vId[1])
-            .then(res => res.json())
-            .then(data => {
-                if (data && 'likes' in data) {
-                    displayLikes = data.likes + offset;
-                }
-                document.getElementById('count-num').innerText = displayLikes.toLocaleString('en-US');
-            })
-            .catch(() => {
-                document.getElementById('count-num').innerText = displayLikes.toLocaleString('en-US');
-            });
-        } else {
-            document.getElementById('count-num').innerText = displayLikes.toLocaleString('en-US');
-        }
 
         window.openT = function(type) {
             window.open(type === 'c' ? config.c : config.v, '_blank');
@@ -166,20 +129,17 @@
         };
 
         window.verify = function() {
-            if(!sub || !vid) return alert("يرجى إكمال المهام (اشتراك + لايك) أولاً!");
+            if(!sub || !vid) return alert("يرجى الضغط على المهام وفتحها أولاً!");
             const ld = document.getElementById('loader');
             ld.style.display = 'flex';
-            let sec = 3;
+            let sec = 4;
             const iv = setInterval(() => {
                 sec--;
-                document.getElementById('timer-text').innerText = sec > 0 ? sec : "تم!";
+                document.getElementById('timer-text').innerText = sec > 0 ? sec : "✓";
                 if(sec < 0) {
                     clearInterval(iv);
                     ld.style.display = 'none';
-                    document.getElementById('count-num').innerText = (displayLikes + 1).toLocaleString('en-US');
-                    document.getElementById('count-num').style.color = "#22c55e";
-                    document.getElementById('vBtn').innerText = "تم التحقق ✓";
-                    document.getElementById('vBtn').disabled = true;
+                    document.getElementById('vBtn').style.display = 'none';
                     document.getElementById('fBtn').style.display = 'block';
                 }
             }, 1000);
@@ -187,25 +147,22 @@
 
     } else {
         app.innerHTML = `
-            <div class="task-box" style="display:block; text-align:center; cursor:default;">
-                <h2 style="color:var(--accent)">MX_SASUKE Generator</h2>
+            <div style="background:#151517; padding:25px; border-radius:20px; text-align:center; border: 1px solid #333;">
+                <h2 style="color:var(--accent); margin-top:0;">صانع الروابط 🛠️</h2>
                 
-                <label style="color:#fff; font-size:13px; margin-top:10px;">عنوان الصفحة:</label>
-                <input type="text" id="it" class="gen-input" value="لازم تعمل اشتراك في القناة ولايك وتعليق على المقطع لكي تحصل على السكربت">
+                <label style="color:#94a3b8; font-size:13px; display:block; text-align:right;">عنوان الصفحة:</label>
+                <input type="text" id="it" class="gen-input" value="لازم تعمل اشتراك ولايك وتعليق للحصول على السكربت">
                 
-                <label style="color:#22c55e; font-size:13px; margin-top:10px;">👇 رابط فيديو اليوتيوب (لايك والصورة)</label>
+                <label style="color:#22c55e; font-size:13px; display:block; text-align:right;">رابط قناتك (للاشتراك):</label>
+                <input type="url" id="ic" class="gen-input" placeholder="https://youtube.com/@...">
+                
+                <label style="color:#22c55e; font-size:13px; display:block; text-align:right;">رابط الفيديو (للايك والصورة):</label>
                 <input type="url" id="iv" class="gen-input" placeholder="https://youtube.com/watch?v=...">
                 
-                <label style="color:#22c55e; font-size:13px; margin-top:10px;">👇 رابط قناتك (اشتراك)</label>
-                <input type="url" id="ic" class="gen-input" placeholder="https://youtube.com/...">
+                <label style="color:var(--main); font-size:13px; display:block; text-align:right;">الرابط النهائي (ميديا فاير):</label>
+                <input type="url" id="if" class="gen-input" placeholder="https://...">
                 
-                <label style="color:#ff0000; font-size:13px; margin-top:10px;">👇 الرابط النهائي (ميديا فاير)</label>
-                <input type="url" id="if" class="gen-input" placeholder="رابط التحميل...">
-                
-                <label style="color:#888; font-size:13px; margin-top:10px;">فرق اللايكات (عشان نظبط دقة الأرقام، اكتب الفرق بينهم هنا)</label>
-                <input type="number" id="io" class="gen-input" placeholder="مثال: 24">
-
-                <button class="verify-btn" onclick="gen()">إنشاء الصفحة</button>
+                <button class="verify-btn" style="margin-top:5px;" onclick="gen()">إنشاء الرابط</button>
             </div>
         `;
         window.gen = function() {
@@ -213,8 +170,7 @@
                 safeEncode(document.getElementById('it').value),
                 safeEncode(document.getElementById('ic').value),
                 safeEncode(document.getElementById('iv').value),
-                safeEncode(document.getElementById('if').value),
-                safeEncode(document.getElementById('io').value || '0')
+                safeEncode(document.getElementById('if').value)
             ].join('|');
             window.location.href = "?data=" + encodeURIComponent(d);
         };
