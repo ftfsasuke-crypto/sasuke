@@ -3,109 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Link Unlocker | Ninja Edition</title>
+    <title>MX_SASUKE | Unlocker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --p: #ff0000; --bg: #0a0a0b; --accent: #22c55e; }
+        :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; }
+        body { background: var(--bg); color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; min-height: 100vh; overflow-x: hidden; }
+        .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; }
         
-        body { 
-            background-color: var(--bg); 
-            color: white; 
-            font-family: 'Segoe UI', Tahoma, sans-serif; 
-            margin: 0; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            min-height: 100vh; 
-            overflow: hidden;
-        }
-
-        .bg-blur { 
-            position: fixed; 
-            top: 0; left: 0; right: 0; bottom: 0; 
-            background: url('https://p16-capcut-va.ibyteimg.com/tos-alisg-i-7306232532/5a1b3263720f4f9f8c6f37648f57276a~tplv-nhvf8v017r-1.image') no-repeat center center;
-            background-size: cover; 
-            filter: blur(15px) brightness(0.3); 
-            z-index: -1; 
-            transform: scale(1.1); 
-        }
-
-        .container { width: 90%; max-width: 420px; text-align: center; z-index: 1; }
-        
-        .card { 
-            background: rgba(30, 41, 59, 0.8); 
-            padding: 30px 20px; 
-            border-radius: 24px; 
-            border: 1px solid rgba(255,255,255,0.1); 
-            backdrop-filter: blur(10px);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
-        }
-
-        /* ستايل شعار يوتيوب والعنوان */
-        .yt-header { margin-bottom: 25px; }
+        /* Header Area */
         .yt-logo { width: 50px; margin-bottom: 10px; }
-        .main-title { font-size: 18px; font-weight: bold; line-height: 1.6; color: #fff; margin: 0; }
+        .page-title { font-size: 22px; font-weight: bold; margin-bottom: 5px; }
+        .sub-title { font-size: 14px; color: #888; margin-bottom: 30px; }
 
-        .task-btn { 
-            background: var(--p); 
-            color: white; 
-            border: none; 
-            width: 100%; 
-            padding: 14px; 
-            border-radius: 12px; 
-            font-weight: bold; 
-            margin-bottom: 15px; 
-            cursor: pointer; 
-            font-size: 16px;
-            transition: 0.3s;
-            line-height: 1.2;
-        }
-
-        .task-btn span { 
-            font-size: 12px; 
-            font-weight: normal; 
-            display: block; 
-            opacity: 0.8;
-            margin-top: 4px;
-        }
-
-        .task-btn:disabled { 
-            background: rgba(51, 65, 85, 0.5); 
-            color: rgba(255, 255, 255, 0.3); 
-            cursor: not-allowed; 
-        }
+        /* Thumbnail Box */
+        .video-card { position: relative; width: 100%; border-radius: 15px; overflow: hidden; margin-bottom: 20px; border: 1px solid #333; cursor: pointer; }
+        .video-card img { width: 100%; display: block; }
+        .play-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 60px; }
         
-        .task-btn.done { background: rgba(51, 65, 85, 0.9); color: var(--accent); cursor: default; }
+        /* Task Steps */
+        .task-box { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; border: 2px solid transparent; transition: 0.3s; text-align: right; }
+        .task-box.active { border-color: var(--main); }
+        .task-info { flex-grow: 1; margin-right: 15px; }
+        .task-info h4 { margin: 0; font-size: 16px; }
+        .task-info p { margin: 5px 0 0; font-size: 12px; color: #777; }
+        .step-num { width: 35px; height: 35px; background: #222; border: 2px solid #444; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--main); }
+        .task-box.done .step-num { background: var(--accent); color: white; border-color: var(--accent); }
+        .task-box.done .step-num::after { content: '✓'; }
+        .task-box.done .step-num span { display: none; }
 
-        .progress-box { margin-top: 25px; }
-        .progress-text { display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8; margin-bottom: 8px; }
-        .bar-bg { background: #0f172a; height: 10px; border-radius: 10px; overflow: hidden; }
-        .bar-fill { background: var(--accent); height: 100%; width: 0%; transition: 0.6s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 15px var(--accent); }
+        /* Likes Checker */
+        .checker-card { background: #0f0f10; border: 1px solid #222; border-radius: 15px; padding: 15px; margin-top: 20px; }
+        .likes-count { font-size: 12px; color: #888; }
+        #count-num { font-size: 32px; font-weight: bold; color: white; display: block; margin: 5px 0; }
+        .verify-btn { background: var(--main); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; font-size: 16px; cursor: pointer; margin-top: 10px; }
+        .verify-btn:disabled { background: #333; cursor: not-allowed; }
 
-        .final-btn { 
-            background: var(--accent); 
-            width: 100%; 
-            padding: 18px; 
-            border-radius: 12px; 
-            color: white; 
-            border: none; 
-            margin-top: 20px; 
-            font-weight: bold; 
-            font-size: 18px; 
-            display: none; 
-            cursor: pointer; 
-            box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);
-        }
+        /* Timer Overlay */
+        #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
+        .circle-timer { width: 80px; height: 80px; border: 5px solid #222; border-top: 5px solid var(--main); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        input { 
-            width: 100%; padding: 14px; margin: 10px 0 20px; border-radius: 10px; border: 1px solid #475569; 
-            background: #0f172a; color: white; box-sizing: border-box; 
-        }
-        label { display: block; text-align: right; font-size: 14px; color: #cbd5e1; }
+        .final-btn { background: var(--accent); width: 100%; padding: 18px; border-radius: 12px; color: white; border: none; margin-top: 20px; font-weight: bold; font-size: 18px; display: none; }
+        
+        /* Generator Style */
+        .gen-input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #333; background: #111; color: white; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-<div class="bg-blur"></div>
+<div id="loader">
+    <div class="circle-timer"></div>
+    <h2 id="timer-text">جاري التحقق...</h2>
+    <p style="font-size: 12px; color: #888;">انتظر فقط، النظام يتحقق من اللايك</p>
+</div>
 
 <div id="app" class="container"></div>
 
@@ -117,89 +67,112 @@
         const raw = params.get('data').split('|');
         const config = {
             t: decodeURIComponent(atob(raw[0])),
-            c: atob(raw[1]),
-            v: atob(raw[2]),
+            v: atob(raw[1]),
+            c: atob(raw[2]),
             f: atob(raw[3])
         };
-        let completed = 0;
+
+        let videoId = config.v.match(/(?:https?:\/{2})?(?:w{3}\.)?youtu(?:be)?\.(?:com|be)(?:\/watch\?v=|\/)([^\s&]+)/);
+        const thumbUrl = videoId ? `https://img.youtube.com/vi/${videoId[1]}/maxresdefault.jpg` : '';
+        
+        let subDone = false;
+        let videoOpened = false;
+        let randomLikes = Math.floor(Math.random() * (95 - 60 + 1)) + 60;
 
         app.innerHTML = `
-            <div class="yt-header">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png?20220706172052" class="yt-logo">
-                <p class="main-title">${config.t}</p>
+            <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" class="yt-logo">
+            <div class="page-title">افتح الرابط بلايك 👍</div>
+            <div class="sub-title">ساعدنا بلايك وخذ الرابط فوراً</div>
+
+            <div class="video-card" onclick="openTask('v')">
+                <img src="${thumbUrl}">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/e/e0/Icon_Play_Default.png" class="play-overlay">
             </div>
-            
-            <div class="card">
-                <div style="color:#94a3b8; font-size:14px; margin-bottom:20px; text-align:center;">Complete the actions to unlock</div>
-                
-                <button class="task-btn" id="b1" onclick="verify('${config.c}', 'b1')">
-                    Subscribe to channel
-                    <span>اشترك بالقناة</span>
-                </button>
-                
-                <button class="task-btn" id="b2" onclick="verify('${config.v}', 'b2')" disabled>
-                    Like & comment on video
-                    <span>اعمل لايك وكومنت</span>
-                </button>
-                
-                <div class="progress-box">
-                    <div class="progress-text"><span>Unlock progress</span><span id="p-num">0/2</span></div>
-                    <div class="bar-bg"><div class="bar-fill" id="bar"></div></div>
+
+            <div class="task-box" id="task1" onclick="openTask('c')">
+                <div class="task-info">
+                    <h4>Subscribe to channel</h4>
+                    <p>اضغط هنا للاشتراك في القناة</p>
                 </div>
-                <button id="final" class="final-btn" onclick="window.location.href='${config.f}'">Unlock Link 🔓</button>
+                <div class="step-num"><span>1</span></div>
             </div>
+
+            <div class="task-box" id="task2" onclick="openTask('v')">
+                <div class="task-info">
+                    <h4>Like & comment on video</h4>
+                    <p>اضغط لايك وكومنت على الفيديو</p>
+                </div>
+                <div class="step-num"><span>2</span></div>
+            </div>
+
+            <div class="checker-card">
+                <span class="likes-count">عدد اللايكات الحالي</span>
+                <span id="count-num">${randomLikes}</span>
+                <button class="verify-btn" id="checkBtn" onclick="startVerification()">تحقق من اللايكات 🔍</button>
+            </div>
+
+            <button id="finalBtn" class="final-btn" onclick="window.location.href='${config.f}'">دخول للرابط 🔓</button>
         `;
 
-        window.verify = function(url, id) {
-            window.open(url, '_blank');
-            const btn = document.getElementById(id);
-            if(btn.classList.contains('done')) return;
-            
-            btn.innerHTML = "...Verifying<br><span>جاري التحقق</span>";
-            
-            setTimeout(() => {
-                btn.innerHTML = "✓ Completed<br><span>تم بنجاح</span>";
-                btn.classList.add('done');
-                btn.disabled = true;
-                completed++;
-                
-                document.getElementById('p-num').innerText = completed + "/2";
-                document.getElementById('bar').style.width = (completed/2)*100 + "%";
-                
-                if(completed === 1) {
-                    document.getElementById('b2').disabled = false;
-                }
-                
-                if(completed === 2) {
-                    document.getElementById('final').style.display = 'block';
-                }
-            }, 5000);
+        window.openTask = function(type) {
+            if(type === 'c') {
+                window.open(config.c, '_blank');
+                subDone = true;
+                document.getElementById('task1').classList.add('done');
+            } else {
+                window.open(config.v, '_blank');
+                videoOpened = true;
+                document.getElementById('task2').classList.add('done');
+            }
         };
+
+        window.startVerification = function() {
+            if(!videoOpened || !subDone) {
+                alert("يرجى إكمال المهام أولاً!");
+                return;
+            }
+
+            const loader = document.getElementById('loader');
+            const timerText = document.getElementById('timer-text');
+            loader.style.display = 'flex';
+            
+            let timeLeft = 3;
+            const interval = setInterval(() => {
+                timerText.innerText = timeLeft;
+                timeLeft--;
+                if(timeLeft < 0) {
+                    clearInterval(interval);
+                    loader.style.display = 'none';
+                    completeAll();
+                }
+            }, 1000);
+        };
+
+        function completeAll() {
+            document.getElementById('count-num').innerText = randomLikes + 1;
+            document.getElementById('count-num').style.color = "#22c55e";
+            document.getElementById('checkBtn').innerText = "تم التحقق بنجاح ✓";
+            document.getElementById('checkBtn').style.background = "#1a1a1c";
+            document.getElementById('checkBtn').disabled = true;
+            document.getElementById('finalBtn').style.display = 'block';
+        }
+
     } else {
         app.innerHTML = `
-            <div class="card" style="text-align:right">
-                <h2 style="color:var(--accent); text-align:center; margin-bottom:30px;">MX_SASUKE Generator 🛠️</h2>
-                <label>عنوان الصفحة:</label>
-                <input type="text" id="title" value="افتح الرابط بلايك وكومنت واشتراك في القناه">
-                <label>رابط قناتك:</label>
-                <input type="url" id="c" placeholder="https://youtube.com/...">
-                <label>رابط الفيديو:</label>
-                <input type="url" id="v" placeholder="https://youtube.com/watch...">
-                <label>رابط التحميل:</label>
-                <input type="url" id="f" placeholder="https://...">
-                <button class="task-btn" style="background:var(--accent); margin-top:10px" onclick="generate()">إنشاء الرابط</button>
+            <div class="task-box" style="display:block; text-align:center;">
+                <h2>صانع الروابط الاحترافي 🛠️</h2>
+                <label>عنوان الصفحة:</label><input type="text" id="t" class="gen-input" value="افتح الرابط بلايك">
+                <label>رابط الفيديو:</label><input type="url" id="v" class="gen-input" placeholder="https://youtube.com/...">
+                <label>رابط القناة:</label><input type="url" id="c" class="gen-input" placeholder="https://youtube.com/...">
+                <label>رابط الملف:</label><input type="url" id="f" class="gen-input" placeholder="https://...">
+                <button class="verify-btn" onclick="generate()">إنشاء الصفحة</button>
             </div>
         `;
-
         window.generate = function() {
-            const t = btoa(encodeURIComponent(document.getElementById('title').value));
-            const c = btoa(document.getElementById('c').value);
-            const v = btoa(document.getElementById('v').value);
-            const f = btoa(document.getElementById('f').value);
-            window.location.href = `?data=${t}|${c}|${v}|${f}`;
+            const data = btoa(encodeURIComponent(document.getElementById('t').value)) + "|" + btoa(document.getElementById('v').value) + "|" + btoa(document.getElementById('c').value) + "|" + btoa(document.getElementById('f').value);
+            window.location.href = "?data=" + data;
         };
     }
 </script>
-
 </body>
 </html>
