@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MX_SASUKE | Pro Unlocker</title>
+    <title>MX_SASUKE | Live Unlocker</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; }
@@ -66,13 +66,11 @@
     function fixUrl(url) {
         if (!url || url === 'undefined') return "#";
         url = url.trim();
-        if (!/^https?:\/\//i.test(url) && url !== "#") {
-            return 'https://' + url;
-        }
+        if (!/^https?:\/\//i.test(url) && url !== "#") { return 'https://' + url; }
         return url;
     }
 
-    // مولد اللايكات الثابت
+    // رقم احتياطي لو النت ضعيف
     function getStaticLikes(str) {
         if(!str) return 74;
         let hash = 0;
@@ -84,7 +82,7 @@
         const raw = urlParams.get('data').split('|');
         let config = {};
 
-        // النظام الذكي: بيقرأ الروابط الجديدة والقديمة
+        // النظام الذكي لدعم الروابط
         if (raw.length >= 5) {
             config.t = safeDecode(raw[0]);
             config.v = fixUrl(safeDecode(raw[2]));
@@ -97,12 +95,12 @@
             config.f = fixUrl(safeDecode(raw[3]));
         }
 
-        // جلب صورة اليوتيوب
+        // استخراج ID الفيديو عشان الصورة واللايكات
         let vId = config.v.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/ytscreeningroom\?v=|\/sandayat\?v=|\/condition_video_id\/|\/watch\?feature=player_embedded&v=))([^#\&\?]*)/);
         let thumb = vId && vId[1].length == 11 ? `https://img.youtube.com/vi/${vId[1]}/maxresdefault.jpg` : '';
 
         let sub = false, vid = false;
-        let likes = getStaticLikes(config.v);
+        let realLikes = getStaticLikes(config.v); // القيمة المبدئية
 
         app.innerHTML = `
             <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" class="yt-logo">
@@ -129,13 +127,32 @@
             </div>
 
             <div class="checker-card">
-                <span style="color:#888; font-size:12px;">عدد اللايكات الحالي</span>
-                <span id="count-num">${likes}</span>
+                <span style="color:#888; font-size:12px;">عدد اللايكات الحالي بالفيديو</span>
+                <span id="count-num">جاري التحميل...</span>
                 <button class="verify-btn" id="vBtn" onclick="verify()">تحقق من الشروط 🔍</button>
             </div>
 
             <button id="fBtn" class="final-btn" onclick="window.location.href='${config.f}'">فتح الرابط 🔓</button>
         `;
+
+        // دالة سحب اللايكات الحقيقية (Live API Fetch)
+        if (vId && vId[1].length == 11) {
+            fetch('https://returnyoutubedislikeapi.com/votes?videoId=' + vId[1])
+            .then(res => res.json())
+            .then(data => {
+                if (data && 'likes' in data) {
+                    realLikes = data.likes;
+                }
+                // عرض الرقم متفرمط (مثلاً 1,500)
+                document.getElementById('count-num').innerText = realLikes.toLocaleString('en-US');
+            })
+            .catch(() => {
+                // لو فشل يجيب الحقيقي هيشغل الاحتياطي
+                document.getElementById('count-num').innerText = realLikes.toLocaleString('en-US');
+            });
+        } else {
+            document.getElementById('count-num').innerText = realLikes.toLocaleString('en-US');
+        }
 
         window.openT = function(type) {
             window.open(type === 'c' ? config.c : config.v, '_blank');
@@ -164,7 +181,8 @@
                 if(sec < 0) {
                     clearInterval(iv);
                     ld.style.display = 'none';
-                    document.getElementById('count-num').innerText = likes + 1;
+                    // إضافة اللايك بتاع المتابع للرقم الحقيقي
+                    document.getElementById('count-num').innerText = (realLikes + 1).toLocaleString('en-US');
                     document.getElementById('count-num').style.color = "#22c55e";
                     document.getElementById('vBtn').innerText = "تم التحقق ✓";
                     document.getElementById('vBtn').disabled = true;
@@ -174,15 +192,14 @@
         };
 
     } else {
-        // صفحة الإنشاء (الصانع)
         app.innerHTML = `
             <div class="task-box" style="display:block; text-align:center; cursor:default;">
-                <h2 style="color:var(--accent)">MX_SASUKE Generator</h2>
+                <h2 style="color:var(--accent)">MX_SASUKE Live Generator</h2>
                 
                 <label style="color:#fff; font-size:13px; margin-top:10px;">عنوان الصفحة:</label>
                 <input type="text" id="it" class="gen-input" value="لازم تعمل اشتراك في القناة ولايك وتعليق على المقطع لكي تحصل على السكربت">
                 
-                <label style="color:#22c55e; font-size:13px; margin-top:10px;">👇 رابط فيديو اليوتيوب (لايك والصورة)</label>
+                <label style="color:#22c55e; font-size:13px; margin-top:10px;">👇 رابط فيديو اليوتيوب (لسحب الصورة واللايكات)</label>
                 <input type="url" id="iv" class="gen-input" placeholder="https://youtube.com/watch?v=...">
                 
                 <label style="color:#22c55e; font-size:13px; margin-top:10px;">👇 رابط قناتك (اشتراك)</label>
@@ -195,7 +212,6 @@
             </div>
         `;
         window.gen = function() {
-            // هنجمع البيانات في 4 خانات بس عشان نمنع أي لخبطة مستقبلاً
             const d = [
                 safeEncode(document.getElementById('it').value),
                 safeEncode(document.getElementById('ic').value),
