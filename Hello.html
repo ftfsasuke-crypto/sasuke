@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
-        :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; }
+        :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; --imposter: #a855f7; }
         body { background: var(--bg); color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden; }
         .container { width: 90%; max-width: 400px; background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; margin: 20px 0; }
         
@@ -33,11 +33,13 @@
         .players-list { background: #000; border: 1px solid #333; border-radius: 10px; padding: 15px; max-height: 200px; overflow-y: auto; text-align: right; margin-bottom: 20px; }
         .player-item { padding: 8px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
         .player-item:last-child { border-bottom: none; }
-        .online-dot { width: 10px; height: 10px; background: var(--accent); border-radius: 50%; display: inline-block; box-shadow: 0 0 8px var(--accent); }
+        .online-dot { width: 10px; height: 10px; background: var(--accent); border-radius: 50%; display: inline-block; box-shadow: 0 0 8px var(--accent); margin-right: 10px;}
+        
+        .kick-btn { background: var(--fail); color: white; border: none; border-radius: 5px; cursor: pointer; padding: 3px 8px; font-size: 12px; font-weight: bold; transition: 0.2s;}
+        .kick-btn:hover { background: #b91c1c; }
 
         .secret-word-box { background: #111; border: 2px dashed var(--accent); border-radius: 15px; padding: 30px 15px; margin: 20px 0; font-size: 35px; font-weight: bold; color: white; text-shadow: 0 0 15px rgba(34,197,94,0.4); }
         .link-box { background: #000; padding: 12px; border-radius: 8px; border: 1px solid #444; color: #888; font-size: 12px; word-break: break-all; margin-bottom: 15px; }
-        .error-msg { color: var(--fail); font-size: 14px; margin-bottom: 15px; display: none; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -48,23 +50,36 @@
         <h1>🎮 اختار الغرفة يا هوست</h1>
         <input type="text" id="host-name-input" class="input-field" placeholder="اسمك كصاحب الغرفة..." value="Sasuke">
         
-        <button class="game-btn" onclick="createRoom('naruto', 'أنمي ناروتو')">🍥 إنشاء غرفة (ناروتو)</button>
-        <button class="game-btn" onclick="createRoom('aot', 'هجوم العمالقة')">⚔️ إنشاء غرفة (هجوم العمالقة)</button>
-        <button class="game-btn" onclick="createRoom('dbz', 'دراجون بول')">🐉 إنشاء غرفة (دراجون بول)</button>
-        <button class="game-btn" onclick="createRoom('ds', 'قاتل الشياطين')">🗡️ إنشاء غرفة (قاتل الشياطين)</button>
-        <button class="game-btn" onclick="createRoom('monster', 'مونستر')">🧠 إنشاء غرفة (مونستر)</button>
-        <button class="game-btn" onclick="showScreen('global-menu')" style="border-color: #22c55e;">🌍 إنشاء غرفة (منوعات عالمية) ➡️</button>
+        <button class="game-btn" onclick="createRoom('naruto', 'أنمي ناروتو', 'guess')">🍥 من أنا؟ (ناروتو)</button>
+        <button class="game-btn" onclick="createRoom('aot', 'هجوم العمالقة', 'guess')">⚔️ من أنا؟ (هجوم العمالقة)</button>
+        <button class="game-btn" onclick="createRoom('dbz', 'دراجون بول', 'guess')">🐉 من أنا؟ (دراجون بول)</button>
+        <button class="game-btn" onclick="createRoom('ds', 'قاتل الشياطين', 'guess')">🗡️ من أنا؟ (قاتل الشياطين)</button>
+        <button class="game-btn" onclick="createRoom('monster', 'مونستر', 'guess')">🧠 من أنا؟ (مونستر)</button>
+        <button class="game-btn" onclick="showScreen('global-menu')" style="border-color: #22c55e;">🌍 من أنا؟ (عالمي) ➡️</button>
+
+        <button class="game-btn" onclick="showScreen('imposter-menu')" style="border-color: var(--imposter); margin-top: 25px; box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);">🕵️‍♂️ لعبة الجاسوس (Imposter) ➡️</button>
     </div>
 
     <div id="global-menu" class="screen">
-        <h1>🌍 اختر التصنيف العالمي</h1>
-        <button class="game-btn" onclick="createRoom('food', 'أكلات مشهورة')">🍕 أكلات مشهورة</button>
-        <button class="game-btn" onclick="createRoom('fruits', 'فواكه')">🍎 فواكه</button>
-        <button class="game-btn" onclick="createRoom('veggies', 'خضروات')">🥕 خضروات</button>
-        <button class="game-btn" onclick="createRoom('objects', 'جماد وأشياء')">📱 جماد وأشياء</button>
-        <button class="game-btn" onclick="createRoom('animals', 'حيوانات')">🦁 حيوانات</button>
-        <button class="game-btn" onclick="createRoom('countries', 'دول وعواصم')">🗺️ دول وعواصم</button>
-        <button class="game-btn" onclick="createRoom('jobs', 'مهن ووظائف')">👨‍⚕️ مهن ووظائف</button>
+        <h1>🌍 تصنيفات التخمين</h1>
+        <button class="game-btn" onclick="createRoom('food', 'أكلات مشهورة', 'guess')">🍕 أكلات مشهورة</button>
+        <button class="game-btn" onclick="createRoom('fruits', 'فواكه', 'guess')">🍎 فواكه</button>
+        <button class="game-btn" onclick="createRoom('veggies', 'خضروات', 'guess')">🥕 خضروات</button>
+        <button class="game-btn" onclick="createRoom('objects', 'جماد وأشياء', 'guess')">📱 جماد وأشياء</button>
+        <button class="game-btn" onclick="createRoom('animals', 'حيوانات', 'guess')">🦁 حيوانات</button>
+        <button class="game-btn" onclick="createRoom('countries', 'دول وعواصم', 'guess')">🗺️ دول وعواصم</button>
+        <button class="game-btn" onclick="createRoom('jobs', 'مهن ووظائف', 'guess')">👨‍⚕️ مهن ووظائف</button>
+        <button class="leave-btn" onclick="showScreen('main-menu')">رجوع للقائمة الرئيسية 🔙</button>
+    </div>
+
+    <div id="imposter-menu" class="screen">
+        <h1>🕵️‍♂️ تصنيفات الإمبوستر</h1>
+        <p style="color: #cbd5e1; font-size: 13px; margin-bottom: 20px;">هنوزع كلمة واحدة على الكل، وواحد بس هيطلعله جاسوس!</p>
+        <button class="game-btn" onclick="createRoom('food', 'جاسوس الأكلات', 'imposter')">🍕 أكلات مشهورة</button>
+        <button class="game-btn" onclick="createRoom('animals', 'جاسوس الحيوانات', 'imposter')">🦁 حيوانات</button>
+        <button class="game-btn" onclick="createRoom('objects', 'جاسوس الأشياء', 'imposter')">📱 جماد وأشياء</button>
+        <button class="game-btn" onclick="createRoom('jobs', 'جاسوس المهن', 'imposter')">👨‍⚕️ مهن ووظائف</button>
+        <button class="game-btn" onclick="createRoom('countries', 'جاسوس الدول', 'imposter')">🗺️ دول وعواصم</button>
         <button class="leave-btn" onclick="showScreen('main-menu')">رجوع للقائمة الرئيسية 🔙</button>
     </div>
 
@@ -84,9 +99,7 @@
         <h1>👋 أهلاً بيك</h1>
         <input type="text" id="player-name" class="input-field" placeholder="اكتب اسمك عشان تدخل..." autocomplete="off">
         <button class="action-btn" id="join-btn" onclick="joinRoom()">دخول الغرفة 🚪</button>
-        <button class="action-btn" id="retry-btn" onclick="joinRoom()" style="display: none; background: #0284c7;">حاول تتصل تاني 🔄</button>
         <p id="join-status" style="color: var(--accent); margin-top: 10px; display: none; font-weight: bold;">جاري الاتصال بالسيرفر... ⏳</p>
-        <p id="error-msg" class="error-msg">فشل الاتصال! تأكد إن الهوست لسه فاتح الغرفة.</p>
     </div>
 
     <div id="guest-lobby" class="screen">
@@ -106,9 +119,9 @@
     </div>
 
     <div id="goodbye-screen" class="screen">
-        <h1 style="font-size: 60px; margin-bottom: 10px;">👋</h1>
-        <h2 style="color: var(--accent); font-size: 28px;">حظاً موفقاً!</h2>
-        <p style="color: #cbd5e1; font-size: 16px; margin-top: 15px;">طلعت من الغرفة بنجاح.. نورتنا يا بطل 🥷</p>
+        <h1 id="bye-emoji" style="font-size: 60px; margin-bottom: 10px;">👋</h1>
+        <h2 id="bye-title" style="color: var(--accent); font-size: 28px;">حظاً موفقاً!</h2>
+        <p id="bye-message" style="color: #cbd5e1; font-size: 16px; margin-top: 15px;">طلعت من الغرفة بنجاح.. نورتنا يا بطل 🥷</p>
         <button class="leave-btn" onclick="window.location.href = window.location.href.split('?')[0];">العودة للرئيسية</button>
     </div>
 
@@ -134,18 +147,19 @@
     let myName = '';
     let isHost = false; 
     let roomCategory = '';
+    let gameMode = 'guess'; // إما guess (تخمين) أو imposter (جاسوس)
     let currentRoomId = '';
     let playersList = []; 
     let inviteUrl = '';
 
+    function safeEncode(str) { return encodeURIComponent(str); }
+    function safeDecode(str) { try { return decodeURIComponent(str); } catch(e) { return str; } }
+
     function showScreen(screenId) {
-        document.querySelectorAll('.screen').forEach(el => {
-            el.classList.remove('active-screen');
-        });
+        document.querySelectorAll('.screen').forEach(el => el.classList.remove('active-screen'));
         document.getElementById(screenId).classList.add('active-screen');
     }
 
-    // بداية التشغيل الصاروخي
     document.addEventListener('DOMContentLoaded', () => {
         const urlParams = new URLSearchParams(window.location.search);
         if(urlParams.has('room')) {
@@ -157,10 +171,25 @@
         }
     });
 
+    // تحديث الواجهة وظهور زرار الطرد للهوست
     function updateUIList() {
         let listHTML = '';
         playersList.forEach(p => {
-            listHTML += `<div class="player-item"><span>${p.name}</span> <span class="online-dot"></span></div>`;
+            let decodedName = safeDecode(p.name);
+            let kickBtn = '';
+            
+            // لو أنت الهوست وده لاعب تاني غيرك، اظهرله زرار الطرد
+            if (isHost && p.name !== myName) {
+                kickBtn = `<button class="kick-btn" onclick="kickPlayer('${p.name}')">طرد 🥾</button>`;
+            }
+
+            listHTML += `
+                <div class="player-item">
+                    <span>${decodedName}</span> 
+                    <div style="display:flex; align-items:center;">
+                        ${kickBtn} <span class="online-dot"></span>
+                    </div>
+                </div>`;
         });
         
         if (isHost) {
@@ -175,15 +204,16 @@
     }
 
     // ==========================================
-    // أكواد الهوست (السيرفر القوي)
+    // أكواد الهوست
     // ==========================================
-    function createRoom(category, catName) {
+    function createRoom(category, catName, mode) {
         isHost = true;
         roomCategory = category;
+        gameMode = mode; // حفظ نوع اللعبة (امبوستر ولا عادي)
         
         myName = document.getElementById('host-name-input').value.trim();
         if(myName === '') myName = 'Sasuke'; 
-        myName = myName + ' 👑';
+        myName = safeEncode(myName + ' 👑');
 
         document.getElementById('lobby-title').innerText = "غرفة: " + catName;
         showScreen('host-lobby');
@@ -198,12 +228,8 @@
         playersList = [{name: myName}];
         updateUIList();
 
-        // الاتصال بسيرفر MQTT العالمي المجاني (مستحيل يتحظر في مصر)
         mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
-        
-        mqttClient.on('connect', () => {
-            mqttClient.subscribe(topic);
-        });
+        mqttClient.on('connect', () => { mqttClient.subscribe(topic); });
 
         mqttClient.on('message', (t, message) => {
             if(!isHost) return;
@@ -224,52 +250,90 @@
         });
     }
 
+    function kickPlayer(targetName) {
+        let decodedTarget = safeDecode(targetName);
+        if(confirm(`متأكد إنك عايز تطرد ${decodedTarget} من الغرفة؟ 🥾`)) {
+            let topic = 'mx_sasuke_room_' + currentRoomId;
+            // بعت رسالة الطرد
+            mqttClient.publish(topic, JSON.stringify({type: 'kick', target: targetName}));
+            // مسحه من القائمة فوراً
+            playersList = playersList.filter(p => p.name !== targetName);
+            updateUIList();
+            mqttClient.publish(topic, JSON.stringify({type: 'updateList', players: playersList}));
+        }
+    }
+
     function copyLink() {
         navigator.clipboard.writeText(inviteUrl).then(() => { alert("تم النسخ! ابعته في الديسكورد 🚀"); });
     }
 
     function startGame() {
         let words = DB[roomCategory] || DB['food'];
-        let shuffledWords = [...words].sort(() => 0.5 - Math.random());
         let assignedWords = {};
+        
+        // لو اللعبة "إمبوستر"
+        if (gameMode === 'imposter') {
+            let randomWord = words[Math.floor(Math.random() * words.length)];
+            let imposterIndex = Math.floor(Math.random() * playersList.length);
+            let imposterName = playersList[imposterIndex].name; // سحب اسم واحد عشوائي ليكون الجاسوس
 
-        // توزيع الكلمات على كل واحد باسمه
-        playersList.forEach((p, index) => {
-            assignedWords[p.name] = shuffledWords[index % shuffledWords.length];
-        });
+            playersList.forEach(p => {
+                if (p.name === imposterName) {
+                    assignedWords[p.name] = "أنت الإمبوستر 🕵️‍♂️";
+                } else {
+                    assignedWords[p.name] = randomWord; // الباقي بياخد نفس الكلمة بالظبط
+                }
+            });
+            document.getElementById('player-role-title').innerText = "كلمتك السرية هي:";
+        } 
+        // لو اللعبة "تخمين عادي (من أنا؟)"
+        else {
+            let shuffledWords = [...words].sort(() => 0.5 - Math.random());
+            playersList.forEach((p, index) => {
+                assignedWords[p.name] = shuffledWords[index % shuffledWords.length]; // كل واحد كلمة مختلفة
+            });
+            document.getElementById('player-role-title').innerText = "شخصيتك السرية هي:";
+        }
 
         let topic = 'mx_sasuke_room_' + currentRoomId;
         mqttClient.publish(topic, JSON.stringify({type: 'gameStart', words: assignedWords}));
 
         document.getElementById('my-secret-word').innerText = assignedWords[myName];
-        document.getElementById('player-role-title').innerText = "أنت الهوست.. شخصيتك هي:";
+        
+        // تلوين الإمبوستر بالبنفسجي عشان يبقى شكله جامد للهوست
+        if (assignedWords[myName] === "أنت الإمبوستر 🕵️‍♂️") {
+            document.getElementById('my-secret-word').style.color = "var(--imposter)";
+            document.getElementById('my-secret-word').style.borderColor = "var(--imposter)";
+        } else {
+            document.getElementById('my-secret-word').style.color = "white";
+            document.getElementById('my-secret-word').style.borderColor = "var(--accent)";
+        }
+
         showScreen('game-screen');
     }
 
     // ==========================================
-    // أكواد الضيف (سريعة جداً ومفيهاش حظر)
+    // أكواد الضيف
     // ==========================================
     function joinRoom() {
-        myName = document.getElementById('player-name').value.trim();
-        if(myName === "") return alert("اكتب اسمك الأول يا بطل!");
+        let nameInput = document.getElementById('player-name').value.trim();
+        if(nameInput === "") return alert("اكتب اسمك الأول يا بطل!");
+        myName = safeEncode(nameInput);
         
         document.getElementById('join-btn').style.display = 'none';
-        document.getElementById('retry-btn').style.display = 'none';
-        document.getElementById('error-msg').style.display = 'none';
         document.getElementById('join-status').style.display = 'block';
 
         currentRoomId = new URLSearchParams(window.location.search).get('room');
         let topic = 'mx_sasuke_room_' + currentRoomId;
         
         if(mqttClient) mqttClient.end(); 
-        
         mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
         
         let connTimeout = setTimeout(() => {
             if(mqttClient) mqttClient.end();
             document.getElementById('join-status').style.display = 'none';
-            document.getElementById('retry-btn').style.display = 'block';
-            document.getElementById('error-msg').style.display = 'block';
+            document.getElementById('join-btn').style.display = 'block';
+            alert("فشل الاتصال! الهوست مش متاح.");
         }, 10000); 
         
         mqttClient.on('connect', () => {
@@ -287,50 +351,4 @@
                 playersList = data.players; 
                 updateUIList(); 
             }
-            else if(data.type === 'gameStart') {
-                let myWord = data.words[myName];
-                if(myWord) {
-                    document.getElementById('my-secret-word').innerText = myWord;
-                }
-                showScreen('game-screen');
-            }
-            else if(data.type === 'hostLeft') {
-                alert("الهوست قفل الغرفة!");
-                showScreen('goodbye-screen');
-                mqttClient.end();
-            }
-        });
-
-        mqttClient.on('error', () => {
-            clearTimeout(connTimeout);
-            document.getElementById('join-status').style.display = 'none';
-            document.getElementById('retry-btn').style.display = 'block';
-            document.getElementById('error-msg').style.display = 'block';
-        });
-    }
-
-    // ==========================================
-    // زرار المغادرة الموحد
-    // ==========================================
-    function leaveRoom() {
-        let topic = 'mx_sasuke_room_' + currentRoomId;
-        if (isHost) {
-            let confirmLeave = confirm("أنت الهوست 👑! لو خرجت الغرفة هتتقفل على الكل، متأكد؟");
-            if (confirmLeave) {
-                mqttClient.publish(topic, JSON.stringify({type: 'hostLeft'}));
-                setTimeout(() => {
-                    window.location.href = window.location.href.split('?')[0];
-                }, 500);
-            }
-        } else {
-            mqttClient.publish(topic, JSON.stringify({type: 'leave', name: myName}));
-            setTimeout(() => {
-                showScreen('goodbye-screen');
-                mqttClient.end();
-            }, 300);
-        }
-    }
-</script>
-
-</body>
-</html>
+            else if(data.type === 'gameStart
