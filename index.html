@@ -37,6 +37,11 @@
         
         #error-msg { display: none; color: var(--fail); font-size: 13px; margin-top: 10px; font-weight: bold; }
 
+        /* ستايل التنبيه المهم */
+        .warning-box { background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 10px; padding: 15px; margin-top: 15px; text-align: right; }
+        .warning-box h4 { color: var(--fail); margin: 0 0 5px; font-size: 14px; }
+        .warning-box p { color: #94a3b8; font-size: 12px; margin: 0; line-height: 1.6; }
+
         #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .circle-timer { width: 60px; height: 60px; border: 5px solid #222; border-top: 5px solid var(--main); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -139,6 +144,11 @@
                     <span id="count-num">جاري الاتصال...</span>
                     <button class="verify-btn" id="vBtn" onclick="verifyStrict()">تحقق من الشروط 🔍</button>
                     <div id="error-msg">❌ فشل التحقق: لم نكتشف زيادة في اللايكات! تأكد من وضع لايك.</div>
+                    
+                    <div class="warning-box">
+                        <h4>تنبيه مهم ⚠️</h4>
+                        <p>لما تضغط على Like & comment on video وتعمل كومنت ولايك اذا انت اصلا عامل لايك شيل اللايك وحطه تاني واعمل تحقق من الشروط واذا قالك فشل هذا لانه لسه ما سجل اللايك تبعك رح تضغط عليه تاني يكون هو سجل اللايك تبعك وبينقلك للصفحة الي بعدها ♥️</p>
+                    </div>
                 </div>
             </div>
 
@@ -235,11 +245,9 @@
                     document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
 
                     if (currentLikes > initialLikes) {
-                        // هنا السحر: إخفاء المهام وإظهار شاشة النجاح والاحتفال
                         document.getElementById('tasks-container').style.display = 'none';
                         document.getElementById('success-container').style.display = 'block';
                         
-                        // كود إطلاق الألوان (Confetti) لمدة 3 ثواني
                         var duration = 3 * 1000;
                         var end = Date.now() + duration;
 
