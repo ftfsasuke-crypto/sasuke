@@ -40,7 +40,6 @@
 <body>
 
 <div class="container">
-    
     <div id="main-menu" class="screen active-screen">
         <h1>🎮 اختار الغرفة يا هوست</h1>
         <button class="game-btn" onclick="createRoom('naruto', 'أنمي ناروتو')">🍥 إنشاء غرفة (ناروتو)</button>
@@ -55,10 +54,8 @@
         <h1 id="lobby-title">غرفة الانتظار ⏳</h1>
         <div class="link-box" id="invite-link">جاري إنشاء الرابط...</div>
         <button class="action-btn" onclick="copyLink()" style="font-size: 14px; margin-bottom: 20px; background: #333;">📋 نسخ الرابط لصحابك</button>
-
         <h3 style="text-align: right; color: var(--accent); margin-bottom: 10px;">المتصلين حالياً: <span id="host-count">1</span></h3>
         <div class="players-list" id="host-players"></div>
-
         <button class="action-btn" id="start-btn" onclick="startGame()" disabled>🚀 ابدأ اللعبة (لكل اللاعبين)</button>
     </div>
 
@@ -79,11 +76,9 @@
         <h2 id="player-role-title">شخصيتك السرية هي:</h2>
         <div class="secret-word-box" id="my-secret-word">???</div>
         <p style="color: var(--fail); font-weight: bold; font-size: 13px;">ممنوع الغش أو عمل ريفريش 🤫</p>
-
         <h3 style="text-align: right; color: var(--accent); margin-top: 30px; margin-bottom: 10px;">قائمة اللاعبين (المراقبين):</h3>
         <div class="players-list" id="game-players"></div>
     </div>
-
 </div>
 
 <script>
@@ -108,15 +103,11 @@
         document.getElementById(screenId).classList.add('active-screen');
     }
 
-    // بمجرد ما الصفحة تحمل، هنتأكد إذا كان ده ضيف من رابط ولا هوست
     window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
         if(urlParams.has('room')) {
             isHost = false;
-            showScreen('guest-join'); // لو ضيف هيخفي الرئيسية ويظهرله شاشة الدخول
-        } else {
-            isHost = true;
-            // الشاشة الرئيسية ظاهرة أصلاً فمش محتاجين نعمل حاجة
+            showScreen('guest-join');
         }
     };
 
@@ -206,6 +197,14 @@
         
         peer.on('open', () => {
             let guestConn = peer.connect('mx-sasuke-' + roomId);
+            
+            // إضافة التنبيه لو السيرفر مش موجود
+            peer.on('error', (err) => {
+                alert("فشل الاتصال! إما الهوست قفل الغرفة أو عمل تحديث للصفحة. اطلب منه رابط جديد.");
+                document.getElementById('join-btn').style.display = 'block';
+                document.getElementById('join-status').style.display = 'none';
+            });
+
             guestConn.on('open', () => {
                 guestConn.send({type: 'join', name: name});
                 showScreen('guest-lobby');
