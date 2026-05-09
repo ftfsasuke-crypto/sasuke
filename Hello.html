@@ -23,6 +23,9 @@
         .action-btn:hover { background: #cc0000; }
         .action-btn:disabled { background: #444; cursor: not-allowed; }
 
+        .leave-btn { background: #333; border: 1px solid #555; color: white; padding: 12px; border-radius: 10px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
+        .leave-btn:hover { background: var(--fail); border-color: var(--fail); }
+
         .screen { display: none; animation: fadeIn 0.4s; }
         .active-screen { display: block; }
 
@@ -42,7 +45,6 @@
 <div class="container">
     <div id="main-menu" class="screen active-screen">
         <h1>🎮 اختار الغرفة يا هوست</h1>
-        
         <input type="text" id="host-name-input" class="input-field" placeholder="اسمك كصاحب الغرفة..." value="Sasuke">
         
         <button class="game-btn" onclick="createRoom('naruto', 'أنمي ناروتو')">🍥 إنشاء غرفة (ناروتو)</button>
@@ -57,9 +59,12 @@
         <h1 id="lobby-title">غرفة الانتظار ⏳</h1>
         <div class="link-box" id="invite-link">جاري إنشاء الرابط...</div>
         <button class="action-btn" onclick="copyLink()" style="font-size: 14px; margin-bottom: 20px; background: #333;">📋 نسخ الرابط لصحابك</button>
+        
         <h3 style="text-align: right; color: var(--accent); margin-bottom: 10px;">المتصلين حالياً: <span id="host-count">1</span></h3>
         <div class="players-list" id="host-players"></div>
+        
         <button class="action-btn" id="start-btn" onclick="startGame()" disabled>🚀 ابدأ اللعبة (لكل اللاعبين)</button>
+        <button class="leave-btn" onclick="leaveRoom()">🚪 إغلاق الغرفة</button>
     </div>
 
     <div id="guest-join" class="screen">
@@ -73,14 +78,19 @@
         <h1>⏳ مستنيين الهوست...</h1>
         <h3 style="text-align: right; color: var(--accent); margin-bottom: 10px;">المتصلين: <span id="guest-count">1</span></h3>
         <div class="players-list" id="guest-players"></div>
+        
+        <button class="leave-btn" onclick="leaveRoom()">🚪 مغادرة الغرفة</button>
     </div>
 
     <div id="game-screen" class="screen">
         <h2 id="player-role-title">شخصيتك السرية هي:</h2>
         <div class="secret-word-box" id="my-secret-word">???</div>
-        <p style="color: var(--fail); font-weight: bold; font-size: 13px;">ممنوع الغش أو عمل ريفريش 🤫</p>
-        <h3 style="text-align: right; color: var(--accent); margin-top: 30px; margin-bottom: 10px;">قائمة اللاعبين (المراقبين):</h3>
+        <p style="color: var(--fail); font-weight: bold; font-size: 13px;">ماتقولش لحد إنت طلعت إيه 🤫</p>
+        
+        <h3 style="text-align: right; color: var(--accent); margin-top: 30px; margin-bottom: 10px;">قائمة اللاعبين:</h3>
         <div class="players-list" id="game-players"></div>
+        
+        <button class="leave-btn" onclick="leaveRoom()">🚪 مغادرة الغرفة</button>
     </div>
 </div>
 
@@ -169,24 +179,16 @@
         });
 
         peer.on('connection', (conn) => {
-            // تسجيل وقت آخر اتصال (أول ما يدخل)
-            conn.lastPing = Date.now();
-
             conn.on('data', (data) => {
-                // تحديث نبض القلب لأي رسالة تيجي من اللاعب
-                conn.lastPing = Date.now();
-
                 if(data.type === 'join') {
                     connections.push(conn);
                     playersList.push({id: conn.peer, name: data.name}); 
                     updateUIList(); 
                     broadcast({type: 'updateList', players: playersList});
                 }
+                // استقبال إشارة زرار المغادرة
                 else if (data.type === 'leave') {
                     removePlayer(conn.peer);
-                }
-                else if (data.type === 'pong') {
-                    // دي رسالة النبض، مش محتاجين نعمل حاجة غير إننا حدثنا الوقت فوق
                 }
             });
             
@@ -202,34 +204,6 @@
         updateUIList();
         broadcast({type: 'updateList', players: playersList});
     }
-
-    // ==========================================
-    // نظام الرادار (نبض القلب) اللي شغال عند الهوست
-    // ==========================================
-    setInterval(() => {
-        if (!isHost) return; // ده بيشتغل عند صاحب الغرفة بس
-        
-        let now = Date.now();
-        let dropped = false;
-
-        connections = connections.filter(conn => {
-            // لو عدى 8 ثواني واللاعب ماردش على النبض، امسحه فوراً
-            if (now - conn.lastPing > 8000) {
-                playersList = playersList.filter(p => p.id !== conn.peer);
-                dropped = true;
-                return false; // شيله من الاتصالات
-            }
-            // لو موجود، ابعتله رسالة نبض جديدة
-            conn.send({type: 'ping'});
-            return true;
-        });
-
-        // لو في حد اتمسح، حدث الشاشة وابعت للباقيين
-        if (dropped) {
-            updateUIList();
-            broadcast({type: 'updateList', players: playersList});
-        }
-    }, 3000); // بيفحص كل 3 ثواني
 
     function broadcast(data) {
         connections.forEach(c => c.send(data));
@@ -288,11 +262,7 @@
             });
             
             guestConn.on('data', (data) => {
-                // رد الضيف على نبض قلب الهوست
-                if(data.type === 'ping') {
-                    guestConn.send({type: 'pong'});
-                }
-                else if(data.type === 'updateList') { 
+                if(data.type === 'updateList') { 
                     playersList = data.players; 
                     updateUIList(); 
                 }
@@ -309,13 +279,24 @@
         });
     }
 
-    // محاولة إرسال رسالة خروج سريعة قبل ما التابة تتقفل
-    window.addEventListener('beforeunload', () => {
-        if (guestConn && guestConn.open) guestConn.send({type: 'leave'});
-    });
-    window.addEventListener('pagehide', () => {
-        if (guestConn && guestConn.open) guestConn.send({type: 'leave'});
-    });
+    // دالة زرار المغادرة الصريح
+    function leaveRoom() {
+        if (isHost) {
+            let confirmLeave = confirm("أنت الهوست 👑! لو خرجت الغرفة هتتقفل على الكل، متأكد؟");
+            if (confirmLeave) {
+                window.location.href = window.location.href.split('?')[0];
+            }
+        } else {
+            // الضيف بيبعت رسالة مغادرة صريحة للهوست
+            if (guestConn && guestConn.open) {
+                guestConn.send({type: 'leave'});
+            }
+            // بنستنى ثانية صغيرة عشان نضمن الرسالة وصلت، وبعدين نرجعه برا
+            setTimeout(() => {
+                window.location.href = window.location.href.split('?')[0];
+            }, 300);
+        }
+    }
 </script>
 
 </body>
