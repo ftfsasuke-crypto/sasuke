@@ -109,7 +109,7 @@
     let peer = null;
     let connections = [];
     let playersList = []; 
-    let isHost = false;
+    let isHost = false; // القيمة الافتراضية
     let roomCategory = '';
     let inviteUrl = '';
 
@@ -133,6 +133,7 @@
             listHTML += `<div class="player-item"><span>${decodedName}</span> <span class="online-dot"></span></div>`;
         });
         
+        // هنا كان السر!
         if (isHost) {
             document.getElementById('host-players').innerHTML = listHTML;
             document.getElementById('host-count').innerText = playersList.length;
@@ -145,11 +146,11 @@
     }
 
     function createRoom(category, catName) {
+        isHost = true; // دي السطر اللي كان طاير ورجعناه! هو اللي هيخلي شاشتك تتحدث صح
         roomCategory = category;
         
-        // أخذ اسم الهوست من المربع الجديد
         let hostName = document.getElementById('host-name-input').value.trim();
-        if(hostName === '') hostName = 'Sasuke'; // لو سابه فاضي
+        if(hostName === '') hostName = 'Sasuke'; 
 
         document.getElementById('lobby-title').innerText = "غرفة: " + catName;
         showScreen('host-lobby');
@@ -163,7 +164,6 @@
             inviteUrl = baseUrl + "?room=" + roomId;
             document.getElementById('invite-link').innerText = inviteUrl;
             
-            // إضافة الهوست بالاسم اللي اختاره
             playersList = [{id: 'host', name: safeEncode(hostName + ' (الهوست) 👑')}];
             updateUIList();
         });
@@ -173,7 +173,7 @@
                 if(data.type === 'join') {
                     connections.push(conn);
                     playersList.push({id: conn.peer, name: data.name}); 
-                    updateUIList();
+                    updateUIList(); // هتتحدث عندك عشان isHost بقت true
                     broadcast({type: 'updateList', players: playersList});
                 }
             });
