@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MX_SASUKE | Multiplayer Hub</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <style>
         :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; }
         body { background: var(--bg); color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden; }
@@ -91,6 +91,16 @@
         global: ['بيتزا', 'تفاحة', 'أسد', 'موبايل', 'سيارة', 'مصر', 'دكتور', 'برجر', 'طيارة', 'كلب', 'كتاب', 'ساعة', 'قلم', 'كرسي']
     };
 
+    // إضافة سيرفرات جوجل للمساعدة في تخطي حظر الشركات
+    const customConfig = {
+        config: {
+            'iceServers': [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        }
+    };
+
     let peer = null;
     let connections = [];
     let playersList = [];
@@ -134,7 +144,9 @@
         showScreen('host-lobby');
 
         let roomId = Math.floor(10000 + Math.random() * 90000).toString();
-        peer = new Peer('mx-sasuke-' + roomId);
+        
+        // استخدام الإعدادات الجديدة
+        peer = new Peer('mx-sasuke-' + roomId, customConfig);
         
         peer.on('open', (id) => {
             let baseUrl = window.location.origin + window.location.pathname;
@@ -193,22 +205,34 @@
         document.getElementById('join-status').style.display = 'block';
 
         let roomId = new URLSearchParams(window.location.search).get('room');
-        peer = new Peer();
+        
+        // استخدام الإعدادات الجديدة للضيف
+        peer = new Peer(customConfig);
+        
+        // مؤقت لو الاتصال اتأخر 10 ثواني يطلعه
+        let connectionTimeout = setTimeout(() => {
+            alert("الاتصال فشل ❌\nالراوتر عندك أو شبكة النت مانعة الاتصال المباشر. جرب تقفل الـ Wi-Fi وتفتح باقة (Data) أو العكس، وحاول تاني.");
+            document.getElementById('join-btn').style.display = 'block';
+            document.getElementById('join-status').style.display = 'none';
+            if(peer) peer.destroy();
+        }, 10000);
         
         peer.on('open', () => {
-            let guestConn = peer.connect('mx-sasuke-' + roomId);
+            let guestConn = peer.connect('mx-sasuke-' + roomId, { reliable: true });
             
-            // إضافة التنبيه لو السيرفر مش موجود
             peer.on('error', (err) => {
-                alert("فشل الاتصال! إما الهوست قفل الغرفة أو عمل تحديث للصفحة. اطلب منه رابط جديد.");
+                clearTimeout(connectionTimeout);
+                alert("الهوست مش موجود أو قفل الغرفة! خليه يبعتلك رابط جديد.");
                 document.getElementById('join-btn').style.display = 'block';
                 document.getElementById('join-status').style.display = 'none';
             });
 
             guestConn.on('open', () => {
+                clearTimeout(connectionTimeout); // الاتصال نجح، نلغي المؤقت
                 guestConn.send({type: 'join', name: name});
                 showScreen('guest-lobby');
             });
+            
             guestConn.on('data', (data) => {
                 if(data.type === 'updateList') { playersList = data.players; updateUIList(); }
                 if(data.type === 'gameStart') {
@@ -216,8 +240,9 @@
                     showScreen('game-screen');
                 }
             });
+            
             guestConn.on('close', () => {
-                alert("الهوست قفل الغرفة!");
+                alert("الهوست قفل الغرفة أو خرج من اللعبة!");
                 window.location.href = window.location.href.split('?')[0];
             });
         });
