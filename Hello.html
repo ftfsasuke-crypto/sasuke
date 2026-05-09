@@ -5,20 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MX_SASUKE | Games Hub</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; }
+        :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; }
         body { background: var(--bg); color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden; }
-        .container { width: 90%; max-width: 400px; background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; position: relative; }
+        .container { width: 90%; max-width: 400px; background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
         
         h1 { color: white; margin-bottom: 25px; font-size: 26px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
         
         /* القوائم */
         .game-btn { background: #111; border: 2px solid #333; color: white; padding: 18px; border-radius: 15px; width: 100%; font-size: 18px; font-weight: bold; cursor: pointer; margin-bottom: 15px; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .game-btn:hover { border-color: var(--main); box-shadow: 0 0 15px rgba(255,0,0,0.3); }
-        .disabled-btn { opacity: 0.5; cursor: not-allowed; border-color: #222; }
 
-        .anime-btn { background: #1a1a1c; border: 1px solid rgba(255,255,255,0.1); color: white; padding: 15px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 12px; transition: 0.3s; text-align: right; }
+        .anime-btn { background: #1a1a1c; border: 1px solid rgba(255,255,255,0.1); color: white; padding: 15px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 12px; transition: 0.3s; text-align: right; display: flex; justify-content: space-between; align-items: center; }
         .anime-btn:hover { background: #222; border-color: var(--accent); padding-right: 20px; }
 
         .back-btn { background: transparent; color: #888; border: none; font-size: 16px; margin-top: 15px; cursor: pointer; font-family: 'Cairo'; text-decoration: underline; }
@@ -28,20 +26,17 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* شاشة اللعبة */
-        .score-board { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 15px; color: #cbd5e1; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        /* شاشة النتيجة (السحب العشوائي) */
+        #random-box { background: #000; border: 2px dashed #444; border-radius: 15px; padding: 40px 20px; margin: 20px 0; transition: 0.3s; }
+        #random-box.revealed { border-style: solid; border-color: var(--accent); background: rgba(34, 197, 94, 0.1); box-shadow: 0 0 20px rgba(34, 197, 94, 0.2); }
         
-        .image-container { width: 100%; height: 250px; background: #000; border-radius: 15px; overflow: hidden; margin-bottom: 20px; border: 2px solid #333; position: relative; }
-        .image-container img { width: 100%; height: 100%; object-fit: cover; filter: blur(25px) grayscale(50%); transition: all 1s ease-in-out; }
-        .image-container img.revealed { filter: blur(0) grayscale(0); }
-
-        .option-btn { background: #1a1a1c; border: 1px solid #333; color: white; padding: 15px; border-radius: 10px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 10px; transition: 0.3s; font-family: 'Cairo'; }
-        .option-btn:hover { background: #222; }
-        .option-btn.correct { background: var(--accent); border-color: var(--accent); color: white; box-shadow: 0 0 15px rgba(34, 197, 94, 0.4); }
-        .option-btn.wrong { background: var(--fail); border-color: var(--fail); color: white; opacity: 0.8; }
-        .option-btn:disabled { cursor: not-allowed; }
-
-        #result-screen h2 { font-size: 40px; margin: 0; }
+        #character-name { font-size: 32px; font-weight: bold; color: white; margin: 0; }
+        #loading-text { font-size: 20px; color: var(--main); animation: pulse 1s infinite; display: none; }
+        
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        
+        .action-btn { background: var(--main); color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 15px; transition: 0.3s; }
+        .action-btn:hover { background: #cc0000; }
     </style>
 </head>
 <body>
@@ -49,150 +44,90 @@
 <div class="container">
     
     <div id="main-menu" class="screen active-screen">
-        <h1>🎮 قائمة الألعاب</h1>
-        <button class="game-btn" onclick="showScreen('anime-menu')">👤 تخمين شخصيات الأنمي</button>
-        <button class="game-btn disabled-btn">🕵️ لعبة البكّاس (قريباً)</button>
+        <h1>🎮 ألعاب الديسكورد</h1>
+        <button class="game-btn" onclick="showScreen('anime-menu')">👤 لعبة من أنا؟ (أنمي)</button>
     </div>
 
     <div id="anime-menu" class="screen">
-        <h1>📺 اختر الأنمي</h1>
-        <button class="anime-btn" onclick="startQuiz('naruto')">🍥 ناروتو (Naruto)</button>
-        <button class="anime-btn disabled-btn">⚔️ هجوم العمالقة (قريباً)</button>
-        <button class="anime-btn disabled-btn">🐉 دراجون بول (قريباً)</button>
-        <button class="anime-btn disabled-btn">🗡️ قاتل الشياطين (قريباً)</button>
-        <button class="anime-btn disabled-btn">🧠 مونستر (قريباً)</button>
+        <h1>📺 اختر عالم الأنمي</h1>
+        <button class="anime-btn" onclick="rollCharacter('naruto')"><span>🍥 ناروتو (Naruto)</span> <span>🎲</span></button>
+        <button class="anime-btn" onclick="rollCharacter('aot')"><span>⚔️ هجوم العمالقة (AOT)</span> <span>🎲</span></button>
+        <button class="anime-btn" onclick="rollCharacter('dbz')"><span>🐉 دراجون بول (DBZ)</span> <span>🎲</span></button>
+        <button class="anime-btn" onclick="rollCharacter('ds')"><span>🗡️ قاتل الشياطين (DS)</span> <span>🎲</span></button>
+        <button class="anime-btn" onclick="rollCharacter('monster')"><span>🧠 مونستر (Monster)</span> <span>🎲</span></button>
         <button class="back-btn" onclick="showScreen('main-menu')">رجوع للقائمة 🔙</button>
     </div>
 
-    <div id="quiz-screen" class="screen">
-        <div class="score-board">
-            <span>السؤال: <span id="q-num">1</span>/5</span>
-            <span style="color: var(--accent);">النقاط: <span id="score">0</span></span>
-        </div>
-        
-        <div class="image-container">
-            <img id="char-img" src="">
-        </div>
-        
-        <h3 id="question-text" style="margin-bottom: 15px;">مين الشخصية دي؟</h3>
-        
-        <div id="options-container">
-            </div>
-    </div>
-
     <div id="result-screen" class="screen">
-        <h2 id="final-emoji">🏆</h2>
-        <h1 style="color: var(--accent); margin-top: 10px;">انتهى التحدي!</h1>
-        <p style="font-size: 20px;">جبت <strong id="final-score" style="color: var(--main); font-size: 26px;">0</strong> من 5</p>
-        <p id="final-message" style="color: #cbd5e1; margin-bottom: 25px;"></p>
-        <button class="game-btn" onclick="showScreen('anime-menu')">العب مرة كمان 🔄</button>
+        <h2 style="color: #cbd5e1; font-size: 20px;">شخصيتك السرية هي:</h2>
+        
+        <div id="random-box">
+            <div id="loading-text">جاري السحب... ⏳</div>
+            <h1 id="character-name">???</h1>
+        </div>
+        
+        <p style="color: #888; font-size: 13px;">ماتقولش لحد! خليهم يسألوك ويحزروا 🤫</p>
+        
+        <button class="action-btn" id="reroll-btn" onclick="reroll()">اسحب شخصية تانية 🔄</button>
+        <button class="back-btn" onclick="showScreen('anime-menu')">تغيير الأنمي 🔙</button>
     </div>
 
 </div>
 
 <script>
-    // قاعدة بيانات شخصيات ناروتو (التقال بس)
-    const db = {
-        naruto: [
-            { img: 'https://upload.wikimedia.org/wikipedia/en/9/9a/NarutoUzumaki.png', answer: 'ناروتو', options: ['ناروتو', 'ساسوكي', 'جارا', 'نيجي'] },
-            { img: 'https://upload.wikimedia.org/wikipedia/en/e/e1/Itachi_Uchiha_design.png', answer: 'ايتاشي', options: ['مادارا', 'اوبيتو', 'ايتاشي', 'كاكاشي'] },
-            { img: 'https://upload.wikimedia.org/wikipedia/en/2/22/Kakashi_Hatake.jpg', answer: 'كاكاشي', options: ['جيرايا', 'أوروتشيمارو', 'شيكامارو', 'كاكاشي'] },
-            { img: 'https://upload.wikimedia.org/wikipedia/en/7/72/Sasuke_Uchiha_design.png', answer: 'ساسوكي', options: ['ايتاشي', 'ساسوكي', 'ساي', 'ناروتو'] },
-            { img: 'https://upload.wikimedia.org/wikipedia/en/e/e4/Madara_Uchiha.png', answer: 'مادارا', options: ['هاشيراما', 'توبيراما', 'مادارا', 'دانزو'] }
-        ]
+    // قاعدة بيانات الشخصيات المشهورة لكل أنمي
+    const charactersDB = {
+        naruto: ['ناروتو', 'ساسوكي', 'ساكورا', 'كاكاشي', 'ايتاشي', 'مادارا', 'جيرايا', 'تسونادي', 'اوروتشيمارو', 'شيكامارو', 'هيناتا', 'جارا', 'باين (Pain)', 'اوبيتو', 'ميناتو', 'جاي', 'هيدان', 'كاكوزو', 'كيسامي', 'ساسوري', 'ديدارا'],
+        aot: ['ايرين', 'ميكاسا', 'ارمين', 'ليفاي', 'ايروين', 'هانجي', 'راينر', 'بيرتولدت', 'زيك', 'ساشا', 'جان', 'كوني', 'هيستوريا', 'آني', 'بيك'],
+        dbz: ['غوكو', 'فيجيتا', 'غوهان', 'بيكولو', 'فريزا', 'سيل', 'ماجين بو', 'ترانكس', 'بولما', 'كوريرين', 'بيروس', 'ويز', 'اندرويد 18', 'اندرويد 17', 'راديتز'],
+        ds: ['تانجيرو', 'نيزوكو', 'زينيتسو', 'اينوسكي', 'توميوكا غيو', 'رينجوكو', 'موزان', 'اكازا', 'شينوبو', 'تينغين اوزوي', 'ميتسوري', 'سانيمي', 'مويتشيرو', 'دوما', 'كوكوشيبو'],
+        monster: ['دكتور تيما', 'يوهان ليبرت', 'نينّا فورتر', 'المفتش لونجي', 'غريمر', 'إيفا هاينمان', 'روبيرتو', 'ديتر', 'كارل نيومان']
     };
 
-    let currentQuiz = [];
-    let currentQIndex = 0;
-    let score = 0;
-    let canClick = true;
+    let currentAnimeKey = '';
 
     function showScreen(screenId) {
         document.querySelectorAll('.screen').forEach(el => el.classList.remove('active-screen'));
         document.getElementById(screenId).classList.add('active-screen');
     }
 
-    function startQuiz(animeId) {
-        currentQuiz = db[animeId];
-        currentQIndex = 0;
-        score = 0;
-        document.getElementById('score').innerText = score;
-        showScreen('quiz-screen');
-        loadQuestion();
-    }
-
-    function loadQuestion() {
-        canClick = true;
-        let q = currentQuiz[currentQIndex];
-        
-        document.getElementById('q-num').innerText = currentQIndex + 1;
-        document.getElementById('question-text').innerText = "مين الشخصية دي؟ 🤔";
-        
-        let imgEl = document.getElementById('char-img');
-        imgEl.src = q.img;
-        imgEl.classList.remove('revealed'); // نرجع التشويش
-
-        let optionsHtml = '';
-        // لغبطة الاختيارات عشان متكنش في نفس المكان
-        let shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
-        
-        shuffledOptions.forEach(opt => {
-            optionsHtml += `<button class="option-btn" onclick="checkAnswer(this, '${opt}', '${q.answer}')">${opt}</button>`;
-        });
-        
-        document.getElementById('options-container').innerHTML = optionsHtml;
-    }
-
-    function checkAnswer(btn, selected, correct) {
-        if (!canClick) return;
-        canClick = false; // نقفل الزراير عشان ميدوسش مرتين
-
-        let imgEl = document.getElementById('char-img');
-        let allBtns = document.querySelectorAll('.option-btn');
-        
-        // توضيح الصورة
-        imgEl.classList.add('revealed');
-
-        if (selected === correct) {
-            btn.classList.add('correct');
-            score++;
-            document.getElementById('score').innerText = score;
-            document.getElementById('question-text').innerText = "عاش يا وحش! 🔥";
-        } else {
-            btn.classList.add('wrong');
-            document.getElementById('question-text').innerText = `غلط! الإجابة هي ${correct} ❌`;
-            // تلوين الإجابة الصح بالأخضر
-            allBtns.forEach(b => {
-                if(b.innerText === correct) b.classList.add('correct');
-            });
-        }
-
-        // قفل كل الزراير
-        allBtns.forEach(b => b.disabled = true);
-
-        // استنى ثانيتين وادخل ع اللي بعده
-        setTimeout(() => {
-            currentQIndex++;
-            if (currentQIndex < currentQuiz.length) {
-                loadQuestion();
-            } else {
-                endQuiz();
-            }
-        }, 2000);
-    }
-
-    function endQuiz() {
+    function rollCharacter(animeKey) {
+        currentAnimeKey = animeKey;
         showScreen('result-screen');
-        document.getElementById('final-score').innerText = score;
-        
-        let msg = "";
-        let emoji = "";
-        if (score === 5) { msg = "أنت أوتاكو بدرجة هوكاجي! 👑"; emoji = "🔥"; confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } }); }
-        else if (score >= 3) { msg = "مستواك جونين، عاش! 🥷"; emoji = "👏"; }
-        else { msg = "محتاج ترجع الأكاديمية تاني يا بطل! 😅"; emoji = "💀"; }
-        
-        document.getElementById('final-message').innerText = msg;
-        document.getElementById('final-emoji').innerText = emoji;
+        executeRoll();
+    }
+
+    function reroll() {
+        executeRoll();
+    }
+
+    function executeRoll() {
+        let nameEl = document.getElementById('character-name');
+        let loadingEl = document.getElementById('loading-text');
+        let boxEl = document.getElementById('random-box');
+        let btnEl = document.getElementById('reroll-btn');
+
+        // تجهيز شكل السحب
+        nameEl.style.display = 'none';
+        loadingEl.style.display = 'block';
+        boxEl.classList.remove('revealed');
+        btnEl.disabled = true;
+        btnEl.style.opacity = '0.5';
+
+        // سحب اسم عشوائي من الداتا بيز
+        let animeList = charactersDB[currentAnimeKey];
+        let randomChar = animeList[Math.floor(Math.random() * animeList.length)];
+
+        // تأخير ثانية عشان الإثارة
+        setTimeout(() => {
+            loadingEl.style.display = 'none';
+            nameEl.innerText = randomChar;
+            nameEl.style.display = 'block';
+            boxEl.classList.add('revealed');
+            
+            btnEl.disabled = false;
+            btnEl.style.opacity = '1';
+        }, 1200);
     }
 </script>
 
