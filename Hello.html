@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MX_SASUKE | Multiplayer Hub</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <style>
         :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; --imposter: #a855f7; }
         body { background: var(--bg); color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden; }
@@ -25,8 +24,9 @@
         .leave-btn { background: #333; border: 1px solid #555; color: white; padding: 12px; border-radius: 10px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
         .leave-btn:hover { background: var(--fail); border-color: var(--fail); }
 
-        .screen { display: none !important; }
-        .active-screen { display: block !important; animation: fadeIn 0.4s; }
+        /* الشاشات مخفية ماعدا اللي واخدة active */
+        .screen { display: none; }
+        .active-screen { display: block; animation: fadeIn 0.4s; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -46,7 +46,7 @@
 
 <div class="container">
     
-    <div id="main-menu" class="screen">
+    <div id="main-menu" class="screen active-screen">
         <h1>🎮 اختار الغرفة يا هوست</h1>
         <input type="text" id="host-name-input" class="input-field" placeholder="اسمك كصاحب الغرفة..." value="Sasuke">
         
@@ -127,6 +127,8 @@
 
 </div>
 
+<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
 <script>
     const DB = {
         naruto: ['ناروتو', 'ساسوكي', 'ساكورا', 'كاكاشي', 'ايتاشي', 'مادارا', 'جيرايا', 'تسونادي', 'اوروتشيمارو', 'شيكامارو', 'باين', 'اوبيتو', 'نيجي', 'جارا', 'هيناتا', 'روك لي', 'زابوزا', 'كابوتو'],
@@ -147,7 +149,7 @@
     let myName = '';
     let isHost = false; 
     let roomCategory = '';
-    let gameMode = 'guess'; // إما guess (تخمين) أو imposter (جاسوس)
+    let gameMode = 'guess'; 
     let currentRoomId = '';
     let playersList = []; 
     let inviteUrl = '';
@@ -160,25 +162,22 @@
         document.getElementById(screenId).classList.add('active-screen');
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        if(urlParams.has('room')) {
-            isHost = false;
-            showScreen('guest-join');
-        } else {
-            isHost = true;
-            showScreen('main-menu');
-        }
-    });
+    // التنفيذ الفوري عشان نضمن مفيش شاشة سودا
+    const urlParams = new URLSearchParams(window.location.search);
+    if(urlParams.has('room')) {
+        isHost = false;
+        showScreen('guest-join');
+    } else {
+        isHost = true;
+        showScreen('main-menu');
+    }
 
-    // تحديث الواجهة وظهور زرار الطرد للهوست
     function updateUIList() {
         let listHTML = '';
         playersList.forEach(p => {
             let decodedName = safeDecode(p.name);
             let kickBtn = '';
             
-            // لو أنت الهوست وده لاعب تاني غيرك، اظهرله زرار الطرد
             if (isHost && p.name !== myName) {
                 kickBtn = `<button class="kick-btn" onclick="kickPlayer('${p.name}')">طرد 🥾</button>`;
             }
@@ -203,13 +202,10 @@
         document.getElementById('game-players').innerHTML = listHTML;
     }
 
-    // ==========================================
-    // أكواد الهوست
-    // ==========================================
     function createRoom(category, catName, mode) {
         isHost = true;
         roomCategory = category;
-        gameMode = mode; // حفظ نوع اللعبة (امبوستر ولا عادي)
+        gameMode = mode; 
         
         myName = document.getElementById('host-name-input').value.trim();
         if(myName === '') myName = 'Sasuke'; 
@@ -228,35 +224,37 @@
         playersList = [{name: myName}];
         updateUIList();
 
-        mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
-        mqttClient.on('connect', () => { mqttClient.subscribe(topic); });
+        try {
+            mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
+            mqttClient.on('connect', () => { mqttClient.subscribe(topic); });
 
-        mqttClient.on('message', (t, message) => {
-            if(!isHost) return;
-            let data = JSON.parse(message.toString());
-            
-            if (data.type === 'join') {
-                if(!playersList.find(p => p.name === data.name)) {
-                    playersList.push({name: data.name}); 
-                    updateUIList(); 
+            mqttClient.on('message', (t, message) => {
+                if(!isHost) return;
+                let data = JSON.parse(message.toString());
+                
+                if (data.type === 'join') {
+                    if(!playersList.find(p => p.name === data.name)) {
+                        playersList.push({name: data.name}); 
+                        updateUIList(); 
+                        mqttClient.publish(topic, JSON.stringify({type: 'updateList', players: playersList}));
+                    }
+                }
+                else if (data.type === 'leave') {
+                    playersList = playersList.filter(p => p.name !== data.name);
+                    updateUIList();
                     mqttClient.publish(topic, JSON.stringify({type: 'updateList', players: playersList}));
                 }
-            }
-            else if (data.type === 'leave') {
-                playersList = playersList.filter(p => p.name !== data.name);
-                updateUIList();
-                mqttClient.publish(topic, JSON.stringify({type: 'updateList', players: playersList}));
-            }
-        });
+            });
+        } catch (e) {
+            console.error("MQTT Error:", e);
+        }
     }
 
     function kickPlayer(targetName) {
         let decodedTarget = safeDecode(targetName);
         if(confirm(`متأكد إنك عايز تطرد ${decodedTarget} من الغرفة؟ 🥾`)) {
             let topic = 'mx_sasuke_room_' + currentRoomId;
-            // بعت رسالة الطرد
             mqttClient.publish(topic, JSON.stringify({type: 'kick', target: targetName}));
-            // مسحه من القائمة فوراً
             playersList = playersList.filter(p => p.name !== targetName);
             updateUIList();
             mqttClient.publish(topic, JSON.stringify({type: 'updateList', players: playersList}));
@@ -271,26 +269,24 @@
         let words = DB[roomCategory] || DB['food'];
         let assignedWords = {};
         
-        // لو اللعبة "إمبوستر"
         if (gameMode === 'imposter') {
             let randomWord = words[Math.floor(Math.random() * words.length)];
             let imposterIndex = Math.floor(Math.random() * playersList.length);
-            let imposterName = playersList[imposterIndex].name; // سحب اسم واحد عشوائي ليكون الجاسوس
+            let imposterName = playersList[imposterIndex].name; 
 
             playersList.forEach(p => {
                 if (p.name === imposterName) {
                     assignedWords[p.name] = "أنت الإمبوستر 🕵️‍♂️";
                 } else {
-                    assignedWords[p.name] = randomWord; // الباقي بياخد نفس الكلمة بالظبط
+                    assignedWords[p.name] = randomWord; 
                 }
             });
             document.getElementById('player-role-title').innerText = "كلمتك السرية هي:";
         } 
-        // لو اللعبة "تخمين عادي (من أنا؟)"
         else {
             let shuffledWords = [...words].sort(() => 0.5 - Math.random());
             playersList.forEach((p, index) => {
-                assignedWords[p.name] = shuffledWords[index % shuffledWords.length]; // كل واحد كلمة مختلفة
+                assignedWords[p.name] = shuffledWords[index % shuffledWords.length]; 
             });
             document.getElementById('player-role-title').innerText = "شخصيتك السرية هي:";
         }
@@ -300,7 +296,6 @@
 
         document.getElementById('my-secret-word').innerText = assignedWords[myName];
         
-        // تلوين الإمبوستر بالبنفسجي عشان يبقى شكله جامد للهوست
         if (assignedWords[myName] === "أنت الإمبوستر 🕵️‍♂️") {
             document.getElementById('my-secret-word').style.color = "var(--imposter)";
             document.getElementById('my-secret-word').style.borderColor = "var(--imposter)";
@@ -312,9 +307,6 @@
         showScreen('game-screen');
     }
 
-    // ==========================================
-    // أكواد الضيف
-    // ==========================================
     function joinRoom() {
         let nameInput = document.getElementById('player-name').value.trim();
         if(nameInput === "") return alert("اكتب اسمك الأول يا بطل!");
@@ -326,29 +318,36 @@
         currentRoomId = new URLSearchParams(window.location.search).get('room');
         let topic = 'mx_sasuke_room_' + currentRoomId;
         
-        if(mqttClient) mqttClient.end(); 
-        mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
-        
-        let connTimeout = setTimeout(() => {
-            if(mqttClient) mqttClient.end();
-            document.getElementById('join-status').style.display = 'none';
-            document.getElementById('join-btn').style.display = 'block';
-            alert("فشل الاتصال! الهوست مش متاح.");
-        }, 10000); 
-        
-        mqttClient.on('connect', () => {
-            clearTimeout(connTimeout); 
-            mqttClient.subscribe(topic);
-            mqttClient.publish(topic, JSON.stringify({type: 'join', name: myName}));
-            showScreen('guest-lobby');
-        });
+        try {
+            if(mqttClient) mqttClient.end(); 
+            mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
             
-        mqttClient.on('message', (t, message) => {
-            if(isHost) return;
-            let data = JSON.parse(message.toString());
+            let connTimeout = setTimeout(() => {
+                if(mqttClient) mqttClient.end();
+                document.getElementById('join-status').style.display = 'none';
+                document.getElementById('join-btn').style.display = 'block';
+                alert("فشل الاتصال! الهوست مش متاح.");
+            }, 10000); 
             
-            if(data.type === 'updateList') { 
-                playersList = data.players; 
-                updateUIList(); 
-            }
-            else if(data.type === 'gameStart
+            mqttClient.on('connect', () => {
+                clearTimeout(connTimeout); 
+                mqttClient.subscribe(topic);
+                mqttClient.publish(topic, JSON.stringify({type: 'join', name: myName}));
+                showScreen('guest-lobby');
+            });
+                
+            mqttClient.on('message', (t, message) => {
+                if(isHost) return;
+                let data = JSON.parse(message.toString());
+                
+                if(data.type === 'updateList') { 
+                    playersList = data.players; 
+                    updateUIList(); 
+                }
+                else if(data.type === 'gameStart') {
+                    let myWord = data.words[myName];
+                    if(myWord) {
+                        document.getElementById('my-secret-word').innerText = myWord;
+                        if (myWord === "أنت الإمبوستر 🕵️‍♂️") {
+                            document.getElementById('my-secret-word').style.color = "var(--imposter)";
+                            document.getElementById('my-secret-word').style.borderColor = "var(--imposter
