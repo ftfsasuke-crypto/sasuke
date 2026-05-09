@@ -91,7 +91,10 @@
         global: ['بيتزا', 'تفاحة', 'أسد', 'موبايل', 'سيارة', 'مصر', 'دكتور', 'برجر', 'طيارة', 'كلب', 'كتاب', 'ساعة', 'قلم', 'كرسي']
     };
 
-    // إضافة سيرفرات جوجل للمساعدة في تخطي حظر الشركات
+    // دوال التشفير السحرية لحل مشكلة اللغة العربية والـ undefined
+    function safeEncode(str) { return encodeURIComponent(str); }
+    function safeDecode(str) { try { return decodeURIComponent(str); } catch(e) { return str; } }
+
     const customConfig = {
         config: {
             'iceServers': [
@@ -103,7 +106,7 @@
 
     let peer = null;
     let connections = [];
-    let playersList = [];
+    let playersList = []; // هتتخزن هنا بالشفرة
     let isHost = false;
     let roomCategory = '';
     let inviteUrl = '';
@@ -124,7 +127,9 @@
     function updateUIList() {
         let listHTML = '';
         playersList.forEach(p => {
-            listHTML += `<div class="player-item"><span>${p.name}</span> <span class="online-dot"></span></div>`;
+            // فك التشفير قبل العرض عشان يظهر عربي مظبوط
+            let decodedName = safeDecode(p.name);
+            listHTML += `<div class="player-item"><span>${decodedName}</span> <span class="online-dot"></span></div>`;
         });
         
         if (isHost) {
@@ -145,14 +150,15 @@
 
         let roomId = Math.floor(10000 + Math.random() * 90000).toString();
         
-        // استخدام الإعدادات الجديدة
         peer = new Peer('mx-sasuke-' + roomId, customConfig);
         
         peer.on('open', (id) => {
             let baseUrl = window.location.origin + window.location.pathname;
             inviteUrl = baseUrl + "?room=" + roomId;
             document.getElementById('invite-link').innerText = inviteUrl;
-            playersList = [{id: 'host', name: '👑 أنت (الهوست)'}];
+            
+            // تشفير اسم الهوست
+            playersList = [{id: 'host', name: safeEncode('أنت (الهوست) 👑')}];
             updateUIList();
         });
 
@@ -160,7 +166,7 @@
             conn.on('data', (data) => {
                 if(data.type === 'join') {
                     connections.push(conn);
-                    playersList.push({id: conn.peer, name: data.name});
+                    playersList.push({id: conn.peer, name: data.name}); // متخزن متشفّر جاهز
                     updateUIList();
                     broadcast({type: 'updateList', players: playersList});
                 }
@@ -187,7 +193,8 @@
         
         connections.forEach(conn => {
             let w = words[Math.floor(Math.random() * words.length)];
-            conn.send({type: 'gameStart', word: w});
+            // تشفير الكلمة السرية قبل الإرسال
+            conn.send({type: 'gameStart', word: safeEncode(w)});
         });
 
         let hostWord = words[Math.floor(Math.random() * words.length)];
@@ -205,13 +212,10 @@
         document.getElementById('join-status').style.display = 'block';
 
         let roomId = new URLSearchParams(window.location.search).get('room');
-        
-        // استخدام الإعدادات الجديدة للضيف
         peer = new Peer(customConfig);
         
-        // مؤقت لو الاتصال اتأخر 10 ثواني يطلعه
         let connectionTimeout = setTimeout(() => {
-            alert("الاتصال فشل ❌\nالراوتر عندك أو شبكة النت مانعة الاتصال المباشر. جرب تقفل الـ Wi-Fi وتفتح باقة (Data) أو العكس، وحاول تاني.");
+            alert("فشل الاتصال بالهوست ❌\nالمشكلة من سرعة النت، حاول تدخل تاني.");
             document.getElementById('join-btn').style.display = 'block';
             document.getElementById('join-status').style.display = 'none';
             if(peer) peer.destroy();
@@ -222,21 +226,26 @@
             
             peer.on('error', (err) => {
                 clearTimeout(connectionTimeout);
-                alert("الهوست مش موجود أو قفل الغرفة! خليه يبعتلك رابط جديد.");
+                alert("الهوست مش متاح أو قفل الغرفة! خليه يعمل رابط جديد.");
                 document.getElementById('join-btn').style.display = 'block';
                 document.getElementById('join-status').style.display = 'none';
             });
 
             guestConn.on('open', () => {
-                clearTimeout(connectionTimeout); // الاتصال نجح، نلغي المؤقت
-                guestConn.send({type: 'join', name: name});
+                clearTimeout(connectionTimeout); 
+                // تشفير اسم الضيف قبل إرساله للهوست
+                guestConn.send({type: 'join', name: safeEncode(name)});
                 showScreen('guest-lobby');
             });
             
             guestConn.on('data', (data) => {
-                if(data.type === 'updateList') { playersList = data.players; updateUIList(); }
+                if(data.type === 'updateList') { 
+                    playersList = data.players; 
+                    updateUIList(); 
+                }
                 if(data.type === 'gameStart') {
-                    document.getElementById('my-secret-word').innerText = data.word;
+                    // فك التشفير عن الكلمة السرية عشان تظهر صح
+                    document.getElementById('my-secret-word').innerText = safeDecode(data.word);
                     showScreen('game-screen');
                 }
             });
