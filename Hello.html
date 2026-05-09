@@ -109,9 +109,10 @@
     let peer = null;
     let connections = [];
     let playersList = []; 
-    let isHost = false; // القيمة الافتراضية
+    let isHost = false; 
     let roomCategory = '';
     let inviteUrl = '';
+    let guestConn = null; // خليناها جلوبال عشان نوصلها وقت الخروج
 
     function showScreen(screenId) {
         document.querySelectorAll('.screen').forEach(el => el.classList.remove('active-screen'));
@@ -133,7 +134,6 @@
             listHTML += `<div class="player-item"><span>${decodedName}</span> <span class="online-dot"></span></div>`;
         });
         
-        // هنا كان السر!
         if (isHost) {
             document.getElementById('host-players').innerHTML = listHTML;
             document.getElementById('host-count').innerText = playersList.length;
@@ -146,7 +146,7 @@
     }
 
     function createRoom(category, catName) {
-        isHost = true; // دي السطر اللي كان طاير ورجعناه! هو اللي هيخلي شاشتك تتحدث صح
+        isHost = true;
         roomCategory = category;
         
         let hostName = document.getElementById('host-name-input').value.trim();
@@ -173,7 +173,14 @@
                 if(data.type === 'join') {
                     connections.push(conn);
                     playersList.push({id: conn.peer, name: data.name}); 
-                    updateUIList(); // هتتحدث عندك عشان isHost بقت true
+                    updateUIList(); 
+                    broadcast({type: 'updateList', players: playersList});
+                }
+                // لو استلمنا إشارة خروج (التابة اتقفلت أو ريفريش)
+                else if (data.type === 'leave') {
+                    connections = connections.filter(c => c.peer !== conn.peer);
+                    playersList = playersList.filter(p => p.id !== conn.peer);
+                    updateUIList();
                     broadcast({type: 'updateList', players: playersList});
                 }
             });
@@ -227,7 +234,7 @@
         }, 10000);
         
         peer.on('open', () => {
-            let guestConn = peer.connect('mx-sasuke-' + roomId, { reliable: true });
+            guestConn = peer.connect('mx-sasuke-' + roomId, { reliable: true });
             
             peer.on('error', (err) => {
                 clearTimeout(connectionTimeout);
@@ -259,6 +266,18 @@
             });
         });
     }
+
+    // كود بيراقب الموبايل عشان يبعت رسالة طوارئ لو التابة اتقفلت
+    window.addEventListener('beforeunload', () => {
+        if (guestConn && guestConn.open) {
+            guestConn.send({type: 'leave'});
+        }
+    });
+    window.addEventListener('pagehide', () => {
+        if (guestConn && guestConn.open) {
+            guestConn.send({type: 'leave'});
+        }
+    });
 </script>
 
 </body>
