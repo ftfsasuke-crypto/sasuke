@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MX_SASUKE | Unlocker</title>
+    <title>MX_SASUKE | VIP Unlocker</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; }
+        :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; }
         body { background: var(--bg); color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; min-height: 100vh; overflow-x: hidden; }
         .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; }
         
         .yt-logo { width: 50px; margin-bottom: 10px; }
         .page-title { font-size: 24px; font-weight: bold; margin-bottom: 25px; word-wrap: break-word; line-height: 1.4; }
         
-        .video-card { position: relative; width: 100%; border-radius: 15px; overflow: hidden; margin-bottom: 25px; border: 1px solid #333; background: #111; min-height: 180px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .video-card { position: relative; width: 100%; border-radius: 15px; overflow: hidden; margin-bottom: 25px; border: 1px solid #333; cursor: pointer; background: #111; min-height: 180px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .video-card img { width: 100%; display: block; }
         
         .task-box { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; border: 2px solid transparent; text-align: right; cursor: pointer; transition: 0.3s; }
@@ -28,19 +28,36 @@
         .task-box.active .step-num { border-color: var(--main); background: rgba(255,0,0,0.1); }
         .task-box.done .step-num { background: var(--accent); color: white; border-color: var(--accent); }
         
-        .verify-btn { background: var(--main); color: white; border: none; width: 100%; padding: 18px; border-radius: 12px; font-weight: bold; cursor: pointer; margin-top: 20px; font-size: 18px; transition: 0.3s; box-shadow: 0 10px 20px rgba(255,0,0,0.2); }
-        .verify-btn:disabled { background: #1a1a1c; color: #555; cursor: not-allowed; box-shadow: none; }
+        .checker-card { background: #0f0f10; border: 1px solid #222; border-radius: 15px; padding: 15px; margin-top: 20px; }
+        #count-num { font-size: 32px; font-weight: bold; display: block; margin: 5px 0; }
         
-        .final-btn { background: var(--accent); width: 100%; padding: 18px; border-radius: 12px; color: white; border: none; margin-top: 20px; font-weight: bold; font-size: 18px; display: none; cursor: pointer; box-shadow: 0 10px 20px rgba(34,197,94,0.2); }
+        .verify-btn { background: var(--main); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; transition: 0.3s; }
+        .verify-btn:disabled { background: #1a1a1c; color: #555; cursor: not-allowed; }
         
+        #error-msg { display: none; color: var(--fail); font-size: 13px; margin-top: 10px; font-weight: bold; }
+
+        #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
+        .circle-timer { width: 60px; height: 60px; border: 5px solid #222; border-top: 5px solid var(--main); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        
+        .final-btn { background: var(--accent); width: 100%; padding: 18px; border-radius: 12px; color: white; border: none; margin-top: 20px; font-weight: bold; font-size: 18px; display: none; cursor: pointer; }
         .gen-input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #333; background: #111; color: white; box-sizing: border-box; text-align: right; font-family: 'Cairo', sans-serif; }
     </style>
 </head>
 <body>
 
+<div id="loader">
+    <div class="circle-timer"></div>
+    <h2 id="timer-text" style="font-size: 30px; margin: 20px 0;">جاري الفحص</h2>
+    <p>بنتأكد من اللايك في سيرفر يوتيوب... ⏳</p>
+</div>
+
 <div id="app" class="container"></div>
 
 <script>
+    // مفتاح جوجل بتاعك أهو محطوط وجاهز
+    const YOUTUBE_API_KEY = "AIzaSyA6NebhJLqT8ZEG56cmMEm4xsRR5byisPI"; 
+
     const app = document.getElementById('app');
     const urlParams = new URLSearchParams(window.location.search);
 
@@ -67,12 +84,13 @@
         let thumb = vId ? `https://img.youtube.com/vi/${vId}/maxresdefault.jpg` : '';
 
         let sub = false, vid = false;
+        let initialLikes = -1; 
 
         app.innerHTML = `
             <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" class="yt-logo">
             <div class="page-title">${config.t}</div>
 
-            <div class="video-card">
+            <div class="video-card" onclick="openT('v')">
                 <img src="${thumb}">
             </div>
 
@@ -92,9 +110,38 @@
                 <div class="step-num"><span>2</span></div>
             </div>
 
-            <button class="verify-btn" id="vBtn" onclick="verifyFinal()">تحقق من الشروط 🔍</button>
+            <div class="checker-card">
+                <span style="color:#888; font-size:12px;">عدد اللايكات الفعلي (مباشر)</span>
+                <span id="count-num">جاري الاتصال بيوتيوب...</span>
+                <button class="verify-btn" id="vBtn" onclick="verifyStrict()">تحقق من الشروط 🔍</button>
+                <div id="error-msg">❌ فشل التحقق: لم نكتشف زيادة في اللايكات! تأكد من وضع لايك.</div>
+            </div>
+
             <button id="fBtn" class="final-btn" onclick="window.location.href='${config.f}'">فتح الرابط 🔓</button>
         `;
+
+        function fetchRealLikes(callback) {
+            if (!vId || YOUTUBE_API_KEY === "حط_المفتاح_بتاعك_هنا") {
+                callback(-1);
+                return;
+            }
+            fetch('https://www.googleapis.com/youtube/v3/videos?part=statistics&id=' + vId + '&key=' + YOUTUBE_API_KEY + '&t=' + Date.now())
+            .then(res => res.json())
+            .then(data => {
+                if(data.items && data.items.length > 0) {
+                    callback(parseInt(data.items[0].statistics.likeCount));
+                } else { callback(-1); }
+            }).catch(e => callback(-1));
+        }
+
+        fetchRealLikes((likes) => {
+            if (likes !== -1) {
+                initialLikes = likes;
+                document.getElementById('count-num').innerText = initialLikes.toLocaleString('en-US');
+            } else {
+                document.getElementById('count-num').innerText = "حدث خطأ/المفتاح غير صالح";
+            }
+        });
 
         window.openT = function(type) {
             window.open(type === 'c' ? config.c : config.v, '_blank');
@@ -112,26 +159,40 @@
             }
         };
 
-        window.verifyFinal = function() {
-            if(!sub || !vid) {
-                alert("❌ يرجى الضغط على المهام وفتحها أولاً!");
-                return;
-            }
+        window.verifyStrict = function() {
+            if(!sub || !vid) return alert("يرجى إكمال المهام أولاً!");
+            if(initialLikes === -1) return alert("حدث خطأ، تأكد من صحة الرابط!");
             
-            const btn = document.getElementById('vBtn');
-            btn.innerText = "جاري التحقق...";
-            btn.style.opacity = "0.7";
+            document.getElementById('error-msg').style.display = 'none';
+            const ld = document.getElementById('loader');
+            ld.style.display = 'flex';
             
             setTimeout(() => {
-                btn.style.display = 'none';
-                document.getElementById('fBtn').style.display = 'block';
-            }, 1500); // تأخير وهمي بسيط عشان يحس إنه بيشيك
+                fetchRealLikes((currentLikes) => {
+                    ld.style.display = 'none';
+                    
+                    if (currentLikes === -1) return alert("حدث خطأ في الاتصال بيوتيوب!");
+
+                    document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
+
+                    if (currentLikes > initialLikes) {
+                        document.getElementById('count-num').style.color = "#22c55e";
+                        document.getElementById('vBtn').innerText = "تم التحقق ✓";
+                        document.getElementById('vBtn').disabled = true;
+                        document.getElementById('fBtn').style.display = 'block';
+                    } else {
+                        document.getElementById('error-msg').style.display = 'block';
+                        document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
+                        initialLikes = currentLikes; 
+                    }
+                });
+            }, 3000);
         };
 
     } else {
         app.innerHTML = `
             <div class="task-box" style="display:block; text-align:center; cursor:default;">
-                <h2 style="color:var(--accent)">MX_SASUKE Generator</h2>
+                <h2 style="color:var(--accent)">MX_SASUKE VIP Generator</h2>
                 <input type="text" id="it" class="gen-input" value="لازم تعمل اشتراك ولايك وتعليق للحصول على السكربت">
                 <input type="url" id="ic" class="gen-input" placeholder="👇 رابط قناتك (اشتراك)">
                 <input type="url" id="iv" class="gen-input" placeholder="👇 رابط فيديو اليوتيوب (اللايك والصورة)">
