@@ -4,12 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MX_SASUKE | Multiplayer Hub</title>
+    
+    <script>
+        window.onerror = function(msg, url, lineNo) {
+            alert("في مشكلة في تحميل الكود!\nالسطر: " + lineNo + "\nالخطأ: " + msg);
+            return false;
+        };
+    </script>
+
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    
     <style>
         :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; --imposter: #a855f7; --warn: #f59e0b; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden; touch-action: manipulation; }
-        .box-container { width: 92%; max-width: 400px; background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #333; position: relative; z-index: 10; }
+        
+        /* شاشة التحميل الجديدة */
+        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        .spinner { width: 50px; height: 50px; border: 5px solid #333; border-top: 5px solid var(--accent); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .box-container { width: 92%; max-width: 400px; background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #333; position: relative; z-index: 10; display: none; /* مخفي لحد ما التحميل يخلص */ }
         h1 { color: white; margin-bottom: 20px; font-size: 22px; text-align: center; }
         .game-btn { background: #111; border: 2px solid #333; color: white; padding: 16px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 12px; transition: 0.2s; display: block; position: relative; z-index: 20; }
         .game-btn:active { transform: scale(0.98); background: #222; }
@@ -27,9 +43,14 @@
 </head>
 <body>
 
-<div class="box-container">
+<div id="loader">
+    <div class="spinner"></div>
+    <h2 style="color: white; font-size: 18px;">جاري تجهيز اللعبة... ⏳</h2>
+</div>
+
+<div class="box-container" id="app-content">
     
-    <div id="p-main" class="panel active-panel">
+    <div id="p-main" class="panel">
         <h1>🎮 اختار الغرفة يا هوست</h1>
         <input type="text" id="host-input" class="input-field" placeholder="اسمك كصاحب الغرفة..." value="Sasuke">
         <button class="game-btn" onclick="hostRoom('naruto', 'ناروتو', 'guess')">🍥 من أنا؟ (ناروتو)</button>
@@ -141,9 +162,17 @@
         if(target) target.classList.add('active-panel');
     }
 
-    if (window.location.search.includes('room=')) {
-        navTo('p-join');
-    }
+    // بمجرد ما الصفحة تحمل بالكامل، هنخفي شاشة التحميل ونظهر الموقع
+    window.addEventListener('load', function() {
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('app-content').style.display = 'block';
+
+        if (window.location.search.includes('room=')) {
+            navTo('p-join');
+        } else {
+            navTo('p-main');
+        }
+    });
 
     function renderPlayers() {
         let html = '';
@@ -161,8 +190,7 @@
     }
 
     function hostRoom(cat, name, mode) {
-        // لو النت بطيء والمكتبة لسه محملتش، الزراير مش هتعلق هتديك رسالة بس
-        if(typeof mqtt === 'undefined') return alert("السيرفر بيحمل، اديني ثانية ودوس تاني ⏳");
+        if(typeof mqtt === 'undefined') return alert("فيه مشكلة في الاتصال بالسيرفر! جرب تعمل Refresh للصفحة.");
         
         isHost = true; gameMode = mode; gameCategory = cat; 
         let n = document.getElementById('host-input').value || "Sasuke";
@@ -179,7 +207,7 @@
     }
 
     function joinRoom() {
-        if(typeof mqtt === 'undefined') return alert("السيرفر بيحمل، اديني ثانية ودوس تاني ⏳");
+        if(typeof mqtt === 'undefined') return alert("فيه مشكلة في الاتصال بالسيرفر! جرب تعمل Refresh للصفحة.");
         let n = document.getElementById('guest-input').value;
         if(!n) return alert("اكتب اسمك!");
         myName = encodeURIComponent(n);
@@ -340,34 +368,4 @@
     function showFinalResult(title, desc, color) {
         navTo('p-result');
         document.getElementById('result-title').innerText = title;
-        document.getElementById('result-title').style.color = color;
-        document.getElementById('result-desc').innerHTML = desc;
-    }
-
-    function copyUrl() { navigator.clipboard.writeText(document.getElementById('invite-link').innerText); alert("تم النسخ!"); }
-    
-    function kickUser(targetName) {
-        if(!isHost) return;
-        players = players.filter(p => p.name !== targetName); renderPlayers();
-        mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'kick', target: targetName}));
-        mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'sync', players: players}));
-    }
-    
-    function leaveRoom() {
-        if (mqttClient) {
-            if (isHost) mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'room_closed'}));
-            else mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'leave', name: myName}));
-            forceLeave();
-        } else navTo('p-main');
-    }
-    
-    function forceLeave() {
-        clearInterval(timerInterval);
-        if(mqttClient) mqttClient.end();
-        players = []; isHost = false; roomId = null; votes = {};
-        window.history.replaceState({}, document.title, window.location.pathname);
-        navTo('p-main');
-    }
-    
-    function disconnectAndShowMsg(title, text) {
-    
+        document.getElementById('re
