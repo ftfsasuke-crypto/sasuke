@@ -26,7 +26,6 @@
         .leave-btn { background: #333; border: 1px solid #555; color: white; padding: 12px; border-radius: 10px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
         .leave-btn:hover { background: var(--fail); border-color: var(--fail); }
 
-        /* الكلاس الأساسي بيخفي الشاشات، وهنظهره بالسكريبت الإجباري تحت */
         .panel { display: none; animation: fadeIn 0.4s; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -165,11 +164,8 @@
     function navTo(id) {
         document.querySelectorAll('.panel').forEach(el => {
             el.style.display = 'none';
-            el.classList.remove('active-screen');
         });
-        let target = document.getElementById(id);
-        target.style.display = 'block';
-        target.classList.add('active-screen');
+        document.getElementById(id).style.display = 'block';
     }
 
     function renderPlayers() {
@@ -193,18 +189,20 @@
         navigator.clipboard.writeText(url).then(() => alert("تم النسخ! ابعته لصحابك 🚀"));
     }
 
-    function hostRoom(cat, mode) {
+    // هنا كان الغلط! ضفت المتغيرات الـ 3 (category, catName, mode)
+    function hostRoom(category, catName, mode) {
         if (typeof mqtt === 'undefined') {
             return alert("السيرفر بيحمل.. ثانية واحدة ⏳");
         }
 
-        roomCategory = cat;
-        gameMode = mode;
+        roomCategory = category;
+        gameMode = mode; // دلوقتي بيحفظ mode صح سواء 'imposter' أو 'guess'
         
         let n = document.getElementById('host-input').value.trim();
         if(!n) n = "Sasuke";
         myName = encodeURIComponent(n + " 👑");
 
+        document.getElementById('lobby-title').innerText = "غرفة: " + catName;
         roomId = Math.floor(10000 + Math.random() * 90000).toString();
         let baseUrl = window.location.origin + window.location.pathname;
         document.getElementById('invite-link').innerText = baseUrl + "?room=" + roomId;
@@ -275,14 +273,15 @@
                     let wBox = document.getElementById('my-word');
                     let rTitle = document.getElementById('role-title');
                     wBox.innerText = w;
-                    if(w.includes('الجاسوس') || w.includes('الإمبوستر')) {
+                    // تلوين الكلمة لو هو الإمبوستر
+                    if(w.includes('الإمبوستر')) {
                         wBox.style.color = 'var(--imposter)';
                         wBox.style.borderColor = 'var(--imposter)';
                         rTitle.innerText = "خليك نينجا وما تبينش:";
                     } else {
                         wBox.style.color = 'white';
                         wBox.style.borderColor = 'var(--accent)';
-                        rTitle.innerText = "كلمتك السرية هي:";
+                        rTitle.innerText = "الكلمة السرية هي:";
                     }
                 }
                 navTo('p-game');
@@ -302,13 +301,17 @@
         let words = DB[roomCategory] || DB['food'];
         let assigned = {};
         
+        // توزيع الأدوار لو اللعبة إمبوستر
         if (gameMode === 'imposter') {
             let rw = words[Math.floor(Math.random() * words.length)];
-            let imp = players[Math.floor(Math.random() * players.length)].name;
+            let imp = players[Math.floor(Math.random() * players.length)].name; // اختيار جاسوس عشوائي
+            
             players.forEach(p => {
-                assigned[p.name] = (p.name === imp) ? "أنت الجاسوس 🕵️‍♂️" : rw;
+                assigned[p.name] = (p.name === imp) ? "أنت الإمبوستر 🕵️‍♂️" : rw; // الباقي بياخد نفس الكلمة بالظبط
             });
-        } else {
+        } 
+        // توزيع الأدوار لو اللعبة عادية (كل واحد كلمة مختلفة)
+        else {
             let shuf = [...words].sort(() => 0.5 - Math.random());
             players.forEach((p, i) => {
                 assigned[p.name] = shuf[i % shuf.length];
@@ -321,15 +324,18 @@
         let wBox = document.getElementById('my-word');
         let rTitle = document.getElementById('role-title');
         wBox.innerText = w;
-        if(w.includes('الجاسوس')) {
+        
+        // تلوين كلمة الهوست لو طلع هو الإمبوستر
+        if(w.includes('الإمبوستر')) {
             wBox.style.color = 'var(--imposter)';
             wBox.style.borderColor = 'var(--imposter)';
             rTitle.innerText = "خليك نينجا وما تبينش:";
         } else {
             wBox.style.color = 'white';
             wBox.style.borderColor = 'var(--accent)';
-            rTitle.innerText = "كلمتك السرية هي:";
+            rTitle.innerText = (gameMode === 'imposter') ? "الكلمة السرية هي:" : "شخصيتك السرية هي:";
         }
+        
         navTo('p-game');
     }
 
@@ -351,12 +357,4 @@
     function kickUser(target) {
         if(confirm("متأكد إنك عايز تطرد " + decodeURIComponent(target) + "؟ 🥾")) {
             mqttClient.publish('mx_game_' + roomId, JSON.stringify({type: 'kick', target: target}));
-            players = players.filter(p => p.name !== target);
-            renderPlayers();
-            mqttClient.publish('mx_game_' + roomId, JSON.stringify({type: 'sync', players: players}));
-        }
-    }
-</script>
-
-</body>
-</html>
+            players = players.filter(p =
