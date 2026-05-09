@@ -16,8 +16,8 @@
         .game-btn { background: #111; border: 2px solid #333; color: white; padding: 15px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 12px; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .game-btn:hover { border-color: var(--main); box-shadow: 0 0 15px rgba(255,0,0,0.3); }
 
-        .input-field { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #444; background: #000; color: white; font-size: 16px; text-align: center; font-family: 'Cairo'; margin-bottom: 15px; box-sizing: border-box; }
-        .input-field:focus { outline: none; border-color: var(--accent); }
+        .input-field { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #444; background: #000; color: var(--accent); font-size: 16px; text-align: center; font-family: 'Cairo'; margin-bottom: 20px; box-sizing: border-box; font-weight: bold; }
+        .input-field:focus { outline: none; border-color: var(--main); }
 
         .action-btn { background: var(--main); color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .action-btn:hover { background: #cc0000; }
@@ -42,6 +42,9 @@
 <div class="container">
     <div id="main-menu" class="screen active-screen">
         <h1>🎮 اختار الغرفة يا هوست</h1>
+        
+        <input type="text" id="host-name-input" class="input-field" placeholder="اسمك كصاحب الغرفة..." value="Sasuke">
+        
         <button class="game-btn" onclick="createRoom('naruto', 'أنمي ناروتو')">🍥 إنشاء غرفة (ناروتو)</button>
         <button class="game-btn" onclick="createRoom('aot', 'هجوم العمالقة')">⚔️ إنشاء غرفة (هجوم العمالقة)</button>
         <button class="game-btn" onclick="createRoom('dbz', 'دراجون بول')">🐉 إنشاء غرفة (دراجون بول)</button>
@@ -91,7 +94,6 @@
         global: ['بيتزا', 'تفاحة', 'أسد', 'موبايل', 'سيارة', 'مصر', 'دكتور', 'برجر', 'طيارة', 'كلب', 'كتاب', 'ساعة', 'قلم', 'كرسي']
     };
 
-    // دوال التشفير السحرية لحل مشكلة اللغة العربية والـ undefined
     function safeEncode(str) { return encodeURIComponent(str); }
     function safeDecode(str) { try { return decodeURIComponent(str); } catch(e) { return str; } }
 
@@ -106,7 +108,7 @@
 
     let peer = null;
     let connections = [];
-    let playersList = []; // هتتخزن هنا بالشفرة
+    let playersList = []; 
     let isHost = false;
     let roomCategory = '';
     let inviteUrl = '';
@@ -127,7 +129,6 @@
     function updateUIList() {
         let listHTML = '';
         playersList.forEach(p => {
-            // فك التشفير قبل العرض عشان يظهر عربي مظبوط
             let decodedName = safeDecode(p.name);
             listHTML += `<div class="player-item"><span>${decodedName}</span> <span class="online-dot"></span></div>`;
         });
@@ -145,6 +146,11 @@
 
     function createRoom(category, catName) {
         roomCategory = category;
+        
+        // أخذ اسم الهوست من المربع الجديد
+        let hostName = document.getElementById('host-name-input').value.trim();
+        if(hostName === '') hostName = 'Sasuke'; // لو سابه فاضي
+
         document.getElementById('lobby-title').innerText = "غرفة: " + catName;
         showScreen('host-lobby');
 
@@ -157,8 +163,8 @@
             inviteUrl = baseUrl + "?room=" + roomId;
             document.getElementById('invite-link').innerText = inviteUrl;
             
-            // تشفير اسم الهوست
-            playersList = [{id: 'host', name: safeEncode('أنت (الهوست) 👑')}];
+            // إضافة الهوست بالاسم اللي اختاره
+            playersList = [{id: 'host', name: safeEncode(hostName + ' (الهوست) 👑')}];
             updateUIList();
         });
 
@@ -166,7 +172,7 @@
             conn.on('data', (data) => {
                 if(data.type === 'join') {
                     connections.push(conn);
-                    playersList.push({id: conn.peer, name: data.name}); // متخزن متشفّر جاهز
+                    playersList.push({id: conn.peer, name: data.name}); 
                     updateUIList();
                     broadcast({type: 'updateList', players: playersList});
                 }
@@ -193,7 +199,6 @@
         
         connections.forEach(conn => {
             let w = words[Math.floor(Math.random() * words.length)];
-            // تشفير الكلمة السرية قبل الإرسال
             conn.send({type: 'gameStart', word: safeEncode(w)});
         });
 
@@ -233,7 +238,6 @@
 
             guestConn.on('open', () => {
                 clearTimeout(connectionTimeout); 
-                // تشفير اسم الضيف قبل إرساله للهوست
                 guestConn.send({type: 'join', name: safeEncode(name)});
                 showScreen('guest-lobby');
             });
@@ -244,7 +248,6 @@
                     updateUIList(); 
                 }
                 if(data.type === 'gameStart') {
-                    // فك التشفير عن الكلمة السرية عشان تظهر صح
                     document.getElementById('my-secret-word').innerText = safeDecode(data.word);
                     showScreen('game-screen');
                 }
