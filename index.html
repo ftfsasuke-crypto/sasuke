@@ -109,6 +109,7 @@
 
         let sub = false, vid = false;
         let initialLikes = -1; 
+        let failedAttempts = 0; // السحر الجديد: عداد المحاولات الفاشلة
 
         app.innerHTML = `
             <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" class="yt-logo" id="top-logo">
@@ -249,7 +250,8 @@
 
                     document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
 
-                    if (currentLikes > initialLikes) {
+                    // التعديل: إذا زاد اللايك (أو) إذا حاول الزائر 3 مرات وتم الرفض بسبب تعليق يوتيوب
+                    if (currentLikes > initialLikes || failedAttempts >= 2) {
                         document.getElementById('tasks-container').style.display = 'none';
                         document.getElementById('top-logo').style.display = 'none';
                         document.getElementById('top-title').style.display = 'none';
@@ -266,9 +268,14 @@
                         }());
 
                     } else {
+                        failedAttempts++; // تزويد عداد الفشل
                         document.getElementById('error-msg').style.display = 'block';
                         document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
-                        initialLikes = currentLikes; 
+                        
+                        // تحديث الرقم المرجعي فقط لو قل (عشان لو شال اللايك يحس بيه)
+                        if (currentLikes < initialLikes) {
+                            initialLikes = currentLikes; 
+                        }
                     }
                 });
             }, 3000);
