@@ -21,37 +21,37 @@
             position: relative;
         }
 
-        /* === التعديل الجديد للخلفية (زي Boostylink بالظبط) === */
-        #dynamic-bg {
+        /* === خلفية الفيديو الاحترافية === */
+        #video-bg {
             position: fixed;
-            top: -20%;
-            left: -20%;
-            width: 140%; /* تكبير الصورة عشان التفاصيل تختفي */
-            height: 140%;
-            background-size: cover;
-            background-position: center;
-            filter: blur(80px); /* تشويش عميق جداً يسيح الألوان */
-            z-index: -2;
-            opacity: 0.8; 
-            transform: scale(1.2); /* تكبير إضافي لضمان نعومة الحواف */
+            top: 50%;
+            left: 50%;
+            min-width: 100%;
+            min-height: 100%;
+            width: auto;
+            height: auto;
+            z-index: -3; /* تحت خالص */
+            transform: translateX(-50%) translateY(-50%);
+            object-fit: cover; /* عشان يملى الشاشة من غير ما يتمط */
+            filter: blur(2px); /* بلور خفيف جدا عشان يدي شكل سينمائي */
         }
 
-        /* طبقة متدرجة: فاتحة شوية في النص عشان الألوان تنور، وغامقة في الأطراف */
+        /* طبقة سوداء شفافة فوق الفيديو عشان الكلام والزراير تظهر بوضوح */
         #bg-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.85) 100%);
-            z-index: -1;
+            background: rgba(0, 0, 0, 0.65); /* غمقان 65% */
+            z-index: -2;
         }
         /* ================================================== */
 
         .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; z-index: 1; position: relative; }
         
         .yt-logo { width: 50px; margin-bottom: 10px; transition: 0.3s; }
-        .page-title { font-size: 24px; font-weight: bold; margin-bottom: 25px; word-wrap: break-word; line-height: 1.4; transition: 0.3s; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        .page-title { font-size: 24px; font-weight: bold; margin-bottom: 25px; word-wrap: break-word; line-height: 1.4; transition: 0.3s; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
         
         .video-card { 
             position: relative; 
@@ -82,21 +82,21 @@
             transition: 0.3s; 
             backdrop-filter: blur(10px);
         }
-        .task-box.active { border-color: var(--main); box-shadow: 0 0 15px rgba(255,0,0,0.2); }
+        .task-box.active { border-color: var(--main); box-shadow: 0 0 15px rgba(255,0,0,0.3); }
         .task-box.done { border-color: var(--accent); cursor: default; }
         
         .task-info { flex-grow: 1; margin-right: 15px; }
-        .task-info h4 { margin: 0; font-size: 16px; color: white; }
+        .task-info h4 { margin: 0; font-size: 16px; color: white; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
         .task-info p { margin: 5px 0 0; font-size: 12px; color: #cbd5e1; }
         
-        .step-num { width: 35px; height: 35px; background: rgba(0,0,0,0.3); border: 2px solid #444; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--main); transition: 0.3s; }
-        .task-box.active .step-num { border-color: var(--main); background: rgba(255,0,0,0.1); }
+        .step-num { width: 35px; height: 35px; background: rgba(0,0,0,0.5); border: 2px solid #444; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--main); transition: 0.3s; }
+        .task-box.active .step-num { border-color: var(--main); background: rgba(255,0,0,0.2); }
         .task-box.done .step-num { background: var(--accent); color: white; border-color: var(--accent); }
         
         .checker-card { background: rgba(15, 15, 16, 0.85); border: 1px solid rgba(255,255,255,0.05); border-radius: 15px; padding: 15px; margin-top: 20px; backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         #count-num { font-size: 32px; font-weight: bold; display: block; margin: 5px 0; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
         
-        .verify-btn { background: var(--main); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; transition: 0.3s; box-shadow: 0 5px 15px rgba(255,0,0,0.2); }
+        .verify-btn { background: var(--main); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; transition: 0.3s; box-shadow: 0 5px 15px rgba(255,0,0,0.3); }
         .verify-btn:disabled { background: #1a1a1c; color: #555; cursor: not-allowed; box-shadow: none; }
         
         #error-msg { display: none; color: var(--fail); font-size: 13px; margin-top: 10px; font-weight: bold; }
@@ -123,7 +123,9 @@
 </head>
 <body>
 
-<div id="dynamic-bg"></div>
+<video id="video-bg" autoplay loop muted playsinline>
+    <source src="bg.mp4" type="video/mp4">
+</video>
 <div id="bg-overlay"></div>
 
 <div id="countdown-overlay">
@@ -174,10 +176,6 @@
         let vId = vIdMatch && vIdMatch[1].length === 11 ? vIdMatch[1] : null;
         let thumb = vId ? `https://img.youtube.com/vi/${vId}/maxresdefault.jpg` : '';
 
-        if(thumb) {
-            document.getElementById('dynamic-bg').style.backgroundImage = `url('${thumb}')`;
-        }
-
         let sub = false, vid = false;
         let initialLikes = -1; 
 
@@ -219,7 +217,7 @@
                 </div>
             </div>
 
-            <div id="success-container" style="display: none; background: rgba(21, 21, 23, 0.8); backdrop-filter: blur(10px); border-radius: 15px; padding: 35px 20px; text-align: center; border: 1px solid rgba(255,255,255,0.1); margin-top: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.8);">
+            <div id="success-container" style="display: none; background: rgba(21, 21, 23, 0.85); backdrop-filter: blur(10px); border-radius: 15px; padding: 35px 20px; text-align: center; border: 1px solid rgba(255,255,255,0.1); margin-top: 20px; box-shadow: 0 10px 40px rgba(0,0,0,0.8);">
                 <div style="font-size: 70px; margin-bottom: 10px; animation: bounce-icon 2s infinite;">🎉</div>
                 
                 <h2 style="margin: 0 0 15px; font-size: 28px; color: white;">احسنت يا بطل 😎</h2>
@@ -228,7 +226,7 @@
                     هذا البداية فقط ولكن لانك اسطورة رح تقدر تتخطي بقية الروابط بسهولة
                 </p>
                 
-                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 15px; margin-bottom: 25px;">
+                <div style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 15px; margin-bottom: 25px;">
                     <p style="color: #cbd5e1; font-size: 13px; margin: 0; line-height: 1.8;">
                         انصحك تشاهد الفيديو بالكامل لاني بشرح فيه كيفية تخطي الروابط او تشوف التعليق المثبت رح تلاقي رابط شرح كيفية تخطي الروابط 🔥
                     </p>
@@ -346,10 +344,8 @@
         };
 
     } else {
-        document.getElementById('bg-overlay').style.background = 'rgba(0,0,0,0.9)'; 
-
         app.innerHTML = `
-            <div class="task-box" style="display:block; text-align:center; cursor:default; background: rgba(21, 21, 23, 0.8); border: 1px solid rgba(255,255,255,0.1);">
+            <div class="task-box" style="display:block; text-align:center; cursor:default; background: rgba(21, 21, 23, 0.85); border: 1px solid rgba(255,255,255,0.1);">
                 <h2 style="color:var(--accent); margin-top:0;">MX_SASUKE VIP Generator</h2>
                 <input type="text" id="it" class="gen-input" value="لازم تعمل اشتراك ولايك وتعليق للحصول على السكربت">
                 <input type="url" id="ic" class="gen-input" placeholder="👇 رابط قناتك (اشتراك)">
