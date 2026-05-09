@@ -8,7 +8,9 @@
     <style>
         :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; --imposter: #a855f7; }
         body { background: var(--bg); color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden; }
-        .container { width: 90%; max-width: 400px; background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; margin: 20px 0; }
+        
+        /* غيرنا اسم الحاوية عشان نضرب الكاش */
+        .mx-container { width: 90%; max-width: 400px; background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; margin: 20px 0; }
         
         h1 { color: white; margin-bottom: 25px; font-size: 24px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
         
@@ -20,14 +22,13 @@
 
         .action-btn { background: var(--main); color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-bottom: 10px; }
         .action-btn:hover { background: #cc0000; }
-        .action-btn:disabled { background: #444; cursor: not-allowed; }
 
         .leave-btn { background: #333; border: 1px solid #555; color: white; padding: 12px; border-radius: 10px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
         .leave-btn:hover { background: var(--fail); border-color: var(--fail); }
 
-        /* الاعتماد الكلي على CSS المباشر لتجنب الكراش */
-        .screen { display: none; }
-        .active-screen { display: block; animation: fadeIn 0.4s; }
+        /* كلاسات جديدة تماماً للشاشات لضمان الظهور */
+        .mx-panel { display: none; }
+        .mx-panel.mx-visible { display: block; animation: fadeIn 0.4s; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -45,46 +46,46 @@
 </head>
 <body>
 
-<div class="container">
+<div class="mx-container">
     
-    <div id="main-menu" class="screen">
+    <div id="ui-main" class="mx-panel mx-visible">
         <h1>🎮 اختار الغرفة يا هوست</h1>
         <input type="text" id="host-name-input" class="input-field" placeholder="اسمك كصاحب الغرفة..." value="Sasuke">
         
-        <button class="game-btn" onclick="createRoom('naruto', 'أنمي ناروتو', 'guess')">🍥 من أنا؟ (ناروتو)</button>
-        <button class="game-btn" onclick="createRoom('aot', 'هجوم العمالقة', 'guess')">⚔️ من أنا؟ (هجوم العمالقة)</button>
-        <button class="game-btn" onclick="createRoom('dbz', 'دراجون بول', 'guess')">🐉 من أنا؟ (دراجون بول)</button>
-        <button class="game-btn" onclick="createRoom('ds', 'قاتل الشياطين', 'guess')">🗡️ من أنا؟ (قاتل الشياطين)</button>
-        <button class="game-btn" onclick="createRoom('monster', 'مونستر', 'guess')">🧠 من أنا؟ (مونستر)</button>
-        <button class="game-btn" onclick="showScreen('global-menu')" style="border-color: #22c55e;">🌍 من أنا؟ (عالمي) ➡️</button>
+        <button class="game-btn" onclick="buildRoom('naruto', 'أنمي ناروتو', 'guess')">🍥 من أنا؟ (ناروتو)</button>
+        <button class="game-btn" onclick="buildRoom('aot', 'هجوم العمالقة', 'guess')">⚔️ من أنا؟ (هجوم العمالقة)</button>
+        <button class="game-btn" onclick="buildRoom('dbz', 'دراجون بول', 'guess')">🐉 من أنا؟ (دراجون بول)</button>
+        <button class="game-btn" onclick="buildRoom('ds', 'قاتل الشياطين', 'guess')">🗡️ من أنا؟ (قاتل الشياطين)</button>
+        <button class="game-btn" onclick="buildRoom('monster', 'مونستر', 'guess')">🧠 من أنا؟ (مونستر)</button>
+        <button class="game-btn" onclick="switchPanel('ui-global')" style="border-color: #22c55e;">🌍 من أنا؟ (عالمي) ➡️</button>
 
-        <button class="game-btn" onclick="showScreen('imposter-menu')" style="border-color: var(--imposter); margin-top: 25px; box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);">🕵️‍♂️ لعبة الجاسوس (Imposter) ➡️</button>
+        <button class="game-btn" onclick="switchPanel('ui-imposter')" style="border-color: var(--imposter); margin-top: 25px; box-shadow: 0 0 10px rgba(168, 85, 247, 0.3);">🕵️‍♂️ لعبة الجاسوس (Imposter) ➡️</button>
     </div>
 
-    <div id="global-menu" class="screen">
+    <div id="ui-global" class="mx-panel">
         <h1>🌍 تصنيفات التخمين</h1>
-        <button class="game-btn" onclick="createRoom('food', 'أكلات مشهورة', 'guess')">🍕 أكلات مشهورة</button>
-        <button class="game-btn" onclick="createRoom('fruits', 'فواكه', 'guess')">🍎 فواكه</button>
-        <button class="game-btn" onclick="createRoom('veggies', 'خضروات', 'guess')">🥕 خضروات</button>
-        <button class="game-btn" onclick="createRoom('objects', 'جماد وأشياء', 'guess')">📱 جماد وأشياء</button>
-        <button class="game-btn" onclick="createRoom('animals', 'حيوانات', 'guess')">🦁 حيوانات</button>
-        <button class="game-btn" onclick="createRoom('countries', 'دول وعواصم', 'guess')">🗺️ دول وعواصم</button>
-        <button class="game-btn" onclick="createRoom('jobs', 'مهن ووظائف', 'guess')">👨‍⚕️ مهن ووظائف</button>
-        <button class="leave-btn" onclick="showScreen('main-menu')">رجوع للقائمة الرئيسية 🔙</button>
+        <button class="game-btn" onclick="buildRoom('food', 'أكلات مشهورة', 'guess')">🍕 أكلات مشهورة</button>
+        <button class="game-btn" onclick="buildRoom('fruits', 'فواكه', 'guess')">🍎 فواكه</button>
+        <button class="game-btn" onclick="buildRoom('veggies', 'خضروات', 'guess')">🥕 خضروات</button>
+        <button class="game-btn" onclick="buildRoom('objects', 'جماد وأشياء', 'guess')">📱 جماد وأشياء</button>
+        <button class="game-btn" onclick="buildRoom('animals', 'حيوانات', 'guess')">🦁 حيوانات</button>
+        <button class="game-btn" onclick="buildRoom('countries', 'دول وعواصم', 'guess')">🗺️ دول وعواصم</button>
+        <button class="game-btn" onclick="buildRoom('jobs', 'مهن ووظائف', 'guess')">👨‍⚕️ مهن ووظائف</button>
+        <button class="leave-btn" onclick="switchPanel('ui-main')">رجوع للقائمة الرئيسية 🔙</button>
     </div>
 
-    <div id="imposter-menu" class="screen">
+    <div id="ui-imposter" class="mx-panel">
         <h1>🕵️‍♂️ تصنيفات الإمبوستر</h1>
         <p style="color: #cbd5e1; font-size: 13px; margin-bottom: 20px;">هنوزع كلمة واحدة على الكل، وواحد بس هيطلعله جاسوس!</p>
-        <button class="game-btn" onclick="createRoom('food', 'جاسوس الأكلات', 'imposter')">🍕 أكلات مشهورة</button>
-        <button class="game-btn" onclick="createRoom('animals', 'جاسوس الحيوانات', 'imposter')">🦁 حيوانات</button>
-        <button class="game-btn" onclick="createRoom('objects', 'جاسوس الأشياء', 'imposter')">📱 جماد وأشياء</button>
-        <button class="game-btn" onclick="createRoom('jobs', 'جاسوس المهن', 'imposter')">👨‍⚕️ مهن ووظائف</button>
-        <button class="game-btn" onclick="createRoom('countries', 'جاسوس الدول', 'imposter')">🗺️ دول وعواصم</button>
-        <button class="leave-btn" onclick="showScreen('main-menu')">رجوع للقائمة الرئيسية 🔙</button>
+        <button class="game-btn" onclick="buildRoom('food', 'جاسوس الأكلات', 'imposter')">🍕 أكلات مشهورة</button>
+        <button class="game-btn" onclick="buildRoom('animals', 'جاسوس الحيوانات', 'imposter')">🦁 حيوانات</button>
+        <button class="game-btn" onclick="buildRoom('objects', 'جاسوس الأشياء', 'imposter')">📱 جماد وأشياء</button>
+        <button class="game-btn" onclick="buildRoom('jobs', 'جاسوس المهن', 'imposter')">👨‍⚕️ مهن ووظائف</button>
+        <button class="game-btn" onclick="buildRoom('countries', 'جاسوس الدول', 'imposter')">🗺️ دول وعواصم</button>
+        <button class="leave-btn" onclick="switchPanel('ui-main')">رجوع للقائمة الرئيسية 🔙</button>
     </div>
 
-    <div id="host-lobby" class="screen">
+    <div id="ui-host-lobby" class="mx-panel">
         <h1 id="lobby-title">غرفة الانتظار ⏳</h1>
         <div class="link-box" id="invite-link">جاري إنشاء الرابط...</div>
         <button class="action-btn" onclick="copyLink()" style="font-size: 14px; margin-bottom: 20px; background: #333;">📋 نسخ الرابط لصحابك</button>
@@ -92,34 +93,34 @@
         <h3 style="text-align: right; color: var(--accent); margin-bottom: 10px;">المتصلين حالياً: <span id="host-count">1</span></h3>
         <div class="players-list" id="host-players"></div>
         
-        <button class="action-btn" id="start-btn" onclick="startGame()" disabled>🚀 ابدأ اللعبة (لكل اللاعبين)</button>
-        <button class="leave-btn" onclick="leaveRoom()">🚪 إغلاق الغرفة</button>
+        <button class="action-btn" id="start-btn" onclick="triggerGame()" disabled>🚀 ابدأ اللعبة (لكل اللاعبين)</button>
+        <button class="leave-btn" onclick="exitRoom()">🚪 إغلاق الغرفة</button>
     </div>
 
-    <div id="guest-join" class="screen">
+    <div id="ui-guest-join" class="mx-panel">
         <h1>👋 أهلاً بيك</h1>
         <input type="text" id="player-name" class="input-field" placeholder="اكتب اسمك عشان تدخل..." autocomplete="off">
-        <button class="action-btn" id="join-btn" onclick="joinRoom()">دخول الغرفة 🚪</button>
+        <button class="action-btn" id="join-btn" onclick="enterRoom()">دخول الغرفة 🚪</button>
         <p id="join-status" style="color: var(--accent); margin-top: 10px; display: none; font-weight: bold;">جاري الاتصال بالسيرفر... ⏳</p>
     </div>
 
-    <div id="guest-lobby" class="screen">
+    <div id="ui-guest-lobby" class="mx-panel">
         <h1>⏳ مستنيين الهوست...</h1>
         <h3 style="text-align: right; color: var(--accent); margin-bottom: 10px;">المتصلين: <span id="guest-count">1</span></h3>
         <div class="players-list" id="guest-players"></div>
-        <button class="leave-btn" onclick="leaveRoom()">🚪 مغادرة الغرفة</button>
+        <button class="leave-btn" onclick="exitRoom()">🚪 مغادرة الغرفة</button>
     </div>
 
-    <div id="game-screen" class="screen">
+    <div id="ui-game" class="mx-panel">
         <h2 id="player-role-title">شخصيتك السرية هي:</h2>
         <div class="secret-word-box" id="my-secret-word">???</div>
         <p style="color: var(--fail); font-weight: bold; font-size: 13px;">ماتقولش لحد إنت طلعت إيه 🤫</p>
         <h3 style="text-align: right; color: var(--accent); margin-top: 30px; margin-bottom: 10px;">قائمة اللاعبين:</h3>
         <div class="players-list" id="game-players"></div>
-        <button class="leave-btn" onclick="leaveRoom()">🚪 مغادرة الغرفة</button>
+        <button class="leave-btn" onclick="exitRoom()">🚪 مغادرة الغرفة</button>
     </div>
 
-    <div id="goodbye-screen" class="screen">
+    <div id="ui-goodbye" class="mx-panel">
         <h1 id="bye-emoji" style="font-size: 60px; margin-bottom: 10px;">👋</h1>
         <h2 id="bye-title" style="color: var(--accent); font-size: 28px;">حظاً موفقاً!</h2>
         <p id="bye-message" style="color: #cbd5e1; font-size: 16px; margin-top: 15px;">طلعت من الغرفة بنجاح.. نورتنا يا بطل 🥷</p>
@@ -129,13 +130,13 @@
 </div>
 
 <script>
-    // الإظهار الإجباري للشاشة فوراً
-    if (window.location.search.includes('room=')) {
-        document.getElementById('guest-join').style.display = 'block';
-    } else {
-        document.getElementById('main-menu').style.display = 'block';
+    if (window.location.href.indexOf('room=') !== -1) {
+        document.getElementById('ui-main').classList.remove('mx-visible');
+        document.getElementById('ui-guest-join').classList.add('mx-visible');
     }
+</script>
 
+<script>
     const DB = {
         naruto: ['ناروتو', 'ساسوكي', 'ساكورا', 'كاكاشي', 'ايتاشي', 'مادارا', 'جيرايا', 'تسونادي', 'اوروتشيمارو', 'شيكامارو', 'باين', 'اوبيتو', 'نيجي', 'جارا', 'هيناتا', 'روك لي', 'زابوزا', 'كابوتو'],
         aot: ['ايرين', 'ميكاسا', 'ارمين', 'ليفاي', 'ايروين', 'هانجي', 'راينر', 'زيك', 'ساشا', 'جان', 'هيستوريا', 'آني', 'بيك', 'فلوك'],
@@ -153,7 +154,7 @@
 
     let mqttClient = null;
     let myName = '';
-    let isHost = !window.location.search.includes('room='); 
+    let isHost = window.location.href.indexOf('room=') === -1; 
     let roomCategory = '';
     let gameMode = 'guess'; 
     let currentRoomId = '';
@@ -163,25 +164,19 @@
     function safeEncode(str) { return encodeURIComponent(str); }
     function safeDecode(str) { try { return decodeURIComponent(str); } catch(e) { return str; } }
 
-    function showScreen(screenId) {
-        document.querySelectorAll('.screen').forEach(el => {
-            el.style.display = 'none';
-        });
-        let target = document.getElementById(screenId);
-        if (target) {
-            target.style.display = 'block';
-            target.style.animation = 'fadeIn 0.4s';
-        }
+    function switchPanel(panelId) {
+        document.querySelectorAll('.mx-panel').forEach(el => el.classList.remove('mx-visible'));
+        document.getElementById(panelId).classList.add('mx-visible');
     }
 
-    function updateUIList() {
+    function refreshUI() {
         let listHTML = '';
         playersList.forEach(p => {
             let decodedName = safeDecode(p.name);
             let kickBtn = '';
             
             if (isHost && p.name !== myName) {
-                kickBtn = `<button class="kick-btn" onclick="kickPlayer('${p.name}')">طرد 🥾</button>`;
+                kickBtn = `<button class="kick-btn" onclick="tardPlayer('${p.name}')">طرد 🥾</button>`;
             }
 
             listHTML += `
@@ -204,10 +199,8 @@
         document.getElementById('game-players').innerHTML = listHTML;
     }
 
-    function createRoom(category, catName, mode) {
-        if (typeof mqtt === 'undefined') {
-            return alert("جاري الاتصال بالسيرفر.. استنى ثانية واحدة ودوس تاني ⏳");
-        }
+    function buildRoom(category, catName, mode) {
+        if (typeof mqtt === 'undefined') return alert("السيرفر بيحمل.. ثانية واحدة ⏳");
 
         isHost = true;
         roomCategory = category;
@@ -218,7 +211,7 @@
         myName = safeEncode(myName + ' 👑');
 
         document.getElementById('lobby-title').innerText = "غرفة: " + catName;
-        showScreen('host-lobby');
+        switchPanel('ui-host-lobby');
 
         currentRoomId = Math.floor(10000 + Math.random() * 90000).toString();
         let topic = 'mx_sasuke_room_' + currentRoomId;
@@ -228,7 +221,7 @@
         document.getElementById('invite-link').innerText = inviteUrl;
         
         playersList = [{name: myName}];
-        updateUIList();
+        refreshUI();
 
         mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
         mqttClient.on('connect', () => { mqttClient.subscribe(topic); });
@@ -240,34 +233,34 @@
             if (data.type === 'join') {
                 if(!playersList.find(p => p.name === data.name)) {
                     playersList.push({name: data.name}); 
-                    updateUIList(); 
+                    refreshUI(); 
                     mqttClient.publish(topic, JSON.stringify({type: 'updateList', players: playersList}));
                 }
             }
             else if (data.type === 'leave') {
                 playersList = playersList.filter(p => p.name !== data.name);
-                updateUIList();
+                refreshUI();
                 mqttClient.publish(topic, JSON.stringify({type: 'updateList', players: playersList}));
             }
         });
     }
 
-    function kickPlayer(targetName) {
+    function tardPlayer(targetName) {
         let decodedTarget = safeDecode(targetName);
-        if(confirm(`متأكد إنك عايز تطرد ${decodedTarget} من الغرفة؟ 🥾`)) {
+        if(confirm(`متأكد إنك عايز تطرد ${decodedTarget}؟ 🥾`)) {
             let topic = 'mx_sasuke_room_' + currentRoomId;
             mqttClient.publish(topic, JSON.stringify({type: 'kick', target: targetName}));
             playersList = playersList.filter(p => p.name !== targetName);
-            updateUIList();
+            refreshUI();
             mqttClient.publish(topic, JSON.stringify({type: 'updateList', players: playersList}));
         }
     }
 
     function copyLink() {
-        navigator.clipboard.writeText(inviteUrl).then(() => { alert("تم النسخ! ابعته لصحابك 🚀"); });
+        navigator.clipboard.writeText(inviteUrl).then(() => { alert("تم النسخ! 🚀"); });
     }
 
-    function startGame() {
+    function triggerGame() {
         let words = DB[roomCategory] || DB['food'];
         let assignedWords = {};
         
@@ -306,16 +299,14 @@
             document.getElementById('my-secret-word').style.borderColor = "var(--accent)";
         }
 
-        showScreen('game-screen');
+        switchPanel('ui-game');
     }
 
-    function joinRoom() {
-        if (typeof mqtt === 'undefined') {
-            return alert("جاري الاتصال بالسيرفر.. استنى ثانية واحدة ودوس تاني ⏳");
-        }
+    function enterRoom() {
+        if (typeof mqtt === 'undefined') return alert("السيرفر بيحمل.. ثانية واحدة ⏳");
 
         let nameInput = document.getElementById('player-name').value.trim();
-        if(nameInput === "") return alert("اكتب اسمك الأول يا بطل!");
+        if(nameInput === "") return alert("اكتب اسمك الأول!");
         myName = safeEncode(nameInput);
         
         document.getElementById('join-btn').style.display = 'none';
@@ -338,7 +329,7 @@
             clearTimeout(connTimeout); 
             mqttClient.subscribe(topic);
             mqttClient.publish(topic, JSON.stringify({type: 'join', name: myName}));
-            showScreen('guest-lobby');
+            switchPanel('ui-guest-lobby');
         });
             
         mqttClient.on('message', (t, message) => {
@@ -347,7 +338,7 @@
             
             if(data.type === 'updateList') { 
                 playersList = data.players; 
-                updateUIList(); 
+                refreshUI(); 
             }
             else if(data.type === 'gameStart') {
                 let myWord = data.words[myName];
@@ -355,4 +346,7 @@
                     document.getElementById('my-secret-word').innerText = myWord;
                     if (myWord === "أنت الإمبوستر 🕵️‍♂️") {
                         document.getElementById('my-secret-word').style.color = "var(--imposter)";
-             
+                        document.getElementById('my-secret-word').style.borderColor = "var(--imposter)";
+                        document.getElementById('player-role-title').innerText = "خليك نينجا وما تبينش:";
+                    } else {
+                        document.getElementById('my-se
