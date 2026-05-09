@@ -112,7 +112,7 @@
     let isHost = false; 
     let roomCategory = '';
     let inviteUrl = '';
-    let guestConn = null; // خليناها جلوبال عشان نوصلها وقت الخروج
+    let guestConn = null; 
 
     function showScreen(screenId) {
         document.querySelectorAll('.screen').forEach(el => el.classList.remove('active-screen'));
@@ -169,29 +169,67 @@
         });
 
         peer.on('connection', (conn) => {
+            // تسجيل وقت آخر اتصال (أول ما يدخل)
+            conn.lastPing = Date.now();
+
             conn.on('data', (data) => {
+                // تحديث نبض القلب لأي رسالة تيجي من اللاعب
+                conn.lastPing = Date.now();
+
                 if(data.type === 'join') {
                     connections.push(conn);
                     playersList.push({id: conn.peer, name: data.name}); 
                     updateUIList(); 
                     broadcast({type: 'updateList', players: playersList});
                 }
-                // لو استلمنا إشارة خروج (التابة اتقفلت أو ريفريش)
                 else if (data.type === 'leave') {
-                    connections = connections.filter(c => c.peer !== conn.peer);
-                    playersList = playersList.filter(p => p.id !== conn.peer);
-                    updateUIList();
-                    broadcast({type: 'updateList', players: playersList});
+                    removePlayer(conn.peer);
+                }
+                else if (data.type === 'pong') {
+                    // دي رسالة النبض، مش محتاجين نعمل حاجة غير إننا حدثنا الوقت فوق
                 }
             });
+            
             conn.on('close', () => {
-                connections = connections.filter(c => c.peer !== conn.peer);
-                playersList = playersList.filter(p => p.id !== conn.peer);
-                updateUIList();
-                broadcast({type: 'updateList', players: playersList});
+                removePlayer(conn.peer);
             });
         });
     }
+
+    function removePlayer(peerId) {
+        connections = connections.filter(c => c.peer !== peerId);
+        playersList = playersList.filter(p => p.id !== peerId);
+        updateUIList();
+        broadcast({type: 'updateList', players: playersList});
+    }
+
+    // ==========================================
+    // نظام الرادار (نبض القلب) اللي شغال عند الهوست
+    // ==========================================
+    setInterval(() => {
+        if (!isHost) return; // ده بيشتغل عند صاحب الغرفة بس
+        
+        let now = Date.now();
+        let dropped = false;
+
+        connections = connections.filter(conn => {
+            // لو عدى 8 ثواني واللاعب ماردش على النبض، امسحه فوراً
+            if (now - conn.lastPing > 8000) {
+                playersList = playersList.filter(p => p.id !== conn.peer);
+                dropped = true;
+                return false; // شيله من الاتصالات
+            }
+            // لو موجود، ابعتله رسالة نبض جديدة
+            conn.send({type: 'ping'});
+            return true;
+        });
+
+        // لو في حد اتمسح، حدث الشاشة وابعت للباقيين
+        if (dropped) {
+            updateUIList();
+            broadcast({type: 'updateList', players: playersList});
+        }
+    }, 3000); // بيفحص كل 3 ثواني
 
     function broadcast(data) {
         connections.forEach(c => c.send(data));
@@ -250,11 +288,15 @@
             });
             
             guestConn.on('data', (data) => {
-                if(data.type === 'updateList') { 
+                // رد الضيف على نبض قلب الهوست
+                if(data.type === 'ping') {
+                    guestConn.send({type: 'pong'});
+                }
+                else if(data.type === 'updateList') { 
                     playersList = data.players; 
                     updateUIList(); 
                 }
-                if(data.type === 'gameStart') {
+                else if(data.type === 'gameStart') {
                     document.getElementById('my-secret-word').innerText = safeDecode(data.word);
                     showScreen('game-screen');
                 }
@@ -267,16 +309,12 @@
         });
     }
 
-    // كود بيراقب الموبايل عشان يبعت رسالة طوارئ لو التابة اتقفلت
+    // محاولة إرسال رسالة خروج سريعة قبل ما التابة تتقفل
     window.addEventListener('beforeunload', () => {
-        if (guestConn && guestConn.open) {
-            guestConn.send({type: 'leave'});
-        }
+        if (guestConn && guestConn.open) guestConn.send({type: 'leave'});
     });
     window.addEventListener('pagehide', () => {
-        if (guestConn && guestConn.open) {
-            guestConn.send({type: 'leave'});
-        }
+        if (guestConn && guestConn.open) guestConn.send({type: 'leave'});
     });
 </script>
 
