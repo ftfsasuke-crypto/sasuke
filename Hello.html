@@ -26,8 +26,9 @@
         .leave-btn { background: #333; border: 1px solid #555; color: white; padding: 12px; border-radius: 10px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
         .leave-btn:hover { background: var(--fail); border-color: var(--fail); }
 
-        .screen { display: none; animation: fadeIn 0.4s; }
-        .active-screen { display: block; }
+        /* الاعتماد الكلي على CSS عشان نمنع الشاشة السودا */
+        .screen { display: none !important; }
+        .active-screen { display: block !important; animation: fadeIn 0.4s; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -38,12 +39,12 @@
 
         .secret-word-box { background: #111; border: 2px dashed var(--accent); border-radius: 15px; padding: 30px 15px; margin: 20px 0; font-size: 35px; font-weight: bold; color: white; text-shadow: 0 0 15px rgba(34,197,94,0.4); }
         .link-box { background: #000; padding: 12px; border-radius: 8px; border: 1px solid #444; color: #888; font-size: 12px; word-break: break-all; margin-bottom: 15px; }
-        .error-msg { color: var(--fail); font-size: 14px; margin-bottom: 15px; display: none; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
+    
     <div id="main-menu" class="screen">
         <h1>🎮 اختار الغرفة يا هوست</h1>
         <input type="text" id="host-name-input" class="input-field" placeholder="اسمك كصاحب الغرفة..." value="Sasuke">
@@ -52,3 +53,46 @@
         <button class="game-btn" onclick="createRoom('aot', 'هجوم العمالقة')">⚔️ إنشاء غرفة (هجوم العمالقة)</button>
         <button class="game-btn" onclick="createRoom('dbz', 'دراجون بول')">🐉 إنشاء غرفة (دراجون بول)</button>
         <button class="game-btn" onclick="createRoom('ds', 'قاتل الشياطين')">🗡️ إنشاء غرفة (قاتل الشياطين)</button>
+        <button class="game-btn" onclick="createRoom('monster', 'مونستر')">🧠 إنشاء غرفة (مونستر)</button>
+        <button class="game-btn" onclick="showScreen('global-menu')" style="border-color: #22c55e;">🌍 إنشاء غرفة (منوعات عالمية) ➡️</button>
+    </div>
+
+    <div id="global-menu" class="screen">
+        <h1>🌍 اختر التصنيف العالمي</h1>
+        <button class="game-btn" onclick="createRoom('food', 'أكلات مشهورة')">🍕 أكلات مشهورة</button>
+        <button class="game-btn" onclick="createRoom('fruits', 'فواكه')">🍎 فواكه</button>
+        <button class="game-btn" onclick="createRoom('veggies', 'خضروات')">🥕 خضروات</button>
+        <button class="game-btn" onclick="createRoom('objects', 'جماد وأشياء')">📱 جماد وأشياء</button>
+        <button class="game-btn" onclick="createRoom('animals', 'حيوانات')">🦁 حيوانات</button>
+        <button class="game-btn" onclick="createRoom('countries', 'دول وعواصم')">🗺️ دول وعواصم</button>
+        <button class="game-btn" onclick="createRoom('jobs', 'مهن ووظائف')">👨‍⚕️ مهن ووظائف</button>
+        <button class="leave-btn" onclick="showScreen('main-menu')">رجوع للقائمة الرئيسية 🔙</button>
+    </div>
+
+    <div id="host-lobby" class="screen">
+        <h1 id="lobby-title">غرفة الانتظار ⏳</h1>
+        <div class="link-box" id="invite-link">جاري إنشاء الرابط...</div>
+        <button class="action-btn" onclick="copyLink()" style="font-size: 14px; margin-bottom: 20px; background: #333;">📋 نسخ الرابط لصحابك</button>
+        
+        <h3 style="text-align: right; color: var(--accent); margin-bottom: 10px;">المتصلين حالياً: <span id="host-count">1</span></h3>
+        <div class="players-list" id="host-players"></div>
+        
+        <button class="action-btn" id="start-btn" onclick="startGame()" disabled>🚀 ابدأ اللعبة</button>
+        <button class="leave-btn" onclick="leaveRoom()">🚪 إغلاق الغرفة</button>
+    </div>
+
+    <div id="guest-join" class="screen">
+        <h1>👋 أهلاً بيك</h1>
+        <input type="text" id="player-name" class="input-field" placeholder="اكتب اسمك عشان تدخل..." autocomplete="off">
+        <button class="action-btn" id="join-btn" onclick="joinRoom()">دخول الغرفة 🚪</button>
+        <p id="join-status" style="color: var(--accent); margin-top: 10px; display: none; font-weight: bold;">جاري الاتصال بصاحب الغرفة... ⏳</p>
+    </div>
+
+    <div id="guest-lobby" class="screen">
+        <h1>⏳ مستنيين الهوست...</h1>
+        <h3 style="text-align: right; color: var(--accent); margin-bottom: 10px;">المتصلين: <span id="guest-count">1</span></h3>
+        <div class="players-list" id="guest-players"></div>
+        <button class="leave-btn" onclick="leaveRoom()">🚪 مغادرة الغرفة</button>
+    </div>
+
+    <div id="game-screen" class="screen">
