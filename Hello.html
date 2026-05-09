@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MX_SASUKE | Multiplayer Hub</title>
-    
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-    
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; --imposter: #a855f7; }
@@ -24,12 +22,13 @@
         .players-list { background: #000; border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 20px; }
         .player-item { padding: 10px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
         .secret-word-box { background: #111; border: 2px dashed var(--accent); border-radius: 15px; padding: 30px 15px; margin: 20px 0; font-size: 30px; font-weight: bold; text-align: center; }
-        .kick-btn { background: var(--fail); color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 12px; }
+        .kick-btn { background: var(--fail); color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 12px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="box-container">
+    
     <div id="p-main" class="panel">
         <h1>🎮 اختار الغرفة يا هوست</h1>
         <input type="text" id="host-input" class="input-field" placeholder="اسمك كصاحب الغرفة..." value="Sasuke">
@@ -53,6 +52,9 @@
         <button class="game-btn" onclick="hostRoom('food', 'جاسوس الأكلات', 'imposter')">🍕 أكلات</button>
         <button class="game-btn" onclick="hostRoom('animals', 'جاسوس الحيوانات', 'imposter')">🦁 حيوانات</button>
         <button class="game-btn" onclick="hostRoom('objects', 'جاسوس الأشياء', 'imposter')">📱 جماد</button>
+        <button class="game-btn" onclick="hostRoom('jobs', 'جاسوس الوظائف', 'imposter')">💼 وظائف</button>
+        <button class="game-btn" onclick="hostRoom('countries', 'جاسوس الدول', 'imposter')">🌍 دول ومدن</button>
+        <button class="game-btn" onclick="hostRoom('sports', 'جاسوس الرياضة', 'imposter')">⚽ رياضة</button>
         <button class="leave-btn" onclick="navTo('p-main')">رجوع 🔙</button>
     </div>
 
@@ -86,16 +88,26 @@
         <div class="players-list" id="game-list"></div>
         <button class="leave-btn" onclick="leaveRoom()">🚪 مغادرة</button>
     </div>
+
+    <div id="p-msg" class="panel">
+        <h1 id="msg-title" style="color: var(--fail); text-align: center; font-size: 28px;">🚫 تنبيه</h1>
+        <h3 id="msg-text" style="text-align: center; margin-bottom: 30px;">...</h3>
+        <button class="leave-btn" onclick="navTo('p-main')">العودة للرئيسية 🏠</button>
+    </div>
+
 </div>
 
 <script>
     let mqttClient, myName, roomId, isHost = false, players = [], gameMode = '', gameCategory = '';
 
-    // قائمة الكلمات بتاعت لعبة الجاسوس
+    // الكلمات مضاف ليها التصنيفات الجديدة
     const wordsDB = {
         food: ['بيتزا', 'شاورما', 'برجر', 'كشري', 'مكرونة بشاميل', 'محشي', 'سوشي', 'كباب', 'فلافل', 'بطاطس مقلية', 'ستيك', 'بان كيك', 'اندومي', 'حواوشي', 'طاجن بامية'],
         animals: ['أسد', 'فيل', 'زرافة', 'قرد', 'نمر', 'حصان', 'كلب', 'قطة', 'تمساح', 'ثعبان', 'غزال', 'صقر', 'دب', 'كنغر', 'بطريق'],
-        objects: ['موبايل', 'لابتوب', 'كرسي', 'تلاجة', 'غسالة', 'تليفزيون', 'ساعة', 'نظارة', 'قلم', 'عجلة', 'طيارة', 'كاميرا', 'شاحن', 'سرير', 'ميكروويف']
+        objects: ['موبايل', 'لابتوب', 'كرسي', 'تلاجة', 'غسالة', 'تليفزيون', 'ساعة', 'نظارة', 'قلم', 'عجلة', 'طيارة', 'كاميرا', 'شاحن', 'سرير', 'ميكروويف'],
+        jobs: ['دكتور', 'مهندس', 'مدرس', 'ظابط', 'محامي', 'طيار', 'محاسب', 'سباك', 'نجار', 'مبرمج', 'طباخ', 'حلاق', 'صحفي', 'ممثل', 'رسام'],
+        countries: ['مصر', 'السعودية', 'الإمارات', 'المغرب', 'فرنسا', 'إيطاليا', 'اليابان', 'البرازيل', 'إسبانيا', 'ألمانيا', 'أمريكا', 'الصين', 'الهند', 'تركيا', 'روسيا'],
+        sports: ['كرة قدم', 'تنس', 'سباحة', 'كرة سلة', 'ملاكمة', 'جودو', 'جمباز', 'كرة طائرة', 'جري', 'فروسية', 'مصارعة', 'بلياردو', 'شطرنج', 'رماية']
     };
 
     function navTo(id) {
@@ -187,13 +199,14 @@
                     navTo('p-game');
                 }
             }
+            
+            // هنا التعديل عشان الشاشة الجديدة تظهر للمطرود
             if(d.type === 'kick' && d.target === myName) {
-                alert("تم طردك من الغرفة!");
-                forceLeave();
+                disconnectAndShowMsg("🚫 تم طردك!", "الهوست قام بطردك من الغرفة، مش هتقدر تكمل اللعب.");
             }
+            // وهنا لو الهوست قفل الغرفة كلها
             if(d.type === 'room_closed' && !isHost) {
-                alert("الهوست قام بإغلاق الغرفة!");
-                forceLeave();
+                disconnectAndShowMsg("🚪 الغرفة اتقفلت", "الهوست قام بإغلاق الغرفة للجميع.");
             }
         });
     }
@@ -243,6 +256,7 @@
         }
     }
 
+    // الدالة دي بتشتغل لو إنت قفلت الغرفة أو خرجت بمزاجك
     function forceLeave() {
         if(mqttClient) mqttClient.end();
         players = [];
@@ -250,6 +264,19 @@
         roomId = null;
         window.history.replaceState({}, document.title, window.location.pathname);
         navTo('p-main');
+    }
+
+    // الدالة دي بتشتغل للاعب اللي انطرد أو لو الهوست قفل الغرفة
+    function disconnectAndShowMsg(title, text) {
+        if(mqttClient) mqttClient.end();
+        players = [];
+        isHost = false;
+        roomId = null;
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        document.getElementById('msg-title').innerText = title;
+        document.getElementById('msg-text').innerText = text;
+        navTo('p-msg');
     }
 </script>
 </body>
