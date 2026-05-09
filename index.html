@@ -35,7 +35,7 @@
         .verify-btn { background: var(--main); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; transition: 0.3s; }
         .verify-btn:disabled { background: #1a1a1c; color: #555; cursor: not-allowed; }
         
-        #error-msg { display: none; color: var(--fail); font-size: 13px; margin-top: 10px; font-weight: bold; }
+        #error-msg { display: none; color: var(--fail); font-size: 13px; margin-top: 10px; font-weight: bold; line-height: 1.5; }
 
         .warning-box { background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 10px; padding: 15px; margin-top: 15px; text-align: right; }
         .warning-box h4 { color: var(--fail); margin: 0 0 5px; font-size: 14px; }
@@ -80,6 +80,7 @@
 <div id="app" class="container"></div>
 
 <script>
+try {
     const YOUTUBE_API_KEY = "AIzaSyA6NebhJLqT8ZEG56cmMEm4xsRR5byisPI"; 
 
     const app = document.getElementById('app');
@@ -94,7 +95,7 @@
         return url;
     }
 
-    if (urlParams.has('data')) {
+    if (urlParams.has('data') && urlParams.get('data').length > 5) {
         const raw = urlParams.get('data').split('|');
         let config = {
             t: safeDecode(raw[0]),
@@ -105,11 +106,11 @@
 
         let vIdMatch = config.v.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/ytscreeningroom\?v=|\/sandayat\?v=|\/condition_video_id\/|\/watch\?feature=player_embedded&v=))([^#\&\?]*)/);
         let vId = vIdMatch && vIdMatch[1].length === 11 ? vIdMatch[1] : null;
-        let thumb = vId ? `https://img.youtube.com/vi/${vId}/maxresdefault.jpg` : '';
+        let thumb = vId ? `https://img.youtube.com/vi/${vId}/maxresdefault.jpg` : 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png';
 
         let sub = false, vid = false;
         let initialLikes = -1; 
-        let failedAttempts = 0; // السحر الجديد: عداد المحاولات الفاشلة
+        let failedAttempts = 0; 
 
         app.innerHTML = `
             <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" class="yt-logo" id="top-logo">
@@ -169,10 +170,7 @@
         `;
 
         function fetchRealLikes(callback) {
-            if (!vId || YOUTUBE_API_KEY === "حط_المفتاح_بتاعك_هنا") {
-                callback(-1);
-                return;
-            }
+            if (!vId) { callback(-1); return; }
             fetch('https://www.googleapis.com/youtube/v3/videos?part=statistics&id=' + vId + '&key=' + YOUTUBE_API_KEY + '&t=' + Date.now())
             .then(res => res.json())
             .then(data => {
@@ -236,7 +234,6 @@
 
         window.verifyStrict = function() {
             if(!sub || !vid) return alert("يرجى إكمال المهام أولاً!");
-            if(initialLikes === -1) return alert("حدث خطأ في الاتصال بيوتيوب!");
             
             document.getElementById('error-msg').style.display = 'none';
             const ld = document.getElementById('loader');
@@ -246,16 +243,15 @@
                 fetchRealLikes((currentLikes) => {
                     ld.style.display = 'none';
                     
-                    if (currentLikes === -1) return alert("حدث خطأ في الاتصال بيوتيوب!");
+                    if (currentLikes !== -1) {
+                        document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
+                    }
 
-                    document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
-
-                    // التعديل: إذا زاد اللايك (أو) إذا حاول الزائر 3 مرات وتم الرفض بسبب تعليق يوتيوب
-                    if (currentLikes > initialLikes || failedAttempts >= 2) {
+                    // هنا التعديل: لو داس المرة التانية علطول هيفتحله الرابط
+                    if (currentLikes > initialLikes || failedAttempts >= 1) {
                         document.getElementById('tasks-container').style.display = 'none';
                         document.getElementById('top-logo').style.display = 'none';
                         document.getElementById('top-title').style.display = 'none';
-                        
                         document.getElementById('success-container').style.display = 'block';
                         
                         var duration = 3 * 1000;
@@ -266,14 +262,14 @@
                             confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ff0000', '#22c55e', '#ffffff'] });
                             if (Date.now() < end) { requestAnimationFrame(frame); }
                         }());
-
                     } else {
-                        failedAttempts++; // تزويد عداد الفشل
-                        document.getElementById('error-msg').style.display = 'block';
+                        failedAttempts++; 
+                        let errMsg = document.getElementById('error-msg');
+                        errMsg.innerHTML = "❌ يوتيوب لسه مراجعش اللايك! دوس <b>أعد التحقق</b> مرة كمان عشان نعديك.";
+                        errMsg.style.display = 'block';
                         document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
                         
-                        // تحديث الرقم المرجعي فقط لو قل (عشان لو شال اللايك يحس بيه)
-                        if (currentLikes < initialLikes) {
+                        if (currentLikes !== -1 && currentLikes < initialLikes) {
                             initialLikes = currentLikes; 
                         }
                     }
@@ -302,6 +298,9 @@
             window.location.href = "?data=" + encodeURIComponent(d);
         };
     }
+} catch (error) {
+    document.getElementById('app').innerHTML = `<h3 style="color:red; margin-top:50px;">يوجد خطأ: تأكد من نسخ الكود بالكامل</h3>`;
+}
 </script>
 </body>
 </html>
