@@ -92,6 +92,13 @@
         
         <button class="leave-btn" onclick="leaveRoom()">🚪 مغادرة الغرفة</button>
     </div>
+
+    <div id="goodbye-screen" class="screen">
+        <h1 style="font-size: 60px; margin-bottom: 10px;">👋</h1>
+        <h2 style="color: var(--accent); font-size: 28px;">حظاً موفقاً!</h2>
+        <p style="color: #cbd5e1; font-size: 16px; margin-top: 15px;">طلعت من الغرفة بنجاح.. نورتنا يا بطل 🥷</p>
+    </div>
+
 </div>
 
 <script>
@@ -186,7 +193,6 @@
                     updateUIList(); 
                     broadcast({type: 'updateList', players: playersList});
                 }
-                // استقبال إشارة زرار المغادرة
                 else if (data.type === 'leave') {
                     removePlayer(conn.peer);
                 }
@@ -273,28 +279,27 @@
             });
             
             guestConn.on('close', () => {
+                // لو الهوست قفل الغرفة يظهر للضيف شاشة النهاية
                 alert("الهوست قفل الغرفة أو خرج من اللعبة!");
-                window.location.href = window.location.href.split('?')[0];
+                showScreen('goodbye-screen');
             });
         });
     }
 
-    // دالة زرار المغادرة الصريح
     function leaveRoom() {
         if (isHost) {
             let confirmLeave = confirm("أنت الهوست 👑! لو خرجت الغرفة هتتقفل على الكل، متأكد؟");
             if (confirmLeave) {
+                // الهوست لما يخرج يعمل ريفريش عشان يقدر يعمل غرفة جديدة
                 window.location.href = window.location.href.split('?')[0];
             }
         } else {
-            // الضيف بيبعت رسالة مغادرة صريحة للهوست
+            // الضيف لما يخرج يبعت إشعار ويشوف شاشة الوداع
             if (guestConn && guestConn.open) {
                 guestConn.send({type: 'leave'});
+                guestConn.close();
             }
-            // بنستنى ثانية صغيرة عشان نضمن الرسالة وصلت، وبعدين نرجعه برا
-            setTimeout(() => {
-                window.location.href = window.location.href.split('?')[0];
-            }, 300);
+            showScreen('goodbye-screen');
         }
     }
 </script>
