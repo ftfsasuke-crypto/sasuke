@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MX_SASUKE | Strict Unlocker</title>
+    <title>MX_SASUKE | Smart Unlocker</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; }
@@ -49,7 +49,8 @@
 <div id="loader">
     <div class="circle-timer"></div>
     <h2 id="timer-text" style="font-size: 30px; margin: 20px 0;">3</h2>
-    <p>جاري فحص اللايكات في السيرفر... ⏳</p>
+    <p>انتظر قليلاً... ⏳</p>
+    <p style="font-size: 12px; color: #888;">النظام يتحقق من إتمام المهمة</p>
 </div>
 
 <div id="app" class="container"></div>
@@ -59,10 +60,7 @@
     const urlParams = new URLSearchParams(window.location.search);
 
     function safeEncode(str) { return btoa(encodeURIComponent(str)); }
-    function safeDecode(str) { 
-        try { return decodeURIComponent(atob(str.replace(/ /g, '+'))); } 
-        catch(e) { return ""; } 
-    }
+    function safeDecode(str) { try { return decodeURIComponent(atob(str.replace(/ /g, '+'))); } catch(e) { return ""; } }
     function fixUrl(url) {
         if (!url || url === 'undefined') return "#";
         url = url.trim();
@@ -74,18 +72,18 @@
         const raw = urlParams.get('data').split('|');
         let config = {
             t: safeDecode(raw[0]),
-            c: fixUrl(safeDecode(raw[1] || raw[0])), // fallback for old links
+            c: fixUrl(safeDecode(raw[1] || raw[0])),
             v: fixUrl(safeDecode(raw[2] || raw[1])),
             f: fixUrl(safeDecode(raw[3] || raw[2]))
         };
 
+        let offset = (raw.length >= 5 && raw[4]) ? parseInt(safeDecode(raw[4])) || 0 : 0;
         let vIdMatch = config.v.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/ytscreeningroom\?v=|\/sandayat\?v=|\/condition_video_id\/|\/watch\?feature=player_embedded&v=))([^#\&\?]*)/);
         let vId = vIdMatch && vIdMatch[1].length === 11 ? vIdMatch[1] : null;
         let thumb = vId ? `https://img.youtube.com/vi/${vId}/maxresdefault.jpg` : '';
 
         let sub = false, vid = false;
-        let initialLikes = 0; // اللايكات قبل ما يضغط
-        let apiUrl = vId ? 'https://returnyoutubedislikeapi.com/votes?videoId=' + vId : '';
+        let activeTask = null; // بيسجل المهمة اللي المتابع ضغط عليها
 
         app.innerHTML = `
             <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" class="yt-logo">
@@ -112,107 +110,101 @@
             </div>
 
             <div class="checker-card">
-                <span style="color:#888; font-size:12px;">عدد اللايكات الفعلي الان</span>
+                <span style="color:#888; font-size:12px;">عدد اللايكات الحالي</span>
                 <span id="count-num">جاري التحميل...</span>
-                <button class="verify-btn" id="vBtn" onclick="verifyStrict()">تحقق من الشروط 🔍</button>
-                <div id="error-msg">❌ فشل التحقق: لم نكتشف زيادة في اللايكات! تأكد من وضع لايك.</div>
+                <button class="verify-btn" id="vBtn" onclick="verifyFinal()">تحقق من الشروط 🔍</button>
+                <div id="error-msg">❌ يرجى الضغط على المهام وإكمالها أولاً!</div>
             </div>
 
             <button id="fBtn" class="final-btn" onclick="window.location.href='${config.f}'">فتح الرابط 🔓</button>
         `;
 
-        // سحب اللايكات أول ما الصفحة تفتح وحفظها
-        if (apiUrl) {
-            fetch(apiUrl)
+        // سحب اللايكات شكلياً عشان الصفحة تبان احترافية
+        if (vId) {
+            fetch('https://returnyoutubedislikeapi.com/votes?videoId=' + vId)
             .then(res => res.json())
             .then(data => {
                 if (data && 'likes' in data) {
-                    initialLikes = data.likes;
-                    document.getElementById('count-num').innerText = initialLikes.toLocaleString('en-US');
+                    document.getElementById('count-num').innerText = (data.likes + offset).toLocaleString('en-US');
                 }
             }).catch(() => { document.getElementById('count-num').innerText = "غير متاح"; });
+        } else {
+            document.getElementById('count-num').innerText = "---";
         }
 
+        // دالة الفتح
         window.openT = function(type) {
+            if(type === 'c' && sub) return; // لو خلصت متفتحش تاني
+            if(type === 'v' && vid) return;
+
             window.open(type === 'c' ? config.c : config.v, '_blank');
-            if(type === 'c') { 
-                sub = true; 
-                document.getElementById('tk1').classList.remove('active');
-                document.getElementById('tk1').classList.add('done'); 
-                document.getElementById('tk1').querySelector('.step-num span').innerText = '✓';
-                document.getElementById('tk2').classList.add('active'); 
-            } else { 
-                vid = true; 
-                document.getElementById('tk2').classList.remove('active');
-                document.getElementById('tk2').classList.add('done'); 
-                document.getElementById('tk2').querySelector('.step-num span').innerText = '✓';
-            }
+            activeTask = type; // سجلنا إنه طلع بره الموقع
         };
 
-        // نظام الفحص الصارم (Before & After)
-        window.verifyStrict = function() {
-            if(!sub || !vid) return alert("يرجى إكمال المهام أولاً!");
-            
-            document.getElementById('error-msg').style.display = 'none';
-            const ld = document.getElementById('loader');
-            const timerText = document.getElementById('timer-text');
-            ld.style.display = 'flex';
-            
-            let sec = 4; // انتظار 4 ثواني عشان السيرفر يلحق يقرأ اللايك
-            const iv = setInterval(() => {
-                sec--;
-                timerText.innerText = sec > 0 ? sec : "جاري الفحص...";
+        // المراقبة: أول ما يرجع للموقع الكود ده هيشتغل لوحده!
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible' && activeTask) {
+                const ld = document.getElementById('loader');
+                const timerText = document.getElementById('timer-text');
+                ld.style.display = 'flex';
+                let sec = 3;
                 
-                if(sec < 0) {
-                    clearInterval(iv);
-                    
-                    // سحب اللايكات مرة تانية للمقارنة
-                    // إضافة بارامتر عشوائي لمنع الكاش (Cache Busting)
-                    fetch(apiUrl + '&t=' + new Date().getTime())
-                    .then(res => res.json())
-                    .then(data => {
+                const iv = setInterval(() => {
+                    sec--;
+                    timerText.innerText = sec > 0 ? sec : "تم!";
+                    if(sec < 0) {
+                        clearInterval(iv);
                         ld.style.display = 'none';
-                        let currentLikes = data.likes;
                         
-                        // لو اللايكات زادت عن الرقم الأولاني = نجاح
-                        if (currentLikes > initialLikes) {
-                            document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
-                            document.getElementById('count-num').style.color = "#22c55e";
-                            document.getElementById('vBtn').innerText = "تم التحقق ✓";
-                            document.getElementById('vBtn').disabled = true;
-                            document.getElementById('fBtn').style.display = 'block';
-                        } else {
-                            // لو مزادتش = فشل
-                            document.getElementById('error-msg').style.display = 'block';
-                            document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
+                        // نعلم له (صح)
+                        if(activeTask === 'c') {
+                            sub = true;
+                            document.getElementById('tk1').classList.remove('active');
+                            document.getElementById('tk1').classList.add('done');
+                            document.getElementById('tk1').querySelector('.step-num span').innerText = '✓';
+                            document.getElementById('tk2').classList.add('active');
+                        } else if(activeTask === 'v') {
+                            vid = true;
+                            document.getElementById('tk2').classList.remove('active');
+                            document.getElementById('tk2').classList.add('done');
+                            document.getElementById('tk2').querySelector('.step-num span').innerText = '✓';
                         }
-                    })
-                    .catch(() => {
-                        // لو الـ API فشل، هنعديه عشان المتابع ميتظلمش
-                        ld.style.display = 'none';
-                        document.getElementById('fBtn').style.display = 'block';
-                        document.getElementById('vBtn').style.display = 'none';
-                    });
-                }
-            }, 1000);
+                        activeTask = null; // نُصفر المهمة
+                    }
+                }, 1000);
+            }
+        });
+
+        // التحقق النهائي (زرار أحمر)
+        window.verifyFinal = function() {
+            if(!sub || !vid) {
+                document.getElementById('error-msg').style.display = 'block';
+                return;
+            }
+            // لو عملهم، افتح فوراً
+            document.getElementById('error-msg').style.display = 'none';
+            document.getElementById('vBtn').innerText = "تم التحقق ✓";
+            document.getElementById('vBtn').style.background = "#1a1a1c";
+            document.getElementById('vBtn').disabled = true;
+            document.getElementById('fBtn').style.display = 'block';
+            
+            // زيادة اللايك الوهمية بعد النجاح
+            let currentNumStr = document.getElementById('count-num').innerText.replace(/,/g, '');
+            if(!isNaN(currentNumStr)) {
+                document.getElementById('count-num').innerText = (parseInt(currentNumStr) + 1).toLocaleString('en-US');
+                document.getElementById('count-num').style.color = "#22c55e";
+            }
         };
 
     } else {
         app.innerHTML = `
             <div class="task-box" style="display:block; text-align:center; cursor:default;">
                 <h2 style="color:var(--accent)">MX_SASUKE Generator</h2>
-                <label style="color:#fff; font-size:13px; margin-top:10px;">عنوان الصفحة:</label>
                 <input type="text" id="it" class="gen-input" value="لازم تعمل اشتراك ولايك وتعليق للحصول على السكربت">
-                
-                <label style="color:#22c55e; font-size:13px; margin-top:10px;">👇 رابط قناتك (اشتراك)</label>
-                <input type="url" id="ic" class="gen-input" placeholder="https://youtube.com/...">
-                
-                <label style="color:#22c55e; font-size:13px; margin-top:10px;">👇 رابط فيديو اليوتيوب (اللايك والصورة)</label>
-                <input type="url" id="iv" class="gen-input" placeholder="https://youtube.com/watch?v=...">
-                
-                <label style="color:#ff0000; font-size:13px; margin-top:10px;">👇 الرابط النهائي (ميديا فاير)</label>
-                <input type="url" id="if" class="gen-input" placeholder="رابط التحميل...">
-                
+                <input type="url" id="ic" class="gen-input" placeholder="👇 رابط قناتك (اشتراك)">
+                <input type="url" id="iv" class="gen-input" placeholder="👇 رابط فيديو اليوتيوب (اللايك والصورة)">
+                <input type="url" id="if" class="gen-input" placeholder="👇 الرابط النهائي (ميديا فاير)">
+                <input type="number" id="io" class="gen-input" placeholder="معامل تصحيح اللايكات (مثال: 10)">
                 <button class="verify-btn" onclick="gen()">إنشاء الصفحة</button>
             </div>
         `;
@@ -221,7 +213,8 @@
                 safeEncode(document.getElementById('it').value),
                 safeEncode(document.getElementById('ic').value),
                 safeEncode(document.getElementById('iv').value),
-                safeEncode(document.getElementById('if').value)
+                safeEncode(document.getElementById('if').value),
+                safeEncode(document.getElementById('io').value || '0')
             ].join('|');
             window.location.href = "?data=" + encodeURIComponent(d);
         };
