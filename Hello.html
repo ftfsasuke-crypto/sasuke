@@ -65,6 +65,7 @@
         <button class="game-btn" onclick="createRoom('animals', 'حيوانات')">🦁 حيوانات</button>
         <button class="game-btn" onclick="createRoom('countries', 'دول وعواصم')">🗺️ دول وعواصم</button>
         <button class="game-btn" onclick="createRoom('jobs', 'مهن ووظائف')">👨‍⚕️ مهن ووظائف</button>
+        
         <button class="leave-btn" onclick="showScreen('main-menu')">رجوع للقائمة الرئيسية 🔙</button>
     </div>
 
@@ -85,13 +86,14 @@
         <h1>👋 أهلاً بيك</h1>
         <input type="text" id="player-name" class="input-field" placeholder="اكتب اسمك عشان تدخل..." autocomplete="off">
         <button class="action-btn" id="join-btn" onclick="joinRoom()">دخول الغرفة 🚪</button>
-        <p id="join-status" style="color: var(--accent); margin-top: 10px; display: none;">جاري الاتصال بصاحب الغرفة... ⏳</p>
+        <p id="join-status" style="color: var(--accent); margin-top: 10px; display: none; font-weight: bold;">جاري الاتصال... ⏳</p>
     </div>
 
     <div id="guest-lobby" class="screen">
         <h1>⏳ مستنيين الهوست...</h1>
         <h3 style="text-align: right; color: var(--accent); margin-bottom: 10px;">المتصلين: <span id="guest-count">1</span></h3>
         <div class="players-list" id="guest-players"></div>
+        
         <button class="leave-btn" onclick="leaveRoom()">🚪 مغادرة الغرفة</button>
     </div>
 
@@ -99,8 +101,10 @@
         <h2 id="player-role-title">شخصيتك السرية هي:</h2>
         <div class="secret-word-box" id="my-secret-word">???</div>
         <p style="color: var(--fail); font-weight: bold; font-size: 13px;">ماتقولش لحد إنت طلعت إيه 🤫</p>
+        
         <h3 style="text-align: right; color: var(--accent); margin-top: 30px; margin-bottom: 10px;">قائمة اللاعبين:</h3>
         <div class="players-list" id="game-players"></div>
+        
         <button class="leave-btn" onclick="leaveRoom()">🚪 مغادرة الغرفة</button>
     </div>
 
@@ -108,6 +112,7 @@
         <h1 style="font-size: 60px; margin-bottom: 10px;">👋</h1>
         <h2 style="color: var(--accent); font-size: 28px;">حظاً موفقاً!</h2>
         <p style="color: #cbd5e1; font-size: 16px; margin-top: 15px;">طلعت من الغرفة بنجاح.. نورتنا يا بطل 🥷</p>
+        <button class="leave-btn" onclick="window.location.href = window.location.href.split('?')[0];">إنشاء غرفة جديدة</button>
     </div>
 
 </div>
@@ -137,8 +142,7 @@
                 { urls: 'stun:stun.l.google.com:19302' },
                 { urls: 'stun:stun1.l.google.com:19302' },
                 { urls: 'stun:stun2.l.google.com:19302' },
-                { urls: 'stun:stun3.l.google.com:19302' },
-                { urls: 'stun:stun.services.mozilla.com' } // إضافة سيرفرات موزيلا لتقوية الاتصال
+                { urls: 'stun:stun.services.mozilla.com' } 
             ]
         }
     };
@@ -254,56 +258,81 @@
         showScreen('game-screen');
     }
 
+    // ==========================================
+    // نظام الاختراق والمحاولات المتكررة للضيف
+    // ==========================================
     function joinRoom() {
         let name = document.getElementById('player-name').value.trim();
         if(name === "") return alert("اكتب اسمك الأول!");
         
         document.getElementById('join-btn').style.display = 'none';
-        document.getElementById('join-status').style.display = 'block';
+        let statusEl = document.getElementById('join-status');
+        statusEl.style.display = 'block';
 
         let roomId = new URLSearchParams(window.location.search).get('room');
-        peer = new Peer(customConfig);
         
-        let connectionTimeout = setTimeout(() => {
-            alert("فشل الاتصال بالهوست ❌\nالمشكلة من سرعة النت، حاول تدخل تاني.");
-            document.getElementById('join-btn').style.display = 'block';
-            document.getElementById('join-status').style.display = 'none';
-            if(peer) peer.destroy();
-        }, 15000); // 15 ثانية مهلة
-        
-        peer.on('open', () => {
-            // شيلنا الـ reliable: true عشان نسرع الاتصال ونمنع البلوك
-            guestConn = peer.connect('mx-sasuke-' + roomId); 
-            
-            peer.on('error', (err) => {
-                clearTimeout(connectionTimeout);
-                alert("الهوست مش متاح أو قفل الغرفة! خليه يعمل رابط جديد ويتأكد إنه فاتح الشاشة.");
-                document.getElementById('join-btn').style.display = 'block';
-                document.getElementById('join-status').style.display = 'none';
-            });
+        let attempt = 1;
+        let maxAttempts = 3;
 
-            guestConn.on('open', () => {
-                clearTimeout(connectionTimeout); 
-                guestConn.send({type: 'join', name: safeEncode(name)});
-                showScreen('guest-lobby');
-            });
-            
-            guestConn.on('data', (data) => {
-                if(data.type === 'updateList') { 
-                    playersList = data.players; 
-                    updateUIList(); 
+        function tryConnect() {
+            statusEl.innerText = `جاري الاتصال بصاحب الغرفة... (محاولة ${attempt} من ${maxAttempts}) ⏳`;
+
+            if(peer) peer.destroy();
+            peer = new Peer(customConfig);
+
+            let connectionTimeout = setTimeout(() => {
+                if (attempt < maxAttempts) {
+                    attempt++;
+                    tryConnect(); // يحاول تاني لوحده
+                } else {
+                    alert("فشل الاتصال نهائياً ❌\nشركات النت عندنا بتعمل حظر للاتصال المباشر أحياناً. جرب تفتح داتا (Data) بدل الواي فاي وادخل تاني.");
+                    document.getElementById('join-btn').style.display = 'block';
+                    statusEl.style.display = 'none';
+                    if(peer) peer.destroy();
                 }
-                else if(data.type === 'gameStart') {
-                    document.getElementById('my-secret-word').innerText = safeDecode(data.word);
-                    showScreen('game-screen');
-                }
-            });
+            }, 10000); // 10 ثواني لكل محاولة (الإجمالي 30 ثانية)
             
-            guestConn.on('close', () => {
-                alert("الهوست قفل الغرفة أو خرج من اللعبة!");
-                showScreen('goodbye-screen');
+            peer.on('open', () => {
+                guestConn = peer.connect('mx-sasuke-' + roomId); 
+                
+                peer.on('error', (err) => {
+                    clearTimeout(connectionTimeout);
+                    if(err.type === 'peer-unavailable') {
+                        alert("صاحب الغرفة مش متاح أو قفلها! خليه يتأكد إنه فاتح الشاشة ويبعتلك رابط جديد.");
+                        document.getElementById('join-btn').style.display = 'block';
+                        statusEl.style.display = 'none';
+                    } else if (attempt < maxAttempts) {
+                        attempt++;
+                        tryConnect();
+                    }
+                });
+
+                guestConn.on('open', () => {
+                    clearTimeout(connectionTimeout); 
+                    guestConn.send({type: 'join', name: safeEncode(name)});
+                    showScreen('guest-lobby');
+                });
+                
+                guestConn.on('data', (data) => {
+                    if(data.type === 'updateList') { 
+                        playersList = data.players; 
+                        updateUIList(); 
+                    }
+                    else if(data.type === 'gameStart') {
+                        document.getElementById('my-secret-word').innerText = safeDecode(data.word);
+                        showScreen('game-screen');
+                    }
+                });
+                
+                guestConn.on('close', () => {
+                    alert("الهوست قفل الغرفة أو خرج من اللعبة!");
+                    showScreen('goodbye-screen');
+                });
             });
-        });
+        }
+
+        // ابدأ أول محاولة
+        tryConnect();
     }
 
     function leaveRoom() {
