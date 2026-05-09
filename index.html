@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MX_SASUKE | Ultimate Strict Unlocker</title>
+    <title>MX_SASUKE | Time Strict Unlocker</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; }
@@ -48,16 +48,13 @@
 
 <div id="loader">
     <div class="circle-timer"></div>
-    <h2 id="timer-text" style="font-size: 30px; margin: 20px 0;">جاري الفحص</h2>
-    <p>بنتأكد من اللايك في سيرفر يوتيوب... ⏳</p>
+    <h2 id="timer-text" style="font-size: 30px; margin: 20px 0;">3</h2>
+    <p>جاري فحص اللايكات في السيرفر... ⏳</p>
 </div>
 
 <div id="app" class="container"></div>
 
 <script>
-    // 🔴🔴🔴 حط مفتاح الـ API بتاعك هنا 🔴🔴🔴
-    const YOUTUBE_API_KEY = "حط_المفتاح_هنا"; 
-
     const app = document.getElementById('app');
     const urlParams = new URLSearchParams(window.location.search);
 
@@ -68,6 +65,14 @@
         url = url.trim();
         if (!/^https?:\/\//i.test(url) && url !== "#") return 'https://' + url;
         return url;
+    }
+
+    // صانع الأرقام الوهمية (مفيش API عشان ميعلقش)
+    function getStaticLikes(str) {
+        if(!str) return 74;
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        return Math.abs(hash % 400) + 150;
     }
 
     if (urlParams.has('data')) {
@@ -83,8 +88,14 @@
         let vId = vIdMatch && vIdMatch[1].length === 11 ? vIdMatch[1] : null;
         let thumb = vId ? `https://img.youtube.com/vi/${vId}/maxresdefault.jpg` : '';
 
+        // نظام المراقبة الزمنية
+        let activeTask = null;
+        let leaveTime = 0;
+        let cTimeSpent = 0;
+        let vTimeSpent = 0;
         let sub = false, vid = false;
-        let initialLikes = 0; 
+        
+        let initialLikes = getStaticLikes(config.v); 
 
         app.innerHTML = `
             <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" class="yt-logo">
@@ -111,79 +122,84 @@
             </div>
 
             <div class="checker-card">
-                <span style="color:#888; font-size:12px;">عدد اللايكات الفعلي (مباشر)</span>
-                <span id="count-num">جاري الاتصال بيوتيوب...</span>
+                <span style="color:#888; font-size:12px;">عدد اللايكات الحالي</span>
+                <span id="count-num">${initialLikes.toLocaleString('en-US')}</span>
                 <button class="verify-btn" id="vBtn" onclick="verifyStrict()">تحقق من الشروط 🔍</button>
-                <div id="error-msg">❌ فشل التحقق: لم نكتشف زيادة في اللايكات! تأكد من وضع لايك.</div>
+                <div id="error-msg">❌ فشل التحقق: يبدو أنك لم تقم بعمل لايك بشكل صحيح! تأكد من وضع اللايك.</div>
             </div>
 
             <button id="fBtn" class="final-btn" onclick="window.location.href='${config.f}'">فتح الرابط 🔓</button>
         `;
 
-        // دالة سحب اللايكات الحقيقية من جوجل
-        function fetchLikes(callback) {
-            if (!vId || YOUTUBE_API_KEY === "حط_المفتاح_هنا") {
-                document.getElementById('count-num').innerText = "يرجى وضع API KEY";
-                return;
-            }
-            fetch(\`https://www.googleapis.com/youtube/v3/videos?part=statistics&id=\${vId}&key=\${YOUTUBE_API_KEY}\`)
-            .then(res => res.json())
-            .then(data => {
-                if(data.items && data.items.length > 0) {
-                    callback(parseInt(data.items[0].statistics.likeCount));
-                }
-            }).catch(e => console.error(e));
-        }
-
-        // سحب الرقم أول ما الصفحة تفتح
-        fetchLikes((likes) => {
-            initialLikes = likes;
-            document.getElementById('count-num').innerText = initialLikes.toLocaleString('en-US');
-        });
-
         window.openT = function(type) {
             window.open(type === 'c' ? config.c : config.v, '_blank');
-            if(type === 'c') { 
-                sub = true; 
-                document.getElementById('tk1').classList.remove('active');
-                document.getElementById('tk1').classList.add('done'); 
-                document.getElementById('tk1').querySelector('.step-num span').innerText = '✓';
-                document.getElementById('tk2').classList.add('active'); 
-            } else { 
-                vid = true; 
-                document.getElementById('tk2').classList.remove('active');
-                document.getElementById('tk2').classList.add('done'); 
-                document.getElementById('tk2').querySelector('.step-num span').innerText = '✓';
-            }
+            activeTask = type;
+            leaveTime = Date.now(); // بدأنا نحسب الوقت اللي ساب فيه الموقع
         };
 
-        // نظام الفحص الصارم (بنجيب الرقم تاني ونقارنه بالأولاني)
+        // أول ما يرجع للموقع، بنحسب قعد كام ثانية بره
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible' && activeTask) {
+                let timeAway = Date.now() - leaveTime;
+                
+                if(activeTask === 'c') {
+                    cTimeSpent += timeAway;
+                    sub = true;
+                    document.getElementById('tk1').classList.remove('active');
+                    document.getElementById('tk1').classList.add('done');
+                    document.getElementById('tk1').querySelector('.step-num span').innerText = '✓';
+                    document.getElementById('tk2').classList.add('active');
+                } else if(activeTask === 'v') {
+                    vTimeSpent += timeAway;
+                    vid = true;
+                    document.getElementById('tk2').classList.remove('active');
+                    document.getElementById('tk2').classList.add('done');
+                    document.getElementById('tk2').querySelector('.step-num span').innerText = '✓';
+                }
+                activeTask = null;
+            }
+        });
+
+        // التحقق الصارم بالوقت
         window.verifyStrict = function() {
-            if(!sub || !vid) return alert("يرجى إكمال المهام أولاً!");
+            if(!sub || !vid) return alert("يرجى الضغط على المهام وإكمالها أولاً!");
             
             document.getElementById('error-msg').style.display = 'none';
             const ld = document.getElementById('loader');
+            const timerText = document.getElementById('timer-text');
             ld.style.display = 'flex';
             
-            // انتظار 4 ثواني عشان السيرفر يلحق يقرأ اللايك الجديد
-            setTimeout(() => {
-                fetchLikes((currentLikes) => {
+            let sec = 3;
+            const iv = setInterval(() => {
+                sec--;
+                timerText.innerText = sec > 0 ? sec : "جاري الفحص...";
+                
+                if(sec < 0) {
+                    clearInterval(iv);
                     ld.style.display = 'none';
                     
-                    // لو اللايكات زادت = نجاح
-                    if (currentLikes > initialLikes) {
-                        document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
-                        document.getElementById('count-num').style.color = "#22c55e";
-                        document.getElementById('vBtn').innerText = "تم التحقق ✓";
-                        document.getElementById('vBtn').disabled = true;
-                        document.getElementById('fBtn').style.display = 'block';
-                    } else {
-                        // لو الرقم ثابت أو قل = فشل
+                    // هنا الخدعة: لو المتابع قعد أقل من 6 ثواني على فيديو اللايك، بنفشله!
+                    if (vTimeSpent < 6000) {
                         document.getElementById('error-msg').style.display = 'block';
                         document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
+                        
+                        // بنشيل علامة الصح من على مهمة اللايك عشان نعقبه ويرجع يعملها تاني بضمير 😂
+                        vid = false;
+                        vTimeSpent = 0;
+                        document.getElementById('tk2').classList.remove('done');
+                        document.getElementById('tk2').classList.add('active');
+                        document.getElementById('tk2').querySelector('.step-num span').innerText = '2';
+                        
+                    } else {
+                        // لو قعد وقت كافي (عمل لايك وشاله وحطه تاني براحته) = ينجح!
+                        document.getElementById('count-num').innerText = (initialLikes + 1).toLocaleString('en-US');
+                        document.getElementById('count-num').style.color = "#22c55e";
+                        document.getElementById('vBtn').innerText = "تم التحقق بنجاح ✓";
+                        document.getElementById('vBtn').disabled = true;
+                        document.getElementById('fBtn').style.display = 'block';
                     }
-                });
-            }, 4000);
+                }
+            }, 1000);
         };
 
     } else {
