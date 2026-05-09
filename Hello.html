@@ -8,16 +8,15 @@
     <style>
         :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; }
         body { background: var(--bg); color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden; }
-        .container { width: 90%; max-width: 400px; background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; }
+        .container { width: 90%; max-width: 400px; background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; margin: 20px 0; }
         
         h1 { color: white; margin-bottom: 25px; font-size: 26px; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
         
-        /* القوائم */
         .game-btn { background: #111; border: 2px solid #333; color: white; padding: 18px; border-radius: 15px; width: 100%; font-size: 18px; font-weight: bold; cursor: pointer; margin-bottom: 15px; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .game-btn:hover { border-color: var(--main); box-shadow: 0 0 15px rgba(255,0,0,0.3); }
 
-        .anime-btn { background: #1a1a1c; border: 1px solid rgba(255,255,255,0.1); color: white; padding: 15px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 12px; transition: 0.3s; text-align: right; display: flex; justify-content: space-between; align-items: center; }
-        .anime-btn:hover { background: #222; border-color: var(--accent); padding-right: 20px; }
+        .item-btn { background: #1a1a1c; border: 1px solid rgba(255,255,255,0.1); color: white; padding: 15px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 12px; transition: 0.3s; text-align: right; display: flex; justify-content: space-between; align-items: center; }
+        .item-btn:hover { background: #222; border-color: var(--accent); padding-right: 20px; }
 
         .back-btn { background: transparent; color: #888; border: none; font-size: 16px; margin-top: 15px; cursor: pointer; font-family: 'Cairo'; text-decoration: underline; }
         
@@ -26,11 +25,10 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* شاشة النتيجة (السحب العشوائي) */
         #random-box { background: #000; border: 2px dashed #444; border-radius: 15px; padding: 40px 20px; margin: 20px 0; transition: 0.3s; }
         #random-box.revealed { border-style: solid; border-color: var(--accent); background: rgba(34, 197, 94, 0.1); box-shadow: 0 0 20px rgba(34, 197, 94, 0.2); }
         
-        #character-name { font-size: 32px; font-weight: bold; color: white; margin: 0; }
+        #result-name { font-size: 32px; font-weight: bold; color: white; margin: 0; }
         #loading-text { font-size: 20px; color: var(--main); animation: pulse 1s infinite; display: none; }
         
         @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
@@ -46,82 +44,114 @@
     <div id="main-menu" class="screen active-screen">
         <h1>🎮 ألعاب الديسكورد</h1>
         <button class="game-btn" onclick="showScreen('anime-menu')">👤 لعبة من أنا؟ (أنمي)</button>
+        <button class="game-btn" onclick="showScreen('global-menu')">🌍 لعبة التخمين العالمية</button>
     </div>
 
     <div id="anime-menu" class="screen">
         <h1>📺 اختر عالم الأنمي</h1>
-        <button class="anime-btn" onclick="rollCharacter('naruto')"><span>🍥 ناروتو (Naruto)</span> <span>🎲</span></button>
-        <button class="anime-btn" onclick="rollCharacter('aot')"><span>⚔️ هجوم العمالقة (AOT)</span> <span>🎲</span></button>
-        <button class="anime-btn" onclick="rollCharacter('dbz')"><span>🐉 دراجون بول (DBZ)</span> <span>🎲</span></button>
-        <button class="anime-btn" onclick="rollCharacter('ds')"><span>🗡️ قاتل الشياطين (DS)</span> <span>🎲</span></button>
-        <button class="anime-btn" onclick="rollCharacter('monster')"><span>🧠 مونستر (Monster)</span> <span>🎲</span></button>
+        <button class="item-btn" onclick="rollItem('anime', 'naruto')"><span>🍥 ناروتو (Naruto)</span> <span>🎲</span></button>
+        <button class="item-btn" onclick="rollItem('anime', 'aot')"><span>⚔️ هجوم العمالقة (AOT)</span> <span>🎲</span></button>
+        <button class="item-btn" onclick="rollItem('anime', 'dbz')"><span>🐉 دراجون بول (DBZ)</span> <span>🎲</span></button>
+        <button class="item-btn" onclick="rollItem('anime', 'ds')"><span>🗡️ قاتل الشياطين (DS)</span> <span>🎲</span></button>
+        <button class="item-btn" onclick="rollItem('anime', 'monster')"><span>🧠 مونستر (Monster)</span> <span>🎲</span></button>
+        <button class="back-btn" onclick="showScreen('main-menu')">رجوع للقائمة 🔙</button>
+    </div>
+
+    <div id="global-menu" class="screen">
+        <h1>🌍 اختر التصنيف</h1>
+        <button class="item-btn" onclick="rollItem('global', 'food')"><span>🍕 أكلات مشهورة</span> <span>🎲</span></button>
+        <button class="item-btn" onclick="rollItem('global', 'fruits')"><span>🍎 فواكه</span> <span>🎲</span></button>
+        <button class="item-btn" onclick="rollItem('global', 'veggies')"><span>🥕 خضروات</span> <span>🎲</span></button>
+        <button class="item-btn" onclick="rollItem('global', 'objects')"><span>📱 جماد وأشياء</span> <span>🎲</span></button>
+        <button class="item-btn" onclick="rollItem('global', 'animals')"><span>🦁 حيوانات</span> <span>🎲</span></button>
+        <button class="item-btn" onclick="rollItem('global', 'countries')"><span>🗺️ دول وعواصم</span> <span>🎲</span></button>
+        <button class="item-btn" onclick="rollItem('global', 'jobs')"><span>👨‍⚕️ مهن ووظائف</span> <span>🎲</span></button>
         <button class="back-btn" onclick="showScreen('main-menu')">رجوع للقائمة 🔙</button>
     </div>
 
     <div id="result-screen" class="screen">
-        <h2 style="color: #cbd5e1; font-size: 20px;">شخصيتك السرية هي:</h2>
+        <h2 style="color: #cbd5e1; font-size: 20px;">الكلمة السرية هي:</h2>
         
         <div id="random-box">
             <div id="loading-text">جاري السحب... ⏳</div>
-            <h1 id="character-name">???</h1>
+            <h1 id="result-name">???</h1>
         </div>
         
         <p style="color: #888; font-size: 13px;">ماتقولش لحد! خليهم يسألوك ويحزروا 🤫</p>
         
-        <button class="action-btn" id="reroll-btn" onclick="reroll()">اسحب شخصية تانية 🔄</button>
-        <button class="back-btn" onclick="showScreen('anime-menu')">تغيير الأنمي 🔙</button>
+        <button class="action-btn" id="reroll-btn" onclick="executeRoll()">اسحب كلمة تانية 🔄</button>
+        <button class="back-btn" id="result-back-btn" onclick="">رجوع 🔙</button>
     </div>
 
 </div>
 
 <script>
-    // قاعدة بيانات الشخصيات المشهورة لكل أنمي
-    const charactersDB = {
-        naruto: ['ناروتو', 'ساسوكي', 'ساكورا', 'كاكاشي', 'ايتاشي', 'مادارا', 'جيرايا', 'تسونادي', 'اوروتشيمارو', 'شيكامارو', 'هيناتا', 'جارا', 'باين (Pain)', 'اوبيتو', 'ميناتو', 'جاي', 'هيدان', 'كاكوزو', 'كيسامي', 'ساسوري', 'ديدارا'],
-        aot: ['ايرين', 'ميكاسا', 'ارمين', 'ليفاي', 'ايروين', 'هانجي', 'راينر', 'بيرتولدت', 'زيك', 'ساشا', 'جان', 'كوني', 'هيستوريا', 'آني', 'بيك'],
-        dbz: ['غوكو', 'فيجيتا', 'غوهان', 'بيكولو', 'فريزا', 'سيل', 'ماجين بو', 'ترانكس', 'بولما', 'كوريرين', 'بيروس', 'ويز', 'اندرويد 18', 'اندرويد 17', 'راديتز'],
-        ds: ['تانجيرو', 'نيزوكو', 'زينيتسو', 'اينوسكي', 'توميوكا غيو', 'رينجوكو', 'موزان', 'اكازا', 'شينوبو', 'تينغين اوزوي', 'ميتسوري', 'سانيمي', 'مويتشيرو', 'دوما', 'كوكوشيبو'],
-        monster: ['دكتور تيما', 'يوهان ليبرت', 'نينّا فورتر', 'المفتش لونجي', 'غريمر', 'إيفا هاينمان', 'روبيرتو', 'ديتر', 'كارل نيومان']
+    // قاعدة بيانات الأنمي
+    const animeDB = {
+        naruto: ['ناروتو', 'ساسوكي', 'ساكورا', 'كاكاشي', 'هيناتا', 'شيكامارو', 'جارا', 'جيرايا', 'تسونادي', 'اوروتشيمارو', 'ايتاشي', 'مادارا', 'باين', 'اوبيتو', 'ساسوري', 'ديدارا', 'هاشيراما', 'توبيراما', 'ميناتو', 'مايت جاي', 'نيجي', 'روك لي', 'كابوتو', 'زابوزا'],
+        aot: ['ايرين ييغر', 'ميكاسا', 'ارمين', 'ليفاي', 'ايروين', 'هانجي', 'راينر', 'بيرتولدت', 'آني', 'جان', 'كوني', 'ساشا', 'هيستوريا', 'زيك ييغر', 'يمير', 'فلوك', 'غابي', 'فالكو', 'كيني أكرمان'],
+        dbz: ['غوكو', 'فيجيتا', 'غوهان', 'بيكولو', 'كوريرين', 'ترانكس', 'بولما', 'موتين روشي', 'فريزا', 'سيل', 'ماجين بو', 'راديتز', 'بيروس', 'ويز', 'اندرويد 18', 'جيرين', 'غوكو بلاك', 'برولي', 'مستر ساتان'],
+        ds: ['تانجيرو', 'نيزوكو', 'زينيتسو', 'اينوسكي', 'جينيا', 'كاناو', 'توميوكا غيو', 'رينجوكو', 'شينوبو', 'تينغين اوزوي', 'ميتسوري', 'أوباناي', 'موزان', 'كوكوشيبو', 'دوما', 'اكازا', 'أوروكوداكي'],
+        monster: ['دكتور كينزو تيما', 'يوهان ليبرت', 'نينّا فورتر (آنا)', 'المفتش لونجي', 'غريمر', 'إيفا هاينمان', 'روبيرتو', 'ديتر', 'الدكتور رايخفاين', 'كارل نيومان', 'مارتن']
     };
 
-    let currentAnimeKey = '';
+    // قاعدة بيانات التخمين العالمية
+    const globalDB = {
+        food: ['بيتزا', 'برجر', 'شاورما', 'كشري', 'مكرونة بشاميل', 'سوشي', 'محشي كرمب', 'كباب', 'كفتة', 'بانيه', 'طعمية', 'فول', 'حواوشي', 'شيش طاووق', 'كبسة', 'ملوخية', 'بان كيك', 'دوناتس', 'بطاطس مقلية', 'إندومي'],
+        fruits: ['تفاحة', 'موز', 'برتقال', 'فراولة', 'بطيخ', 'عنب', 'مانجو', 'خوخ', 'أناناس', 'كيوي', 'رمان', 'تين', 'بلح', 'يوسفي', 'جوافة', 'أفوكادو', 'توت', 'شمام'],
+        veggies: ['طماطم', 'خيار', 'جزر', 'بطاطس', 'بصل', 'ثوم', 'باذنجان', 'فلفل رومي', 'بروكلي', 'خس', 'سبانخ', 'قرنبيط', 'كرنب', 'بقدونس', 'بسلة', 'كوسة', 'بامية', 'فاصوليا'],
+        objects: ['كرسي', 'طاولة', 'تليفزيون', 'موبايل', 'لابتوب', 'سيارة', 'طيارة', 'ساعة', 'نظارة', 'قلم', 'كتاب', 'ثلاجة', 'غسالة', 'مروحة', 'مكيف', 'سرير', 'دولاب', 'مفتاح', 'سماعات', 'شنطة', 'ميكروفون', 'عجلة', 'مقص', 'مفك'],
+        animals: ['أسد', 'فيل', 'زرافة', 'نمر', 'قرد', 'كلب', 'قطة', 'حصان', 'حوت', 'سمك القرش', 'تمساح', 'صقر', 'نسر', 'دب', 'ثعبان', 'بقرة', 'خروف', 'أرنب', 'سلحفاة', 'بطريق', 'دولفين', 'فهد', 'خفاش', 'قنفذ'],
+        countries: ['مصر', 'السعودية', 'اليابان', 'أمريكا', 'البرازيل', 'فرنسا', 'إيطاليا', 'الصين', 'الهند', 'روسيا', 'المغرب', 'الإمارات', 'قطر', 'فلسطين', 'تركيا', 'إسبانيا', 'ألمانيا', 'كندا', 'أستراليا', 'الأرجنتين', 'كوريا الجنوبية'],
+        jobs: ['دكتور', 'مهندس', 'طيار', 'ضابط', 'مدرس', 'مبرمج', 'طباخ', 'نجار', 'سباك', 'محامي', 'محاسب', 'صحفي', 'ممثل', 'رائد فضاء', 'رسام', 'خياط', 'ميكانيكي', 'قاضي', 'صيدلي', 'مصور', 'حلاق']
+    };
+
+    let activeDBType = ''; // 'anime' أو 'global'
+    let activeCategory = '';
 
     function showScreen(screenId) {
         document.querySelectorAll('.screen').forEach(el => el.classList.remove('active-screen'));
         document.getElementById(screenId).classList.add('active-screen');
     }
 
-    function rollCharacter(animeKey) {
-        currentAnimeKey = animeKey;
+    function rollItem(dbType, categoryKey) {
+        activeDBType = dbType;
+        activeCategory = categoryKey;
+        
+        // ظبط زرار الرجوع بناءً على القائمة اللي جينا منها
+        let backBtn = document.getElementById('result-back-btn');
+        if (dbType === 'anime') {
+            backBtn.setAttribute('onclick', "showScreen('anime-menu')");
+            backBtn.innerText = "تغيير الأنمي 🔙";
+        } else {
+            backBtn.setAttribute('onclick', "showScreen('global-menu')");
+            backBtn.innerText = "تغيير التصنيف 🔙";
+        }
+
         showScreen('result-screen');
         executeRoll();
     }
 
-    function reroll() {
-        executeRoll();
-    }
-
     function executeRoll() {
-        let nameEl = document.getElementById('character-name');
+        let nameEl = document.getElementById('result-name');
         let loadingEl = document.getElementById('loading-text');
         let boxEl = document.getElementById('random-box');
         let btnEl = document.getElementById('reroll-btn');
 
-        // تجهيز شكل السحب
         nameEl.style.display = 'none';
         loadingEl.style.display = 'block';
         boxEl.classList.remove('revealed');
         btnEl.disabled = true;
         btnEl.style.opacity = '0.5';
 
-        // سحب اسم عشوائي من الداتا بيز
-        let animeList = charactersDB[currentAnimeKey];
-        let randomChar = animeList[Math.floor(Math.random() * animeList.length)];
+        // اختيار الداتا بيز الصح (أنمي ولا عالمي)
+        let currentDB = activeDBType === 'anime' ? animeDB : globalDB;
+        let list = currentDB[activeCategory];
+        let randomWord = list[Math.floor(Math.random() * list.length)];
 
-        // تأخير ثانية عشان الإثارة
         setTimeout(() => {
             loadingEl.style.display = 'none';
-            nameEl.innerText = randomChar;
+            nameEl.innerText = randomWord;
             nameEl.style.display = 'block';
             boxEl.classList.add('revealed');
             
