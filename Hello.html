@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MX_SASUKE | Multiplayer Hub</title>
-    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js" async></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; --imposter: #a855f7; --warn: #f59e0b; }
@@ -30,7 +30,7 @@
 
 <div class="box-container">
     
-    <div id="p-main" class="panel">
+    <div id="p-main" class="panel active-panel">
         <h1>🎮 اختار الغرفة يا هوست</h1>
         <input type="text" id="host-input" class="input-field" placeholder="اسمك كصاحب الغرفة..." value="Sasuke">
         <button class="game-btn" onclick="hostRoom('naruto', 'ناروتو', 'guess')">🍥 من أنا؟ (ناروتو)</button>
@@ -121,12 +121,6 @@
 </div>
 
 <script>
-    // ده نظام هيكشفلك لو إنت نسخت الكود ناقص ويقولك المشكلة فين بدل الشاشة السودة
-    window.onerror = function(msg, url, lineNo) {
-        alert("حصل خطأ في الكود (غالباً اتنسخ ناقص)!\nالسطر: " + lineNo + "\nالخطأ: " + msg);
-        return false;
-    };
-
     let mqttClient, myName, roomId, isHost = false, players = [], gameMode = '', gameCategory = '';
     
     let timerInterval;
@@ -149,14 +143,10 @@
         if(target) target.classList.add('active-panel');
     }
 
-    // خلينا تشغيل الشاشة يبدأ أول ما المتصفح يجهز عشان نمنع الشاشة السودة
-    window.onload = function() {
-        if (window.location.search.includes('room=')) {
-            navTo('p-join');
-        } else {
-            navTo('p-main');
-        }
-    };
+    // التنفيذ الفوري عشان نضمن الشاشة متسودش
+    if (window.location.search.includes('room=')) {
+        navTo('p-join');
+    }
 
     function renderPlayers() {
         let html = '';
@@ -369,4 +359,15 @@
             if (isHost) mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'room_closed'}));
             else mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'leave', name: myName}));
             forceLeave();
-      
+        } else navTo('p-main');
+    }
+    
+    function forceLeave() {
+        clearInterval(timerInterval);
+        if(mqttClient) mqttClient.end();
+        players = []; isHost = false; roomId = null; votes = {};
+        window.history.replaceState({}, document.title, window.location.pathname);
+        navTo('p-main');
+    }
+    
+    function disconnectAndShowMsg(tit
