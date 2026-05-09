@@ -115,7 +115,7 @@
 </div>
 
 <script>
-    // قاعدة البيانات بكل التصنيفات العالمية والأنمي
+    // قاعدة البيانات بكل التصنيفات
     const DB = {
         naruto: ['ناروتو', 'ساسوكي', 'ساكورا', 'كاكاشي', 'ايتاشي', 'مادارا', 'جيرايا', 'تسونادي', 'اوروتشيمارو', 'شيكامارو', 'باين', 'اوبيتو', 'نيجي', 'جارا', 'هيناتا', 'روك لي', 'زابوزا', 'كابوتو'],
         aot: ['ايرين', 'ميكاسا', 'ارمين', 'ليفاي', 'ايروين', 'هانجي', 'راينر', 'زيك', 'ساشا', 'جان', 'هيستوريا', 'آني', 'بيك', 'فلوك'],
@@ -123,7 +123,6 @@
         ds: ['تانجيرو', 'نيزوكو', 'زينيتسو', 'اينوسكي', 'غيو', 'رينجوكو', 'موزان', 'اكازا', 'شينوبو', 'تينغين', 'ميتسوري'],
         monster: ['دكتور تيما', 'يوهان ليبرت', 'نينّا فورتر', 'المفتش لونجي', 'غريمر', 'إيفا هاينمان', 'روبيرتو', 'ديتر'],
         
-        // الأقسام العالمية
         food: ['بيتزا', 'برجر', 'شاورما', 'كشري', 'مكرونة بشاميل', 'سوشي', 'محشي كرمب', 'كباب', 'كفتة', 'بانيه', 'طعمية', 'حواوشي', 'شيش طاووق', 'كبسة', 'ملوخية'],
         fruits: ['تفاحة', 'موز', 'برتقال', 'فراولة', 'بطيخ', 'عنب', 'مانجو', 'خوخ', 'أناناس', 'كيوي', 'رمان', 'تين', 'بلح', 'يوسفي', 'جوافة'],
         veggies: ['طماطم', 'خيار', 'جزر', 'بطاطس', 'بصل', 'ثوم', 'باذنجان', 'فلفل رومي', 'بروكلي', 'خس', 'سبانخ', 'قرنبيط', 'كرنب', 'بقدونس', 'كوسة'],
@@ -136,11 +135,14 @@
     function safeEncode(str) { return encodeURIComponent(str); }
     function safeDecode(str) { try { return decodeURIComponent(str); } catch(e) { return str; } }
 
+    // إضافة سيرفرات قوية لتقليل فشل الاتصال
     const customConfig = {
         config: {
             'iceServers': [
                 { urls: 'stun:stun.l.google.com:19302' },
-                { urls: 'stun:stun1.l.google.com:19302' }
+                { urls: 'stun:stun1.l.google.com:19302' },
+                { urls: 'stun:stun2.l.google.com:19302' },
+                { urls: 'stun:stun3.l.google.com:19302' }
             ]
         }
     };
@@ -188,7 +190,6 @@
         isHost = true;
         roomCategory = category;
         
-        // الاسم متسجل في الشاشة الأولى عادي
         let hostName = document.getElementById('host-name-input').value.trim();
         if(hostName === '') hostName = 'Sasuke'; 
 
@@ -243,7 +244,7 @@
     }
 
     function startGame() {
-        let words = DB[roomCategory] || DB['food']; // احتياطي
+        let words = DB[roomCategory] || DB['food'];
         
         connections.forEach(conn => {
             let w = words[Math.floor(Math.random() * words.length)];
@@ -267,12 +268,13 @@
         let roomId = new URLSearchParams(window.location.search).get('room');
         peer = new Peer(customConfig);
         
+        // المهلة بقت 20 ثانية بدل 10
         let connectionTimeout = setTimeout(() => {
-            alert("فشل الاتصال بالهوست ❌\nالمشكلة من سرعة النت، حاول تدخل تاني.");
+            alert("فشل الاتصال بالهوست ❌\nخلّي الهوست يفتح الشاشة بتاعته ومتكونش مقفولة، وجرب ادخل تاني.");
             document.getElementById('join-btn').style.display = 'block';
             document.getElementById('join-status').style.display = 'none';
             if(peer) peer.destroy();
-        }, 10000);
+        }, 20000); 
         
         peer.on('open', () => {
             guestConn = peer.connect('mx-sasuke-' + roomId, { reliable: true });
