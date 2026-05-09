@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MX_SASUKE | Multiplayer Hub</title>
-    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js" async></script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; --imposter: #a855f7; --warn: #f59e0b; }
@@ -143,7 +145,6 @@
         if(target) target.classList.add('active-panel');
     }
 
-    // التنفيذ الفوري عشان نضمن الشاشة متسودش
     if (window.location.search.includes('room=')) {
         navTo('p-join');
     }
@@ -164,7 +165,7 @@
     }
 
     function hostRoom(cat, name, mode) {
-        if(typeof mqtt === 'undefined') return alert("الموقع لسه بيحمل، ثواني وجرب تاني..");
+        if(typeof mqtt === 'undefined') return alert("النت عندك بطيء شوية، ثانية وجرب تاني..");
         isHost = true; gameMode = mode; gameCategory = cat; 
         let n = document.getElementById('host-input').value || "Sasuke";
         myName = encodeURIComponent(n + " 👑");
@@ -180,7 +181,7 @@
     }
 
     function joinRoom() {
-        if(typeof mqtt === 'undefined') return alert("الموقع لسه بيحمل..");
+        if(typeof mqtt === 'undefined') return alert("النت عندك بطيء شوية، ثانية وجرب تاني..");
         let n = document.getElementById('guest-input').value;
         if(!n) return alert("اكتب اسمك!");
         myName = encodeURIComponent(n);
@@ -370,4 +371,4 @@
         navTo('p-main');
     }
     
-    function disconnectAndShowMsg(tit
+    function disconnectAndShowMsg(
