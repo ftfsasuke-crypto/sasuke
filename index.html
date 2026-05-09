@@ -36,15 +36,29 @@
         
         #error-msg { display: none; color: var(--fail); font-size: 13px; margin-top: 10px; font-weight: bold; }
 
-        #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
+        /* شاشة التحقق النهائية */
+        #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .circle-timer { width: 60px; height: 60px; border: 5px solid #222; border-top: 5px solid var(--main); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         
+        /* شاشة العداد التنازلي الجديدة (7 ثواني) */
+        #countdown-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 999; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+        .countdown-circle { width: 90px; height: 90px; border-radius: 50%; border: 4px solid #333; border-top-color: var(--main); display: flex; align-items: center; justify-content: center; font-size: 40px; font-weight: bold; color: white; animation: pulse 1s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(255, 0, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); } }
+
         .final-btn { background: var(--accent); width: 100%; padding: 18px; border-radius: 12px; color: white; border: none; margin-top: 20px; font-weight: bold; font-size: 18px; display: none; cursor: pointer; }
         .gen-input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #333; background: #111; color: white; box-sizing: border-box; text-align: right; font-family: 'Cairo', sans-serif; }
     </style>
 </head>
 <body>
+
+<div id="countdown-overlay">
+    <div class="countdown-circle">
+        <span id="countdown-number">7</span>
+    </div>
+    <h2 style="margin-top: 20px; font-size: 24px;">انتظر قليلاً... ⏳</h2>
+    <p style="color: #888; font-size: 14px; text-align: center; width: 80%;">انتظر فقط، النظام يتحقق من إتمامك للشرط<br>بعد الانتهاء ستكتمل المهمة 👍</p>
+</div>
 
 <div id="loader">
     <div class="circle-timer"></div>
@@ -55,7 +69,7 @@
 <div id="app" class="container"></div>
 
 <script>
-    // مفتاح جوجل بتاعك أهو محطوط وجاهز
+    // مفتاح جوجل بتاعك
     const YOUTUBE_API_KEY = "AIzaSyA6NebhJLqT8ZEG56cmMEm4xsRR5byisPI"; 
 
     const app = document.getElementById('app');
@@ -143,20 +157,47 @@
             }
         });
 
+        // هنا السحر الجديد: التايمر الـ 7 ثواني
         window.openT = function(type) {
+            // منع الضغط المتكرر لو المهمة خلصت
+            if (type === 'c' && sub) return;
+            if (type === 'v' && vid) return;
+
+            // فتح الرابط
             window.open(type === 'c' ? config.c : config.v, '_blank');
-            if(type === 'c') { 
-                sub = true; 
-                document.getElementById('tk1').classList.remove('active');
-                document.getElementById('tk1').classList.add('done'); 
-                document.getElementById('tk1').querySelector('.step-num span').innerText = '✓';
-                document.getElementById('tk2').classList.add('active'); 
-            } else { 
-                vid = true; 
-                document.getElementById('tk2').classList.remove('active');
-                document.getElementById('tk2').classList.add('done'); 
-                document.getElementById('tk2').querySelector('.step-num span').innerText = '✓';
-            }
+
+            // إظهار شاشة العداد
+            const overlay = document.getElementById('countdown-overlay');
+            const numSpan = document.getElementById('countdown-number');
+            overlay.style.display = 'flex';
+            
+            let timeLeft = 7;
+            numSpan.innerText = timeLeft;
+
+            // تشغيل العداد التنازلي
+            const timer = setInterval(() => {
+                timeLeft--;
+                numSpan.innerText = timeLeft;
+
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    overlay.style.display = 'none';
+
+                    // تحديث شكل المهمة لـ "تم"
+                    if(type === 'c') { 
+                        sub = true; 
+                        document.getElementById('tk1').classList.remove('active');
+                        document.getElementById('tk1').classList.add('done'); 
+                        document.getElementById('tk1').querySelector('.step-num span').innerText = '✓';
+                        document.getElementById('tk2').classList.add('active'); 
+                    } else { 
+                        vid = true; 
+                        document.getElementById('tk2').classList.remove('active');
+                        document.getElementById('tk2').classList.add('done'); 
+                        document.getElementById('tk2').querySelector('.step-num span').innerText = '✓';
+                    }
+                }
+            }, 1000);
         };
 
         window.verifyStrict = function() {
