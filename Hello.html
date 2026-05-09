@@ -20,11 +20,11 @@
 
         .action-btn { background: var(--main); color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-bottom: 10px; }
         .action-btn:hover { background: #cc0000; }
+        .action-btn:disabled { background: #444; cursor: not-allowed; }
 
         .leave-btn { background: #333; border: 1px solid #555; color: white; padding: 12px; border-radius: 10px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
         .leave-btn:hover { background: var(--fail); border-color: var(--fail); }
 
-        /* الشاشات مخفية ماعدا اللي واخدة active */
         .screen { display: none; }
         .active-screen { display: block; animation: fadeIn 0.4s; }
 
@@ -46,7 +46,7 @@
 
 <div class="container">
     
-    <div id="main-menu" class="screen active-screen">
+    <div id="main-menu" class="screen">
         <h1>🎮 اختار الغرفة يا هوست</h1>
         <input type="text" id="host-name-input" class="input-field" placeholder="اسمك كصاحب الغرفة..." value="Sasuke">
         
@@ -127,8 +127,6 @@
 
 </div>
 
-<script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
-
 <script>
     const DB = {
         naruto: ['ناروتو', 'ساسوكي', 'ساكورا', 'كاكاشي', 'ايتاشي', 'مادارا', 'جيرايا', 'تسونادي', 'اوروتشيمارو', 'شيكامارو', 'باين', 'اوبيتو', 'نيجي', 'جارا', 'هيناتا', 'روك لي', 'زابوزا', 'كابوتو'],
@@ -162,7 +160,7 @@
         document.getElementById(screenId).classList.add('active-screen');
     }
 
-    // التنفيذ الفوري عشان نضمن مفيش شاشة سودا
+    // التنفيذ المباشر بمجرد قراءة الكود
     const urlParams = new URLSearchParams(window.location.search);
     if(urlParams.has('room')) {
         isHost = false;
@@ -203,6 +201,11 @@
     }
 
     function createRoom(category, catName, mode) {
+        // حماية: لو الملف لسه محملش، طلعله تنبيه بدل ما نعلق
+        if (typeof mqtt === 'undefined') {
+            return alert("جاري تجهيز سيرفر اللعبة.. استنى ثانية واحدة وجرب تدوس تاني! ⏳");
+        }
+
         isHost = true;
         roomCategory = category;
         gameMode = mode; 
@@ -246,7 +249,7 @@
                 }
             });
         } catch (e) {
-            console.error("MQTT Error:", e);
+            console.error(e);
         }
     }
 
@@ -308,6 +311,10 @@
     }
 
     function joinRoom() {
+        if (typeof mqtt === 'undefined') {
+            return alert("جاري تجهيز سيرفر اللعبة.. استنى ثانية واحدة وجرب تدوس تاني! ⏳");
+        }
+
         let nameInput = document.getElementById('player-name').value.trim();
         if(nameInput === "") return alert("اكتب اسمك الأول يا بطل!");
         myName = safeEncode(nameInput);
@@ -348,6 +355,4 @@
                     let myWord = data.words[myName];
                     if(myWord) {
                         document.getElementById('my-secret-word').innerText = myWord;
-                        if (myWord === "أنت الإمبوستر 🕵️‍♂️") {
-                            document.getElementById('my-secret-word').style.color = "var(--imposter)";
-                            document.getElementById('my-secret-word').style.borderColor = "var(--imposter
+ 
