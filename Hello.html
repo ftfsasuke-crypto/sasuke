@@ -19,7 +19,7 @@
         .input-field { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #444; background: #000; color: var(--accent); font-size: 16px; text-align: center; font-family: 'Cairo'; margin-bottom: 20px; box-sizing: border-box; font-weight: bold; }
         .input-field:focus { outline: none; border-color: var(--main); }
 
-        .action-btn { background: var(--main); color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .action-btn { background: var(--main); color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-bottom: 10px; }
         .action-btn:hover { background: #cc0000; }
         .action-btn:disabled { background: #444; cursor: not-allowed; }
 
@@ -38,4 +38,17 @@
 
         .secret-word-box { background: #111; border: 2px dashed var(--accent); border-radius: 15px; padding: 30px 15px; margin: 20px 0; font-size: 35px; font-weight: bold; color: white; text-shadow: 0 0 15px rgba(34,197,94,0.4); }
         .link-box { background: #000; padding: 12px; border-radius: 8px; border: 1px solid #444; color: #888; font-size: 12px; word-break: break-all; margin-bottom: 15px; }
-        .warning-text { color: #facc15; font-size: 12px; margin-bottom: 15
+        .error-msg { color: var(--fail); font-size: 14px; margin-bottom: 15px; display: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="main-menu" class="screen">
+        <h1>🎮 اختار الغرفة يا هوست</h1>
+        <input type="text" id="host-name-input" class="input-field" placeholder="اسمك كصاحب الغرفة..." value="Sasuke">
+        
+        <button class="game-btn" onclick="createRoom('naruto', 'أنمي ناروتو')">🍥 إنشاء غرفة (ناروتو)</button>
+        <button class="game-btn" onclick="createRoom('aot', 'هجوم العمالقة')">⚔️ إنشاء غرفة (هجوم العمالقة)</button>
+        <button class="game-btn" onclick="createRoom('dbz', 'دراجون بول')">🐉 إنشاء غرفة (دراجون بول)</button>
+        <button class="game-btn" onclick="createRoom('ds', 'قاتل الشياطين')">🗡️ إنشاء غرفة (قاتل الشياطين)</button>
