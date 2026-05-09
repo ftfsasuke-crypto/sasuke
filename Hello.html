@@ -36,7 +36,16 @@
         <button class="game-btn" onclick="hostRoom('naruto', 'ناروتو', 'guess')">🍥 من أنا؟ (ناروتو)</button>
         <button class="game-btn" onclick="hostRoom('aot', 'هجوم العمالقة', 'guess')">⚔️ من أنا؟ (العمالقة)</button>
         <button class="game-btn" onclick="hostRoom('dbz', 'دراجون بول', 'guess')">🐉 من أنا؟ (دراجون بول)</button>
+        <button class="game-btn" onclick="navTo('p-global')">🌍 من أنا؟ (عالمي) ➡️</button>
         <button class="game-btn" onclick="navTo('p-imposter')" style="border-color: var(--imposter); margin-top: 20px;">🕵️‍♂️ لعبة الجاسوس ➡️</button>
+    </div>
+
+    <div id="p-global" class="panel">
+        <h1>🌍 تصنيفات التخمين</h1>
+        <button class="game-btn" onclick="hostRoom('food', 'أكلات', 'guess')">🍕 أكلات</button>
+        <button class="game-btn" onclick="hostRoom('animals', 'حيوانات', 'guess')">🦁 حيوانات</button>
+        <button class="game-btn" onclick="hostRoom('objects', 'جماد', 'guess')">📱 جماد</button>
+        <button class="leave-btn" onclick="navTo('p-main')">رجوع 🔙</button>
     </div>
 
     <div id="p-imposter" class="panel">
@@ -112,9 +121,14 @@
 </div>
 
 <script>
+    // ده نظام هيكشفلك لو إنت نسخت الكود ناقص ويقولك المشكلة فين بدل الشاشة السودة
+    window.onerror = function(msg, url, lineNo) {
+        alert("حصل خطأ في الكود (غالباً اتنسخ ناقص)!\nالسطر: " + lineNo + "\nالخطأ: " + msg);
+        return false;
+    };
+
     let mqttClient, myName, roomId, isHost = false, players = [], gameMode = '', gameCategory = '';
     
-    // متغيرات النظام الجديد
     let timerInterval;
     let votes = {};
     let realImposter = '';
@@ -135,11 +149,14 @@
         if(target) target.classList.add('active-panel');
     }
 
-    if (window.location.search.includes('room=')) {
-        navTo('p-join');
-    } else {
-        navTo('p-main');
-    }
+    // خلينا تشغيل الشاشة يبدأ أول ما المتصفح يجهز عشان نمنع الشاشة السودة
+    window.onload = function() {
+        if (window.location.search.includes('room=')) {
+            navTo('p-join');
+        } else {
+            navTo('p-main');
+        }
+    };
 
     function renderPlayers() {
         let html = '';
@@ -187,7 +204,6 @@
         setupMessageHandler();
     }
 
-    // فصلت استقبال الرسايل في Function عشان الكود ميكبرش على الفاضي
     function setupMessageHandler() {
         mqttClient.on('message', (t, m) => {
             let d = JSON.parse(m.toString());
@@ -204,9 +220,8 @@
             }
             if(d.type === 'sync') { players = d.players; renderPlayers(); }
             
-            // بداية اللعبة
             if(d.type === 'start') {
-                votes = {}; // تصفير الأصوات
+                votes = {}; 
                 realImposter = d.imposter;
                 secretWord = d.actualWord;
                 let w = d.words[myName];
@@ -214,12 +229,10 @@
                     document.getElementById('my-word').innerText = w;
                     if(w.includes('جاسوس')) document.getElementById('my-word').style.color = 'var(--imposter)';
                     navTo('p-game');
-                    // تشغيل التايمر لو اللعبة جاسوس
                     if(gameMode === 'imposter') startTimer(120); 
                 }
             }
 
-            // استقبال التصويت (الهوست بيجمعهم)
             if(d.type === 'vote') {
                 votes[d.voter] = d.target;
                 if(isHost && Object.keys(votes).length >= players.length) {
@@ -227,7 +240,6 @@
                 }
             }
 
-            // نتيجة التصويت
             if(d.type === 'vote_result') {
                 if(d.result === 'escaped') {
                     showFinalResult("🕵️‍♂️ الجاسوس ضحك عليكم!", `الناس معرفتش الجاسوس أو اتعادلت!<br>الجاسوس الحقيقي كان: <b>${decodeURIComponent(realImposter)}</b><br>الكلمة كانت: <b>${secretWord}</b>`, 'var(--fail)');
@@ -236,7 +248,6 @@
                 }
             }
 
-            // استقبال الكلمة اللي الجاسوس خمنها
             if(d.type === 'imposter_guess') {
                 let isCorrect = (d.word.trim() === secretWord.trim());
                 if(isCorrect) {
@@ -268,8 +279,6 @@
         
         mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'start', words: assigned, imposter: imp, actualWord: actualWord}));
     }
-
-    // --- دوال النظام الجديد (التايمر والتصويت) ---
 
     function startTimer(seconds) {
         let timeLeft = seconds;
@@ -346,30 +355,18 @@
         document.getElementById('result-desc').innerHTML = desc;
     }
 
-    // --- دوال الخروج ---
     function copyUrl() { navigator.clipboard.writeText(document.getElementById('invite-link').innerText); alert("تم النسخ!"); }
+    
     function kickUser(targetName) {
         if(!isHost) return;
         players = players.filter(p => p.name !== targetName); renderPlayers();
         mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'kick', target: targetName}));
         mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'sync', players: players}));
     }
+    
     function leaveRoom() {
         if (mqttClient) {
             if (isHost) mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'room_closed'}));
             else mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'leave', name: myName}));
             forceLeave();
-        } else navTo('p-main');
-    }
-    function forceLeave() {
-        clearInterval(timerInterval);
-        if(mqttClient) mqttClient.end();
-        players = []; isHost = false; roomId = null; votes = {};
-        window.history.replaceState({}, document.title, window.location.pathname);
-        navTo('p-main');
-    }
-    function disconnectAndShowMsg(title, text) {
-        clearInterval(timerInterval);
-        if(mqttClient) mqttClient.end();
-        players = []; isHost = false; roomId = null; votes = {};
-        window.history.replaceState({}, 
+      
