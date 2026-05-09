@@ -26,9 +26,8 @@
         .leave-btn { background: #333; border: 1px solid #555; color: white; padding: 12px; border-radius: 10px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; }
         .leave-btn:hover { background: var(--fail); border-color: var(--fail); }
 
-        /* الاعتماد الكلي على CSS عشان نمنع الشاشة السودا */
-        .screen { display: none !important; }
-        .active-screen { display: block !important; animation: fadeIn 0.4s; }
+        .screen { display: none; }
+        .active-screen { display: block; animation: fadeIn 0.4s; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
@@ -39,13 +38,14 @@
 
         .secret-word-box { background: #111; border: 2px dashed var(--accent); border-radius: 15px; padding: 30px 15px; margin: 20px 0; font-size: 35px; font-weight: bold; color: white; text-shadow: 0 0 15px rgba(34,197,94,0.4); }
         .link-box { background: #000; padding: 12px; border-radius: 8px; border: 1px solid #444; color: #888; font-size: 12px; word-break: break-all; margin-bottom: 15px; }
+        .error-msg { color: var(--fail); font-size: 14px; margin-bottom: 15px; display: none; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
     
-    <div id="main-menu" class="screen">
+    <div id="main-menu" class="screen active-screen">
         <h1>🎮 اختار الغرفة يا هوست</h1>
         <input type="text" id="host-name-input" class="input-field" placeholder="اسمك كصاحب الغرفة..." value="Sasuke">
         
@@ -71,13 +71,14 @@
 
     <div id="host-lobby" class="screen">
         <h1 id="lobby-title">غرفة الانتظار ⏳</h1>
+        <p style="color: #facc15; font-size: 12px; margin-bottom: 15px; font-weight: bold;">⚠️ خلي الشاشة دي منورة وماتقفلش المتصفح لحد ما صحابك يدخلوا.</p>
         <div class="link-box" id="invite-link">جاري إنشاء الرابط...</div>
         <button class="action-btn" onclick="copyLink()" style="font-size: 14px; margin-bottom: 20px; background: #333;">📋 نسخ الرابط لصحابك</button>
         
         <h3 style="text-align: right; color: var(--accent); margin-bottom: 10px;">المتصلين حالياً: <span id="host-count">1</span></h3>
         <div class="players-list" id="host-players"></div>
         
-        <button class="action-btn" id="start-btn" onclick="startGame()" disabled>🚀 ابدأ اللعبة</button>
+        <button class="action-btn" id="start-btn" onclick="startGame()" disabled>🚀 ابدأ اللعبة (لكل اللاعبين)</button>
         <button class="leave-btn" onclick="leaveRoom()">🚪 إغلاق الغرفة</button>
     </div>
 
@@ -85,7 +86,9 @@
         <h1>👋 أهلاً بيك</h1>
         <input type="text" id="player-name" class="input-field" placeholder="اكتب اسمك عشان تدخل..." autocomplete="off">
         <button class="action-btn" id="join-btn" onclick="joinRoom()">دخول الغرفة 🚪</button>
+        <button class="action-btn" id="retry-btn" onclick="joinRoom()" style="display: none; background: #0284c7;">حاول تتصل تاني 🔄</button>
         <p id="join-status" style="color: var(--accent); margin-top: 10px; display: none; font-weight: bold;">جاري الاتصال بصاحب الغرفة... ⏳</p>
+        <p id="error-msg" class="error-msg">فشل الاتصال! الشبكة عندك ضعيفة أو صاحب الغرفة قفل.</p>
     </div>
 
     <div id="guest-lobby" class="screen">
@@ -96,3 +99,232 @@
     </div>
 
     <div id="game-screen" class="screen">
+        <h2 id="player-role-title">شخصيتك السرية هي:</h2>
+        <div class="secret-word-box" id="my-secret-word">???</div>
+        <p style="color: var(--fail); font-weight: bold; font-size: 13px;">ماتقولش لحد إنت طلعت إيه 🤫</p>
+        <h3 style="text-align: right; color: var(--accent); margin-top: 30px; margin-bottom: 10px;">قائمة اللاعبين:</h3>
+        <div class="players-list" id="game-players"></div>
+        <button class="leave-btn" onclick="leaveRoom()">🚪 مغادرة الغرفة</button>
+    </div>
+
+    <div id="goodbye-screen" class="screen">
+        <h1 style="font-size: 60px; margin-bottom: 10px;">👋</h1>
+        <h2 style="color: var(--accent); font-size: 28px;">حظاً موفقاً!</h2>
+        <p style="color: #cbd5e1; font-size: 16px; margin-top: 15px;">طلعت من الغرفة بنجاح.. نورتنا يا بطل 🥷</p>
+        <button class="leave-btn" onclick="window.location.href = window.location.href.split('?')[0];">العودة للرئيسية</button>
+    </div>
+
+</div>
+
+<script>
+    const DB = {
+        naruto: ['ناروتو', 'ساسوكي', 'ساكورا', 'كاكاشي', 'ايتاشي', 'مادارا', 'جيرايا', 'تسونادي', 'اوروتشيمارو', 'شيكامارو', 'باين', 'اوبيتو', 'نيجي', 'جارا', 'هيناتا', 'روك لي', 'زابوزا', 'كابوتو'],
+        aot: ['ايرين', 'ميكاسا', 'ارمين', 'ليفاي', 'ايروين', 'هانجي', 'راينر', 'زيك', 'ساشا', 'جان', 'هيستوريا', 'آني', 'بيك', 'فلوك'],
+        dbz: ['غوكو', 'فيجيتا', 'غوهان', 'بيكولو', 'فريزا', 'سيل', 'ماجين بو', 'ترانكس', 'بيروس', 'ويز', 'اندرويد 18', 'مستر ساتان'],
+        ds: ['تانجيرو', 'نيزوكو', 'زينيتسو', 'اينوسكي', 'غيو', 'رينجوكو', 'موزان', 'اكازا', 'شينوبو', 'تينغين', 'ميتسوري'],
+        monster: ['دكتور تيما', 'يوهان ليبرت', 'نينّا فورتر', 'المفتش لونجي', 'غريمر', 'إيفا هاينمان', 'روبيرتو', 'ديتر'],
+        food: ['بيتزا', 'برجر', 'شاورما', 'كشري', 'مكرونة بشاميل', 'سوشي', 'محشي كرمب', 'كباب', 'كفتة', 'بانيه', 'طعمية', 'حواوشي', 'شيش طاووق', 'كبسة', 'ملوخية'],
+        fruits: ['تفاحة', 'موز', 'برتقال', 'فراولة', 'بطيخ', 'عنب', 'مانجو', 'خوخ', 'أناناس', 'كيوي', 'رمان', 'تين', 'بلح', 'يوسفي', 'جوافة'],
+        veggies: ['طماطم', 'خيار', 'جزر', 'بطاطس', 'بصل', 'ثوم', 'باذنجان', 'فلفل رومي', 'بروكلي', 'خس', 'سبانخ', 'قرنبيط', 'كرنب', 'بقدونس', 'كوسة'],
+        objects: ['كرسي', 'طاولة', 'تليفزيون', 'موبايل', 'لابتوب', 'سيارة', 'طيارة', 'ساعة', 'نظارة', 'قلم', 'كتاب', 'ثلاجة', 'غسالة', 'مروحة', 'مكيف', 'مفتاح', 'مقص', 'مفك'],
+        animals: ['أسد', 'فيل', 'زرافة', 'نمر', 'قرد', 'كلب', 'قطة', 'حصان', 'حوت', 'قرش', 'تمساح', 'صقر', 'نسر', 'دب', 'ثعبان', 'بقرة', 'دولفين', 'قنفذ'],
+        countries: ['مصر', 'السعودية', 'اليابان', 'أمريكا', 'البرازيل', 'فرنسا', 'إيطاليا', 'الصين', 'الهند', 'روسيا', 'المغرب', 'الإمارات', 'قطر', 'فلسطين', 'تركيا', 'إسبانيا', 'ألمانيا'],
+        jobs: ['دكتور', 'مهندس', 'طيار', 'ضابط', 'مدرس', 'مبرمج', 'طباخ', 'نجار', 'سباك', 'محامي', 'محاسب', 'صحفي', 'ممثل', 'رائد فضاء', 'رسام', 'ميكانيكي']
+    };
+
+    function safeEncode(str) { return encodeURIComponent(str); }
+    function safeDecode(str) { try { return decodeURIComponent(str); } catch(e) { return str; } }
+
+    const customConfig = {
+        config: {
+            'iceServers': [
+                { urls: 'stun:stun.l.google.com:19302' },
+                { urls: 'stun:stun1.l.google.com:19302' }
+            ]
+        }
+    };
+
+    let peer = null;
+    let connections = [];
+    let playersList = []; 
+    let isHost = false; 
+    let roomCategory = '';
+    let inviteUrl = '';
+    let guestConn = null; 
+
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(el => el.classList.remove('active-screen'));
+        document.getElementById(screenId).classList.add('active-screen');
+    }
+
+    // التنفيذ المباشر بدل الانتظار اللي كان بيعمل شاشة سودا
+    const urlParams = new URLSearchParams(window.location.search);
+    if(urlParams.has('room')) {
+        isHost = false;
+        showScreen('guest-join');
+    } else {
+        isHost = true;
+        // الشاشة الرئيسية ظاهرة تلقائياً من الـ HTML
+    }
+
+    function updateUIList() {
+        let listHTML = '';
+        playersList.forEach(p => {
+            let decodedName = safeDecode(p.name);
+            listHTML += `<div class="player-item"><span>${decodedName}</span> <span class="online-dot"></span></div>`;
+        });
+        
+        if (isHost) {
+            document.getElementById('host-players').innerHTML = listHTML;
+            document.getElementById('host-count').innerText = playersList.length;
+            document.getElementById('start-btn').disabled = playersList.length < 2;
+        } else {
+            document.getElementById('guest-players').innerHTML = listHTML;
+            document.getElementById('guest-count').innerText = playersList.length;
+        }
+        document.getElementById('game-players').innerHTML = listHTML;
+    }
+
+    function createRoom(category, catName) {
+        isHost = true;
+        roomCategory = category;
+        
+        let hostName = document.getElementById('host-name-input').value.trim();
+        if(hostName === '') hostName = 'Sasuke'; 
+
+        document.getElementById('lobby-title').innerText = "غرفة: " + catName;
+        showScreen('host-lobby');
+
+        let roomId = Math.floor(10000 + Math.random() * 90000).toString();
+        
+        peer = new Peer('mx-sasuke-' + roomId, customConfig);
+        
+        peer.on('open', (id) => {
+            let baseUrl = window.location.origin + window.location.pathname;
+            inviteUrl = baseUrl + "?room=" + roomId;
+            document.getElementById('invite-link').innerText = inviteUrl;
+            
+            playersList = [{id: 'host', name: safeEncode(hostName + ' (الهوست) 👑')}];
+            updateUIList();
+        });
+
+        peer.on('connection', (conn) => {
+            conn.on('data', (data) => {
+                if(data.type === 'join') {
+                    connections.push(conn);
+                    playersList.push({id: conn.peer, name: data.name}); 
+                    updateUIList(); 
+                    broadcast({type: 'updateList', players: playersList});
+                }
+                else if (data.type === 'leave') {
+                    removePlayer(conn.peer);
+                }
+            });
+            conn.on('close', () => removePlayer(conn.peer));
+        });
+    }
+
+    function removePlayer(peerId) {
+        connections = connections.filter(c => c.peer !== peerId);
+        playersList = playersList.filter(p => p.id !== peerId);
+        updateUIList();
+        broadcast({type: 'updateList', players: playersList});
+    }
+
+    function broadcast(data) {
+        connections.forEach(c => c.send(data));
+    }
+
+    function copyLink() {
+        navigator.clipboard.writeText(inviteUrl).then(() => { alert("تم النسخ! ابعته في الديسكورد 🚀"); });
+    }
+
+    function startGame() {
+        let words = DB[roomCategory] || DB['food'];
+        
+        connections.forEach(conn => {
+            let w = words[Math.floor(Math.random() * words.length)];
+            conn.send({type: 'gameStart', word: safeEncode(w)});
+        });
+
+        let hostWord = words[Math.floor(Math.random() * words.length)];
+        document.getElementById('my-secret-word').innerText = hostWord;
+        document.getElementById('player-role-title').innerText = "أنت الهوست.. شخصيتك هي:";
+        
+        showScreen('game-screen');
+    }
+
+    function joinRoom() {
+        let name = document.getElementById('player-name').value.trim();
+        if(name === "") return alert("اكتب اسمك الأول!");
+        
+        document.getElementById('join-btn').style.display = 'none';
+        document.getElementById('retry-btn').style.display = 'none';
+        document.getElementById('error-msg').style.display = 'none';
+        document.getElementById('join-status').style.display = 'block';
+
+        let roomId = new URLSearchParams(window.location.search).get('room');
+        
+        if(peer) peer.destroy(); 
+        peer = new Peer(customConfig);
+        
+        let connectionTimeout = setTimeout(() => {
+            showError();
+        }, 12000); 
+        
+        peer.on('open', () => {
+            guestConn = peer.connect('mx-sasuke-' + roomId); 
+            
+            peer.on('error', (err) => {
+                showError();
+            });
+
+            guestConn.on('open', () => {
+                clearTimeout(connectionTimeout); 
+                guestConn.send({type: 'join', name: safeEncode(name)});
+                showScreen('guest-lobby');
+            });
+            
+            guestConn.on('data', (data) => {
+                if(data.type === 'updateList') { 
+                    playersList = data.players; 
+                    updateUIList(); 
+                }
+                else if(data.type === 'gameStart') {
+                    document.getElementById('my-secret-word').innerText = safeDecode(data.word);
+                    showScreen('game-screen');
+                }
+            });
+            
+            guestConn.on('close', () => {
+                alert("الهوست قفل الغرفة أو خرج من اللعبة!");
+                showScreen('goodbye-screen');
+            });
+        });
+    }
+
+    function showError() {
+        if(peer) peer.destroy();
+        document.getElementById('join-status').style.display = 'none';
+        document.getElementById('retry-btn').style.display = 'block';
+        document.getElementById('error-msg').style.display = 'block';
+    }
+
+    function leaveRoom() {
+        if (isHost) {
+            let confirmLeave = confirm("أنت الهوست 👑! لو خرجت الغرفة هتتقفل على الكل، متأكد؟");
+            if (confirmLeave) {
+                window.location.href = window.location.href.split('?')[0];
+            }
+        } else {
+            if (guestConn && guestConn.open) {
+                guestConn.send({type: 'leave'});
+                guestConn.close();
+            }
+            showScreen('goodbye-screen');
+        }
+    }
+</script>
+
+</body>
+</html>
