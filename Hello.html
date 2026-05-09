@@ -52,7 +52,20 @@
         <button class="game-btn" onclick="createRoom('dbz', 'دراجون بول')">🐉 إنشاء غرفة (دراجون بول)</button>
         <button class="game-btn" onclick="createRoom('ds', 'قاتل الشياطين')">🗡️ إنشاء غرفة (قاتل الشياطين)</button>
         <button class="game-btn" onclick="createRoom('monster', 'مونستر')">🧠 إنشاء غرفة (مونستر)</button>
-        <button class="game-btn" onclick="createRoom('global', 'تخمين منوعات')">🌍 إنشاء غرفة (منوعات عالمية)</button>
+        <button class="game-btn" onclick="showScreen('global-menu')" style="border-color: #22c55e;">🌍 إنشاء غرفة (منوعات عالمية) ➡️</button>
+    </div>
+
+    <div id="global-menu" class="screen">
+        <h1>🌍 اختر التصنيف العالمي</h1>
+        <button class="game-btn" onclick="createRoom('food', 'أكلات مشهورة')">🍕 أكلات مشهورة</button>
+        <button class="game-btn" onclick="createRoom('fruits', 'فواكه')">🍎 فواكه</button>
+        <button class="game-btn" onclick="createRoom('veggies', 'خضروات')">🥕 خضروات</button>
+        <button class="game-btn" onclick="createRoom('objects', 'جماد وأشياء')">📱 جماد وأشياء</button>
+        <button class="game-btn" onclick="createRoom('animals', 'حيوانات')">🦁 حيوانات</button>
+        <button class="game-btn" onclick="createRoom('countries', 'دول وعواصم')">🗺️ دول وعواصم</button>
+        <button class="game-btn" onclick="createRoom('jobs', 'مهن ووظائف')">👨‍⚕️ مهن ووظائف</button>
+        
+        <button class="leave-btn" onclick="showScreen('main-menu')">رجوع للقائمة الرئيسية 🔙</button>
     </div>
 
     <div id="host-lobby" class="screen">
@@ -102,13 +115,22 @@
 </div>
 
 <script>
+    // قاعدة البيانات بكل التصنيفات العالمية والأنمي
     const DB = {
         naruto: ['ناروتو', 'ساسوكي', 'ساكورا', 'كاكاشي', 'ايتاشي', 'مادارا', 'جيرايا', 'تسونادي', 'اوروتشيمارو', 'شيكامارو', 'باين', 'اوبيتو', 'نيجي', 'جارا', 'هيناتا', 'روك لي', 'زابوزا', 'كابوتو'],
         aot: ['ايرين', 'ميكاسا', 'ارمين', 'ليفاي', 'ايروين', 'هانجي', 'راينر', 'زيك', 'ساشا', 'جان', 'هيستوريا', 'آني', 'بيك', 'فلوك'],
         dbz: ['غوكو', 'فيجيتا', 'غوهان', 'بيكولو', 'فريزا', 'سيل', 'ماجين بو', 'ترانكس', 'بيروس', 'ويز', 'اندرويد 18', 'مستر ساتان'],
         ds: ['تانجيرو', 'نيزوكو', 'زينيتسو', 'اينوسكي', 'غيو', 'رينجوكو', 'موزان', 'اكازا', 'شينوبو', 'تينغين', 'ميتسوري'],
         monster: ['دكتور تيما', 'يوهان ليبرت', 'نينّا فورتر', 'المفتش لونجي', 'غريمر', 'إيفا هاينمان', 'روبيرتو', 'ديتر'],
-        global: ['بيتزا', 'تفاحة', 'أسد', 'موبايل', 'سيارة', 'مصر', 'دكتور', 'برجر', 'طيارة', 'كلب', 'كتاب', 'ساعة', 'قلم', 'كرسي']
+        
+        // الأقسام العالمية
+        food: ['بيتزا', 'برجر', 'شاورما', 'كشري', 'مكرونة بشاميل', 'سوشي', 'محشي كرمب', 'كباب', 'كفتة', 'بانيه', 'طعمية', 'حواوشي', 'شيش طاووق', 'كبسة', 'ملوخية'],
+        fruits: ['تفاحة', 'موز', 'برتقال', 'فراولة', 'بطيخ', 'عنب', 'مانجو', 'خوخ', 'أناناس', 'كيوي', 'رمان', 'تين', 'بلح', 'يوسفي', 'جوافة'],
+        veggies: ['طماطم', 'خيار', 'جزر', 'بطاطس', 'بصل', 'ثوم', 'باذنجان', 'فلفل رومي', 'بروكلي', 'خس', 'سبانخ', 'قرنبيط', 'كرنب', 'بقدونس', 'كوسة'],
+        objects: ['كرسي', 'طاولة', 'تليفزيون', 'موبايل', 'لابتوب', 'سيارة', 'طيارة', 'ساعة', 'نظارة', 'قلم', 'كتاب', 'ثلاجة', 'غسالة', 'مروحة', 'مكيف', 'مفتاح', 'مقص', 'مفك'],
+        animals: ['أسد', 'فيل', 'زرافة', 'نمر', 'قرد', 'كلب', 'قطة', 'حصان', 'حوت', 'قرش', 'تمساح', 'صقر', 'نسر', 'دب', 'ثعبان', 'بقرة', 'دولفين', 'قنفذ'],
+        countries: ['مصر', 'السعودية', 'اليابان', 'أمريكا', 'البرازيل', 'فرنسا', 'إيطاليا', 'الصين', 'الهند', 'روسيا', 'المغرب', 'الإمارات', 'قطر', 'فلسطين', 'تركيا', 'إسبانيا', 'ألمانيا'],
+        jobs: ['دكتور', 'مهندس', 'طيار', 'ضابط', 'مدرس', 'مبرمج', 'طباخ', 'نجار', 'سباك', 'محامي', 'محاسب', 'صحفي', 'ممثل', 'رائد فضاء', 'رسام', 'ميكانيكي']
     };
 
     function safeEncode(str) { return encodeURIComponent(str); }
@@ -166,6 +188,7 @@
         isHost = true;
         roomCategory = category;
         
+        // الاسم متسجل في الشاشة الأولى عادي
         let hostName = document.getElementById('host-name-input').value.trim();
         if(hostName === '') hostName = 'Sasuke'; 
 
@@ -220,7 +243,7 @@
     }
 
     function startGame() {
-        let words = DB[roomCategory] || DB['global'];
+        let words = DB[roomCategory] || DB['food']; // احتياطي
         
         connections.forEach(conn => {
             let w = words[Math.floor(Math.random() * words.length)];
@@ -279,7 +302,6 @@
             });
             
             guestConn.on('close', () => {
-                // لو الهوست قفل الغرفة يظهر للضيف شاشة النهاية
                 alert("الهوست قفل الغرفة أو خرج من اللعبة!");
                 showScreen('goodbye-screen');
             });
@@ -290,11 +312,9 @@
         if (isHost) {
             let confirmLeave = confirm("أنت الهوست 👑! لو خرجت الغرفة هتتقفل على الكل، متأكد؟");
             if (confirmLeave) {
-                // الهوست لما يخرج يعمل ريفريش عشان يقدر يعمل غرفة جديدة
                 window.location.href = window.location.href.split('?')[0];
             }
         } else {
-            // الضيف لما يخرج يبعت إشعار ويشوف شاشة الوداع
             if (guestConn && guestConn.open) {
                 guestConn.send({type: 'leave'});
                 guestConn.close();
