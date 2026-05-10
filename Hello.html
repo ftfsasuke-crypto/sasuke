@@ -46,6 +46,11 @@
         .btn-ghost { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #ccc; }
         .action-btn:disabled { background: #333; opacity: 0.5; cursor: not-allowed; }
 
+        /* السطر ده اللي كان ممسوح وبسببه الشاشات دخلت في بعض */
+        .panel { display: none; }
+        .panel.active { display: block !important; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
         .players-list { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 10px; margin-bottom: 20px; max-height: 180px; overflow-y: auto; }
         .player-item { padding: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
         
@@ -375,7 +380,7 @@
         document.getElementById('imp-guess-sec').style.display = 'none';
         document.getElementById('imp-end-sec').style.display = 'none';
         
-        let endTime = Date.now() + (600 * 1000); // 10 دقائق = 600 ثانية
+        let endTime = Date.now() + (600 * 1000);
         document.getElementById('imp-countdown').innerText = "10:00";
         if(timerInterval) clearInterval(timerInterval);
         timerInterval = setInterval(() => {
@@ -402,7 +407,6 @@
     window.castVote = function(target) {
         document.getElementById('imp-vote-list').style.display = 'none'; 
         document.getElementById('imp-wait-vote-msg').style.display = 'block';
-        // تحديث العداد مبدئياً للمستخدم عشان يحس بالاستجابة
         document.getElementById('imp-wait-vote-msg').innerText = t('waitingVote') + ` (1/${players.length})`;
         client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_act', act: 'vote', n: myName, target: target}));
     }
@@ -413,7 +417,6 @@
             impState.votes = impState.votes || {};
             impState.votes[d.n] = d.target;
             
-            // إرسال تحديث لكل اللاعبين عشان العداد الحي (Live Counter)
             client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_sync', state: impState}));
 
             if(Object.keys(impState.votes).length === players.length) {
@@ -432,7 +435,6 @@
 
     function updateImpUI(s) {
         impState = s;
-        // تحديث العداد الحي للناس اللي مستنية الباقي يصوتوا
         if(s.votes && document.getElementById('imp-wait-vote-msg').style.display === 'block') {
             let vc = Object.keys(s.votes).length;
             document.getElementById('imp-wait-vote-msg').innerText = t('waitingVote') + ` (${vc}/${players.length})`;
