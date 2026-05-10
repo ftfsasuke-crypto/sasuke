@@ -87,16 +87,17 @@
     <div id="p-game" class="panel">
         <h2 id="role-title" style="text-align: center;">شخصيتك هي:</h2>
         <div class="secret-word-box" id="my-word">???</div>
-        <div id="timer-display" style="display: none;">02:00</div>
+        <div id="timer-display" style="display: none;">01:00</div>
+        
         <h3 style="text-align: right; font-size: 14px;">اللاعبين:</h3>
         <div class="players-list" id="game-list"></div>
-        <button class="leave-btn" onclick="leaveRoom()">🚪 مغادرة</button>
-    </div>
 
-    <div id="p-vote" class="panel">
-        <h1 style="color: var(--warn);">🗳️ وقت التصويت!</h1>
-        <h3 style="text-align: center; margin-bottom: 20px;">تفتكر مين الجاسوس؟</h3>
-        <div id="vote-list"></div>
+        <div id="inline-vote-area" style="display: none; margin-top: 25px; border-top: 1px solid #333; padding-top: 20px;">
+            <h3 style="color: var(--warn); text-align: center; margin-bottom: 15px;">🗳️ وقت التصويت! تفتكر مين الجاسوس؟</h3>
+            <div id="inline-vote-list"></div>
+        </div>
+
+        <button class="leave-btn" onclick="leaveRoom()">🚪 مغادرة</button>
     </div>
 
     <div id="p-imposter-guess" class="panel">
@@ -123,7 +124,6 @@
 </div>
 
 <script>
-    // حماية ضد الأعطال الصامتة
     window.onerror = function(msg, url, line) {
         alert("خطأ في الكود: " + msg + "\nالسطر: " + line);
         return false;
@@ -239,12 +239,17 @@
                 votes = {}; 
                 realImposter = d.imposter;
                 secretWord = d.actualWord;
+                
+                // إخفاء مساحة التصويت لو كانت ظاهرة من الجولة اللي فاتت
+                document.getElementById('inline-vote-area').style.display = 'none';
+
                 let w = d.words[myName];
                 if(w) {
                     document.getElementById('my-word').innerText = w;
                     if(w.includes('جاسوس')) document.getElementById('my-word').style.color = 'var(--imposter)';
                     navTo('p-game');
-                    if(gameMode === 'imposter') startTimer(120); 
+                    // خليت الوقت 60 ثانية (دقيقة)
+                    if(gameMode === 'imposter') startTimer(60); 
                 }
             }
 
@@ -314,17 +319,18 @@
     }
 
     function showVotingPanel() {
-        navTo('p-vote');
+        // إظهار التصويت في نفس الصفحة بدل الانتقال
         let html = '';
         players.forEach(p => {
             let pName = decodeURIComponent(p.name);
             html += `<button class="game-btn" onclick="submitVote('${p.name}')">${pName}</button>`;
         });
-        document.getElementById('vote-list').innerHTML = html;
+        document.getElementById('inline-vote-list').innerHTML = html;
+        document.getElementById('inline-vote-area').style.display = 'block';
     }
 
     function submitVote(targetName) {
-        document.getElementById('vote-list').innerHTML = '<h3 style="text-align:center; color:var(--accent);">✅ تم تسجيل صوتك، في انتظار الباقي...</h3>';
+        document.getElementById('inline-vote-list').innerHTML = '<h3 style="text-align:center; color:var(--accent);">✅ تم تسجيل صوتك، في انتظار الباقي...</h3>';
         mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'vote', voter: myName, target: targetName}));
     }
 
@@ -389,6 +395,7 @@
     
     function forceLeave() {
         clearInterval(timerInterval);
+        document.getElementById('inline-vote-area').style.display = 'none'; // إعادة إخفاء التصويت
         if(mqttClient) mqttClient.end();
         players = []; isHost = false; roomId = null; votes = {};
         window.history.replaceState({}, document.title, window.location.pathname);
@@ -397,6 +404,7 @@
     
     function disconnectAndShowMsg(title, text) {
         clearInterval(timerInterval);
+        document.getElementById('inline-vote-area').style.display = 'none'; // إعادة إخفاء التصويت
         if(mqttClient) mqttClient.end();
         players = []; isHost = false; roomId = null; votes = {};
         window.history.replaceState({}, document.title, window.location.pathname);
