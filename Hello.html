@@ -15,14 +15,23 @@
             color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; touch-action: manipulation; overflow: hidden; 
         }
         
-        /* زرار تغيير اللغة */
+        /* زرار الترجمة */
         .lang-switch {
             position: fixed; top: 20px; inset-inline-end: 20px; background: #1a1a1c; border-radius: 20px; padding: 4px; display: flex; z-index: 1000; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.5);
         }
-        .lang-btn {
-            padding: 5px 15px; border-radius: 16px; color: #888; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 14px; user-select: none;
-        }
+        .lang-btn { padding: 5px 15px; border-radius: 16px; color: #888; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 14px; user-select: none; }
         .lang-btn.active { background: #ff0000; color: white; box-shadow: 0 0 10px rgba(255,0,0,0.5); }
+
+        /* زرار وشريط إدارة الهوست */
+        #host-menu-btn {
+            display: none; position: fixed; top: 20px; inset-inline-start: 20px; background: rgba(0,0,0,0.6); border: 1px solid #ff512f; color: white; padding: 8px 15px; border-radius: 20px; cursor: pointer; z-index: 1000; font-weight: bold; font-family: 'Cairo'; box-shadow: 0 0 10px rgba(255,81,47,0.4);
+        }
+        #host-sidebar {
+            position: fixed; top: 0; inset-inline-start: -300px; width: 260px; height: 100vh; background: rgba(10, 10, 15, 0.98); backdrop-filter: blur(10px); border-inline-end: 1px solid rgba(255,255,255,0.1); z-index: 1001; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); padding: 20px; box-shadow: 5px 0 20px rgba(0,0,0,0.8);
+        }
+        #host-sidebar.open { inset-inline-start: 0; }
+        .kick-btn-side { background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.2s; }
+        .kick-btn-side:active { transform: scale(0.9); }
 
         .box-container { width: 92%; max-width: 400px; background: var(--card); padding: 25px; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); box-shadow: 0 20px 50px rgba(0,0,0,0.7); position: relative; z-index: 10; }
         
@@ -78,6 +87,14 @@
     <div class="lang-btn" id="btn-en" onclick="setLang('en')">EN</div>
 </div>
 
+<button id="host-menu-btn" onclick="toggleHostMenu()" data-tr="hostMenu">⚙️ الإدارة</button>
+
+<div id="host-sidebar">
+    <h3 style="color: white; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-top: 30px;" data-tr="managePlayers">إدارة اللاعبين</h3>
+    <div id="sidebar-players-list" style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;"></div>
+    <button class="action-btn btn-ghost" onclick="toggleHostMenu()" data-tr="closeMenu">إغلاق</button>
+</div>
+
 <div class="box-container">
     <div id="p-main" class="panel active">
         <h1 data-tr="gamesTitle">🎮 الألعاب</h1>
@@ -117,6 +134,13 @@
     <div id="p-wait" class="panel">
         <h1 data-tr="waitTitle">⏳ جاري الانتظار...</h1>
         <div class="players-list" id="g-list"></div>
+    </div>
+
+    <div id="p-kicked" class="panel" style="text-align: center;">
+        <h1 style="font-size: 80px; margin-bottom: 10px;">🥾</h1>
+        <h2 style="color: var(--fail);" data-tr="kickedTitle">تم طردك!</h2>
+        <p style="color: #ccc; margin-bottom: 25px;" data-tr="kickedMsg">لقد تم طردك من الغرفة بواسطة الهوست.</p>
+        <button class="action-btn btn-ghost" onclick="location.reload()" data-tr="backBtn">العودة للرئيسية 🔙</button>
     </div>
 
     <div id="p-imp-game" class="panel">
@@ -189,9 +213,6 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
 <script>
-    // ==========================================
-    // نظام الترجمة العالمي (I18N)
-    // ==========================================
     let lang = 'ar';
     const tr = {
         ar: {
@@ -207,7 +228,8 @@
             impCaught: "تم كشف الجاسوس! 😂", impEscaped: "الجاسوس هرب! 😱", impWon: "الجاسوس فاز! 😈", impLost: "الجاسوس خسر! 🎉",
             turn: "دور:", playing: "🎲 بيلعب", emptyDeck: "المخزون فارغ!", skipTurn: "تخطي الدور", playSelected: "العب المحددة",
             animVerify: "جاري التحقق...", animReveal: "كشف الأوراق...", animLiar: "كاذب! 😂", animTruth: "صادق للأسف 😱", survived: "نجوت!<br>الدروع:",
-            maxSelect: "الحد الأقصى 3 أوراق!", selectOne: "حدد ورقة واحدة على الأقل!", copied: "تم النسخ! 🚀"
+            maxSelect: "الحد الأقصى 3 أوراق!", selectOne: "حدد ورقة واحدة على الأقل!", copied: "تم النسخ! 🚀",
+            hostMenu: "⚙️ الإدارة", managePlayers: "إدارة اللاعبين", closeMenu: "إغلاق", kickBtn: "طرد 🥾", kickedTitle: "تم طردك!", kickedMsg: "لقد تم طردك من الغرفة بواسطة الهوست."
         },
         en: {
             gamesTitle: "🎮 Games", namePh: "Enter your name...", liarBtn: "Liar Game ☠️", impBtn: "Imposter Game ➡️",
@@ -222,52 +244,62 @@
             impCaught: "Imposter Caught! 😂", impEscaped: "Imposter Escaped! 😱", impWon: "Imposter Won! 😈", impLost: "Imposter Lost! 🎉",
             turn: "Turn:", playing: "🎲 Playing", emptyDeck: "Empty Hand!", skipTurn: "Skip Turn", playSelected: "Play Selected",
             animVerify: "Verifying...", animReveal: "Revealing...", animLiar: "LIAR! 😂", animTruth: "Told the truth 😱", survived: "Survived!<br>Shields:",
-            maxSelect: "Max 3 cards!", selectOne: "Select at least 1 card!", copied: "Copied! 🚀"
+            maxSelect: "Max 3 cards!", selectOne: "Select at least 1 card!", copied: "Copied! 🚀",
+            hostMenu: "⚙️ Manage", managePlayers: "Manage Players", closeMenu: "Close", kickBtn: "Kick 🥾", kickedTitle: "Kicked Out!", kickedMsg: "You have been kicked out of the room by the host."
         }
     };
 
     const DB = {
-        ar: {
-            food: ['بيتزا', 'برجر', 'شاورما', 'كشري', 'سوشي', 'ملوخية'], animals: ['أسد', 'نمر', 'فيل', 'زرافة', 'قطة', 'بطريق'], countries: ['مصر', 'اليابان', 'فرنسا', 'البرازيل', 'السعودية', 'أمريكا'], jobs: ['طيار', 'دكتور', 'مهندس', 'مبرمج', 'طباخ', 'رائد فضاء'], tech: ['موبايل', 'لابتوب', 'بلايستيشن', 'ساعة ذكية', 'كاميرا', 'شاشة'], fruits: ['تفاح', 'موز', 'فراولة', 'بطيخ', 'برتقال', 'عنب'], objects: ['نظارة', 'قميص', 'حذاء', 'ساعة', 'حقيبة', 'جاكيت']
-        },
-        en: {
-            food: ['Pizza', 'Burger', 'Shawarma', 'Koshary', 'Sushi', 'Soup'], animals: ['Lion', 'Tiger', 'Elephant', 'Giraffe', 'Cat', 'Penguin'], countries: ['Egypt', 'Japan', 'France', 'Brazil', 'KSA', 'USA'], jobs: ['Pilot', 'Doctor', 'Engineer', 'Programmer', 'Chef', 'Astronaut'], tech: ['Phone', 'Laptop', 'Console', 'Smartwatch', 'Camera', 'Monitor'], fruits: ['Apple', 'Banana', 'Strawberry', 'Watermelon', 'Orange', 'Grapes'], objects: ['Glasses', 'Shirt', 'Shoes', 'Watch', 'Bag', 'Jacket']
-        }
+        ar: { food: ['بيتزا', 'برجر', 'شاورما', 'كشري', 'سوشي', 'ملوخية'], animals: ['أسد', 'نمر', 'فيل', 'زرافة', 'قطة', 'بطريق'], countries: ['مصر', 'اليابان', 'فرنسا', 'البرازيل', 'السعودية', 'أمريكا'], jobs: ['طيار', 'دكتور', 'مهندس', 'مبرمج', 'طباخ', 'رائد فضاء'], tech: ['موبايل', 'لابتوب', 'بلايستيشن', 'ساعة ذكية', 'كاميرا', 'شاشة'], fruits: ['تفاح', 'موز', 'فراولة', 'بطيخ', 'برتقال', 'عنب'], objects: ['نظارة', 'قميص', 'حذاء', 'ساعة', 'حقيبة', 'جاكيت'] },
+        en: { food: ['Pizza', 'Burger', 'Shawarma', 'Koshary', 'Sushi', 'Soup'], animals: ['Lion', 'Tiger', 'Elephant', 'Giraffe', 'Cat', 'Penguin'], countries: ['Egypt', 'Japan', 'France', 'Brazil', 'KSA', 'USA'], jobs: ['Pilot', 'Doctor', 'Engineer', 'Programmer', 'Chef', 'Astronaut'], tech: ['Phone', 'Laptop', 'Console', 'Smartwatch', 'Camera', 'Monitor'], fruits: ['Apple', 'Banana', 'Strawberry', 'Watermelon', 'Orange', 'Grapes'], objects: ['Glasses', 'Shirt', 'Shoes', 'Watch', 'Bag', 'Jacket'] }
     };
 
     function t(key) { return tr[lang][key] || key; }
 
     window.setLang = function(l) {
-        lang = l;
-        document.documentElement.dir = (l === 'ar') ? 'rtl' : 'ltr';
-        document.getElementById('btn-ar').classList.remove('active');
-        document.getElementById('btn-en').classList.remove('active');
-        document.getElementById('btn-' + l).classList.add('active');
-        
+        lang = l; document.documentElement.dir = (l === 'ar') ? 'rtl' : 'ltr';
+        document.getElementById('btn-ar').classList.remove('active'); document.getElementById('btn-en').classList.remove('active'); document.getElementById('btn-' + l).classList.add('active');
         document.querySelectorAll('[data-tr]').forEach(el => { el.innerHTML = t(el.getAttribute('data-tr')); });
         document.querySelectorAll('[data-tr-ph]').forEach(el => { el.placeholder = t(el.getAttribute('data-tr-ph')); });
-        
         updateLists();
         if(currentLiarState.turn !== undefined) updateLiarUI(currentLiarState);
         if(impState.phase) updateImpUI(impState);
     }
 
-    // ==========================================
-    // منطق اللعبة
-    // ==========================================
     let client, myName, roomId, isHost = false, players = [], mode = '', cat = '', currentLiarState = {};
     let selectedCards = [], impState = {}, timerInterval;
 
     function changeUI(id) { document.querySelectorAll('.panel').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+    
+    window.toggleHostMenu = function() { document.getElementById('host-sidebar').classList.toggle('open'); }
 
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('room')) { roomId = urlParams.get('room'); changeUI('p-join'); }
 
     function updateLists() {
-        let html = "";
-        players.forEach(p => html += `<div class="player-item"><span>${decodeURIComponent(p.name)}</span><span style="color:#0ba360; font-size:10px;">${t('online')}</span></div>`);
+        let html = "", sideHtml = "";
+        players.forEach(p => {
+            let n = decodeURIComponent(p.name);
+            html += `<div class="player-item"><span>${n}</span><span style="color:#0ba360; font-size:10px;">${t('online')}</span></div>`;
+            if(isHost) {
+                let kickHtml = (p.name !== myName) ? `<button class="kick-btn-side" onclick="kickUser('${p.name}')">${t('kickBtn')}</button>` : '';
+                sideHtml += `<div class="player-item" style="background:rgba(0,0,0,0.5); border-radius:8px;"><span>${n}</span>${kickHtml}</div>`;
+            }
+        });
         ["h-list", "g-list"].forEach(id => { if(document.getElementById(id)) document.getElementById(id).innerHTML = html; });
-        if(isHost) document.getElementById('start-btn').disabled = (mode === 'liar') ? (players.length < 3) : (players.length < 2);
+        if(isHost) {
+            document.getElementById('sidebar-players-list').innerHTML = sideHtml;
+            document.getElementById('start-btn').disabled = (mode === 'liar') ? (players.length < 3) : (players.length < 2);
+        }
+    }
+
+    window.kickUser = function(target) {
+        if(confirm("طرد / Kick " + decodeURIComponent(target) + "؟")) {
+            client.publish('sasuke_' + roomId, JSON.stringify({type: 'kick', target: target}));
+            players = players.filter(p => p.name !== target);
+            updateLists();
+            client.publish('sasuke_' + roomId, JSON.stringify({type: 'sync', players: players, mode: mode}));
+        }
     }
 
     function startHost(c, nameKey, m) {
@@ -275,6 +307,7 @@
         myName = encodeURIComponent((document.getElementById('host-input').value || "Sasuke") + " 👑");
         roomId = Math.floor(10000 + Math.random() * 90000).toString();
         players = [{name: myName}]; updateLists(); changeUI('p-lobby');
+        document.getElementById('host-menu-btn').style.display = 'block'; // إظهار زرار الإدارة
         client = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
         client.on('connect', () => client.subscribe('sasuke_' + roomId));
         client.on('message', (topic, msg) => {
@@ -300,27 +333,24 @@
             if(d.type === 'imp_sync') { updateImpUI(d.state); }
             if(d.type === 'anim') { startAnim(t(d.msgKey), d.sec); }
             if(d.type === 'gun') { startGunAnim(d.target, d.hits); }
+            // استقبال الطرد
+            if(d.type === 'kick' && d.target === myName) { changeUI('p-kicked'); if(client) client.end(); }
         });
     }
 
     function gameLaunch() {
         if(!isHost) return;
         if(mode === 'liar') {
-            let deck = [];
-            let counts = players.length === 5 ? [7,7,7,3] : (players.length === 4 ? [6,6,6,3] : [4,4,4,2]);
+            let deck = []; let counts = players.length === 5 ? [7,7,7,3] : (players.length === 4 ? [6,6,6,3] : [4,4,4,2]);
             ['King','Ace','Queen'].forEach((v, i) => { for(let j=0; j<counts[i]; j++) deck.push(v); });
-            for(let j=0; j<counts[3]; j++) deck.push('Joker');
-            deck.sort(() => 0.5 - Math.random());
+            for(let j=0; j<counts[3]; j++) deck.push('Joker'); deck.sort(() => 0.5 - Math.random());
             let s = { turn: 0, req: ['King','Ace','Queen'][Math.floor(Math.random()*3)], last: null, phase: 'play', hands: {}, stats: {} };
             players.forEach(p => { s.hands[p.name] = []; s.stats[p.name] = {h:0, d:false}; });
             let i = 0; while(deck.length) { s.hands[players[i%players.length].name].push(deck.pop()); i++; }
-            client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_start', state: s}));
-            updateLiarUI(s); 
+            client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_start', state: s})); updateLiarUI(s); 
         } else if (mode === 'imposter') {
-            let words = DB[lang][cat]; // يستخدم لغة الهوست
-            let w = words[Math.floor(Math.random()*words.length)];
-            let imp = players[Math.floor(Math.random()*players.length)].name;
-            let assigned = {};
+            let words = DB[lang][cat]; let w = words[Math.floor(Math.random()*words.length)];
+            let imp = players[Math.floor(Math.random()*players.length)].name; let assigned = {};
             players.forEach(p => assigned[p.name] = (p.name === imp ? "IMPOSTER_FLAG" : w));
             impState = { phase: 'timer', word: w, imp: imp, votes: {} };
             client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_start', words: assigned, state: impState}));
@@ -330,14 +360,11 @@
 
     function handleImpStart(d) {
         impState = d.state; changeUI('p-imp-game');
-        let rawW = d.words[myName];
-        let isImp = (rawW === "IMPOSTER_FLAG");
+        let rawW = d.words[myName]; let isImp = (rawW === "IMPOSTER_FLAG");
         document.getElementById('imp-my-word').innerText = isImp ? t('youAreImp') : rawW;
         document.getElementById('imp-role-title').innerText = isImp ? t('impMission') : t('secretWordTitle');
         document.getElementById('imp-timer-sec').style.display = 'block';
-        
-        let endTime = Date.now() + (60 * 1000);
-        document.getElementById('imp-countdown').innerText = "60";
+        let endTime = Date.now() + (60 * 1000); document.getElementById('imp-countdown').innerText = "60";
         if(timerInterval) clearInterval(timerInterval);
         timerInterval = setInterval(() => {
             let timeLeft = Math.round((endTime - Date.now()) / 1000);
@@ -353,8 +380,7 @@
     }
 
     window.castVote = function(target) {
-        document.getElementById('imp-vote-list').style.display = 'none';
-        document.getElementById('imp-wait-vote-msg').style.display = 'block';
+        document.getElementById('imp-vote-list').style.display = 'none'; document.getElementById('imp-wait-vote-msg').style.display = 'block';
         client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_act', act: 'vote', n: myName, target: target}));
     }
 
@@ -366,18 +392,15 @@
                 let counts = {}; Object.values(impState.votes).forEach(v => counts[v] = (counts[v]||0)+1);
                 let highest = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
                 impState.phase = 'guess'; impState.caught = (highest === impState.imp);
-                client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_sync', state: impState}));
-                updateImpUI(impState);
+                client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_sync', state: impState})); updateImpUI(impState);
             }
         } else if (d.act === 'guess') {
             impState.phase = 'end'; impState.guessWord = d.word;
-            client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_sync', state: impState}));
-            updateImpUI(impState);
+            client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_sync', state: impState})); updateImpUI(impState);
         }
     }
 
     function updateImpUI(s) {
-        impState = s;
         if(s.phase === 'guess') {
             document.getElementById('imp-vote-sec').style.display = 'none'; document.getElementById('imp-guess-sec').style.display = 'block';
             document.getElementById('imp-status-msg').innerText = s.caught ? t('impCaught') : t('impEscaped');
@@ -386,8 +409,7 @@
             document.getElementById('imp-guess-sec').style.display = 'none'; document.getElementById('imp-end-sec').style.display = 'block';
             let won = (s.guessWord.trim().toLowerCase() === s.word.trim().toLowerCase());
             document.getElementById('imp-final-title').innerText = won ? t('impWon') : t('impLost');
-            document.getElementById('imp-real-word').innerText = s.word;
-            document.getElementById('imp-guessed-word').innerText = s.guessWord;
+            document.getElementById('imp-real-word').innerText = s.word; document.getElementById('imp-guessed-word').innerText = s.guessWord;
         }
     }
 
@@ -397,38 +419,26 @@
     }
 
     function renderHand() {
-        let h = currentLiarState.hands[myName] || [];
-        let html = "";
+        let h = currentLiarState.hands[myName] || []; let html = "";
         if(h.length === 0) {
             html = `<p style="color:#aaa;">${t('emptyDeck')}</p>`;
             if(!currentLiarState.last) html += `<button class="action-btn btn-ghost" onclick="liarMove('play', [])">${t('skipTurn')}</button>`;
         } else {
-            html += `<div class="card-grid">`;
-            h.forEach((c, idx) => html += `<button class="liar-card-btn ${selectedCards.includes(idx) ? 'selected' : ''}" onclick="toggleCard(${idx})">${c}</button>`);
+            html += `<div class="card-grid">`; h.forEach((c, idx) => html += `<button class="liar-card-btn ${selectedCards.includes(idx) ? 'selected' : ''}" onclick="toggleCard(${idx})">${c}</button>`);
             html += `</div><button class="action-btn btn-orange" onclick="playSelectedCards()">${t('playSelected')} (${selectedCards.length})</button>`;
         }
         document.getElementById('my-hand-container').innerHTML = html;
     }
 
-    window.toggleCard = function(idx) {
-        let p = selectedCards.indexOf(idx);
-        if(p > -1) selectedCards.splice(p, 1); else if(selectedCards.length < 3) selectedCards.push(idx); else return alert(t('maxSelect'));
-        renderHand();
-    }
-
-    window.playSelectedCards = function() {
-        if(selectedCards.length === 0) return alert(t('selectOne'));
-        let c = selectedCards.map(i => currentLiarState.hands[myName][i]);
-        client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_act', act: 'play', c: c, n: myName})); selectedCards = [];
-    }
+    window.toggleCard = function(idx) { let p = selectedCards.indexOf(idx); if(p > -1) selectedCards.splice(p, 1); else if(selectedCards.length < 3) selectedCards.push(idx); else return alert(t('maxSelect')); renderHand(); }
+    window.playSelectedCards = function() { if(selectedCards.length === 0) return alert(t('selectOne')); let c = selectedCards.map(i => currentLiarState.hands[myName][i]); client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_act', act: 'play', c: c, n: myName})); selectedCards = []; }
 
     function updateLiarUI(s) {
         currentLiarState = s; changeUI('p-liar');
         document.getElementById('turn-display').innerText = t('turn') + " " + decodeURIComponent(players[s.turn].name);
         document.getElementById('liar-req').innerText = s.req;
         let h = ""; players.forEach((p, i) => {
-            let st = s.stats[p.name];
-            h += `<div class="player-item ${st.d?'dead':''}"><span><span class="stat-badge">${st.h}/6</span> ${decodeURIComponent(p.name)}</span><span style="color:#fda085;">${i===s.turn?t('playing'):''}</span></div>`;
+            let st = s.stats[p.name]; h += `<div class="player-item ${st.d?'dead':''}"><span><span class="stat-badge">${st.h}/6</span> ${decodeURIComponent(p.name)}</span><span style="color:#fda085;">${i===s.turn?t('playing'):''}</span></div>`;
         });
         document.getElementById('liar-list').innerHTML = h;
         let isMyTurn = (players[s.turn].name === myName && !s.stats[myName].d);
@@ -445,9 +455,9 @@
                 d.c.forEach(c => { let i = s.hands[d.n].indexOf(c); if(i > -1) s.hands[d.n].splice(i, 1); });
                 s.last = {n: d.n, c: d.c}; s.phase = 'wait';
                 client.publish('sasuke_' + roomId, JSON.stringify({type: 'anim', msgKey: 'animVerify', sec: 3}));
-                setTimeout(() => { s.phase = 'decision'; s.turn = (s.turn + 1) % players.length; while(s.stats[players[s.turn].name].d) s.turn = (s.turn + 1) % players.length; client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_sync', state: s})); updateLiarUI(s); }, 3000);
+                setTimeout(() => { s.phase = 'decision'; s.turn = (s.turn + 1) % players.length; while(s.stats[players[s.turn].name] && s.stats[players[s.turn].name].d) s.turn = (s.turn + 1) % players.length; client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_sync', state: s})); updateLiarUI(s); }, 3000);
             } else {
-                s.turn = (s.turn + 1) % players.length; while(s.stats[players[s.turn].name].d) s.turn = (s.turn + 1) % players.length; client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_sync', state: s})); updateLiarUI(s);
+                s.turn = (s.turn + 1) % players.length; while(s.stats[players[s.turn].name] && s.stats[players[s.turn].name].d) s.turn = (s.turn + 1) % players.length; client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_sync', state: s})); updateLiarUI(s);
             }
         } else if(d.act === 'call' || d.act === 'continue') {
             if(d.act === 'continue') { s.phase = 'play'; client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_sync', state: s})); updateLiarUI(s); }
@@ -488,7 +498,6 @@
     function liarMove(a) { client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_act', act: a, n: myName})); }
     function copyLink() { navigator.clipboard.writeText(window.location.origin + window.location.pathname + "?room=" + roomId); alert(t('copied')); }
     
-    // ضبط اللغة الافتراضية
     setLang('ar');
 </script>
 </body>
