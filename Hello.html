@@ -24,13 +24,16 @@
         .active-panel { display: block !important; visibility: visible !important; }
         .players-list { background: #000; border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 20px; }
         .player-item { padding: 10px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
-        .player-dead { text-decoration: line-through; color: #555; }
         .secret-word-box { background: #111; border: 2px dashed var(--accent); border-radius: 15px; padding: 30px 15px; margin: 20px 0; font-size: 30px; font-weight: bold; text-align: center; }
+        .kick-btn { background: var(--fail); color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 12px; cursor: pointer; }
+        #timer-display { font-size: 35px; color: var(--warn); text-align: center; margin: 15px 0; font-weight: bold; letter-spacing: 2px; }
+        
+        /* إضافات لعبة الكذابين */
+        .player-dead { text-decoration: line-through; color: #555; }
         .card-container { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px; }
         .card-item { background: #222; border: 2px solid #444; padding: 10px; border-radius: 8px; cursor: pointer; min-width: 60px; text-align: center; }
         .card-item.selected { border-color: var(--accent); background: #1a3a1a; }
         .health-bar { font-size: 12px; color: var(--warn); }
-        #timer-display { font-size: 35px; color: var(--warn); text-align: center; margin: 15px 0; font-weight: bold; letter-spacing: 2px; }
     </style>
 </head>
 <body>
@@ -38,17 +41,23 @@
 <div class="box-container" id="app-content">
     
     <div id="p-main" class="panel active-panel">
-        <h1>🎮 اختار اللعبة يا هوست</h1>
+        <h1>🎮 اختار الغرفة يا هوست</h1>
         <input type="text" id="host-input" class="input-field" placeholder="اسمك كصاحب الغرفة..." value="Sasuke">
-        <button class="game-btn" onclick="navTo('p-imposter-cats')">🕵️‍♂️ لعبة الجاسوس</button>
-        <button class="game-btn" onclick="hostRoom('liar', 'لعبة الكذابين', 'liar')" style="border-color: var(--liar);">🃏 لعبة الكذابين (جديد!)</button>
+        <button class="game-btn" onclick="hostRoom('naruto', 'ناروتو', 'imposter')">🍥 من أنا؟ (ناروتو)</button>
+        <button class="game-btn" onclick="hostRoom('aot', 'هجوم العمالقة', 'imposter')">⚔️ من أنا؟ (العمالقة)</button>
+        <button class="game-btn" onclick="hostRoom('dbz', 'دراجون بول', 'imposter')">🐉 من أنا؟ (دراجون بول)</button>
+        <button class="game-btn" onclick="navTo('p-imposter')" style="border-color: var(--imposter); margin-top: 20px;">🕵️‍♂️ لعبة الجاسوس ➡️</button>
+        <button class="game-btn" onclick="hostRoom('liar', 'لعبة الكذابين', 'liar')" style="border-color: var(--liar); margin-top: 10px;">🃏 لعبة الكذابين (الجديدة) ➡️</button>
     </div>
 
-    <div id="p-imposter-cats" class="panel">
+    <div id="p-imposter" class="panel">
         <h1>🕵️‍♂️ تصنيفات الجاسوس</h1>
         <button class="game-btn" onclick="hostRoom('food', 'جاسوس الأكلات', 'imposter')">🍕 أكلات</button>
         <button class="game-btn" onclick="hostRoom('animals', 'جاسوس الحيوانات', 'imposter')">🦁 حيوانات</button>
-        <button class="game-btn" onclick="hostRoom('naruto', 'ناروتو', 'imposter')">🍥 ناروتو</button>
+        <button class="game-btn" onclick="hostRoom('objects', 'جاسوس الأشياء', 'imposter')">📱 جماد</button>
+        <button class="game-btn" onclick="hostRoom('jobs', 'جاسوس الوظائف', 'imposter')">💼 وظائف</button>
+        <button class="game-btn" onclick="hostRoom('countries', 'جاسوس الدول', 'imposter')">🌍 دول ومدن</button>
+        <button class="game-btn" onclick="hostRoom('sports', 'جاسوس الرياضة', 'imposter')">⚽ رياضة</button>
         <button class="leave-btn" onclick="navTo('p-main')">رجوع 🔙</button>
     </div>
 
@@ -79,11 +88,15 @@
         <h2 id="role-title" style="text-align: center;">شخصيتك أو كلمتك:</h2>
         <div class="secret-word-box" id="my-word">???</div>
         <div id="timer-display" style="display: none;">01:00</div>
+        
+        <h3 style="text-align: right; font-size: 14px;">اللاعبين:</h3>
         <div class="players-list" id="game-list"></div>
-        <div id="inline-vote-area" style="display: none;">
-            <h3 style="color: var(--warn); text-align: center;">🗳️ وقت التصويت!</h3>
+
+        <div id="inline-vote-area" style="display: none; margin-top: 25px; border-top: 1px solid #333; padding-top: 20px;">
+            <h3 style="color: var(--warn); text-align: center; margin-bottom: 15px;">🗳️ وقت التصويت! تفتكر مين الجاسوس؟</h3>
             <div id="inline-vote-list"></div>
         </div>
+
         <button class="leave-btn" onclick="leaveRoom()">🚪 مغادرة</button>
     </div>
 
@@ -106,120 +119,244 @@
         <button class="leave-btn" onclick="leaveRoom()">🚪 مغادرة</button>
     </div>
 
+    <div id="p-imposter-guess" class="panel">
+        <h1 id="guess-title" style="text-align: center;"></h1>
+        <div id="imposter-input-area" style="display:none;">
+            <input type="text" id="imposter-word-input" class="input-field" placeholder="اكتب الكلمة / الشخصية هنا...">
+            <button class="action-btn" onclick="submitImposterGuess()">إرسال التخمين 🚀</button>
+        </div>
+        <h3 id="guess-wait-text" style="text-align: center; color: var(--accent);">في انتظار الجاسوس يخمن الكلمة... ⏳</h3>
+    </div>
+
     <div id="p-result" class="panel">
         <h1 id="result-title" style="text-align: center; font-size: 28px;"></h1>
-        <div id="result-desc" style="text-align: center; font-size: 18px; margin-bottom: 30px;"></div>
+        <div id="result-desc" style="text-align: center; font-size: 18px; margin-bottom: 30px; line-height: 1.8;"></div>
         <button class="action-btn" onclick="leaveRoom()">العودة للرئيسية 🏠</button>
     </div>
 
     <div id="p-msg" class="panel">
-        <h1 id="msg-title" style="color: var(--fail); text-align: center;">🚫 تنبيه</h1>
-        <h3 id="msg-text" style="text-align: center;">...</h3>
+        <h1 id="msg-title" style="color: var(--fail); text-align: center; font-size: 28px;">🚫 تنبيه</h1>
+        <h3 id="msg-text" style="text-align: center; margin-bottom: 30px;">...</h3>
         <button class="leave-btn" onclick="navTo('p-main')">العودة للرئيسية 🏠</button>
     </div>
+
 </div>
 
 <script>
+    window.onerror = function(msg, url, line) {
+        alert("خطأ في الكود: " + msg + "\nالسطر: " + line);
+        return false;
+    };
+
     let mqttClient, myName, roomId, isHost = false, players = [], gameMode = '', gameCategory = '';
+    let timerInterval;
+    let votes = {};
+    let realImposter = '';
+    let secretWord = '';
+
+    // متغيرات لعبة الكذابين
     let liarState = { turn: 0, requiredCard: '', lastPlayedCard: '', lastPlayer: '', health: {}, dead: [] };
     let myCards = [];
     let selectedCardIdx = -1;
 
+    const wordsDB = {
+        food: ['بيتزا', 'شاورما', 'برجر', 'كشري', 'مكرونة بشاميل', 'محشي', 'سوشي', 'كباب', 'فلافل', 'بطاطس مقلية', 'ستيك', 'بان كيك', 'اندومي', 'حواوشي', 'طاجن بامية'],
+        animals: ['أسد', 'فيل', 'زرافة', 'قرد', 'نمر', 'حصان', 'كلب', 'قطة', 'تمساح', 'ثعبان', 'غزال', 'صقر', 'دب', 'كنغر', 'بطريق'],
+        objects: ['موبايل', 'لابتوب', 'كرسي', 'تلاجة', 'غسالة', 'تليفزيون', 'ساعة', 'نظارة', 'قلم', 'عجلة', 'طيارة', 'كاميرا', 'شاحن', 'سرير', 'ميكروويف'],
+        jobs: ['دكتور', 'مهندس', 'مدرس', 'ظابط', 'محامي', 'طيار', 'محاسب', 'سباك', 'نجار', 'مبرمج', 'طباخ', 'حلاق', 'صحفي', 'ممثل', 'رسام'],
+        countries: ['مصر', 'السعودية', 'الإمارات', 'المغرب', 'فرنسا', 'إيطاليا', 'اليابان', 'البرازيل', 'إسبانيا', 'ألمانيا', 'أمريكا', 'الصين', 'الهند', 'تركيا', 'روسيا'],
+        sports: ['كرة قدم', 'تنس', 'سباحة', 'كرة سلة', 'ملاكمة', 'جودو', 'جمباز', 'كرة طائرة', 'جري', 'فروسية', 'مصارعة', 'بلياردو', 'شطرنج', 'رماية'],
+        naruto: ['ناروتو', 'ساسكي', 'ساكورا', 'كاكاشي', 'إيتاشي', 'مادارا', 'جيرايا', 'أوروتشيمارو', 'تسونادي', 'شيكامارو', 'هيناتا', 'غارا', 'باين', 'أوبيتو', 'ميناتو'],
+        aot: ['إيرين', 'ميكاسا', 'أرمين', 'ليفاي', 'إروين', 'هانجي', 'راينر', 'زيك', 'آني', 'جان', 'ساشا', 'هيستوريا', 'يمير', 'بيرتولدت', 'فالكو'],
+        dbz: ['غوكو', 'فيجيتا', 'جوهان', 'بيكولو', 'فريزا', 'سيل', 'ماجين بو', 'ترانكس', 'بولما', 'كوريرين', 'بيروس', 'ويز', 'اندرويد 18', 'غوتين', 'برولي']
+    };
+
     function navTo(id) {
-        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active-panel'));
-        document.getElementById(id).classList.add('active-panel');
+        try {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active-panel'));
+            const target = document.getElementById(id);
+            if(target) target.classList.add('active-panel');
+        } catch (e) {
+            alert("حدث خطأ أثناء التنقل: " + e);
+        }
     }
 
-    if (window.location.search.includes('room=')) navTo('p-join');
+    if (window.location.search.includes('room=')) {
+        navTo('p-join');
+    }
 
     function renderPlayers() {
         let html = '';
         players.forEach(p => {
             let name = decodeURIComponent(p.name);
-            html += `<div class="player-item"><span>${name}</span></div>`;
+            let kick = (isHost && p.name !== myName) ? `<button class="kick-btn" onclick="kickUser('${p.name}')">طرد</button>` : '';
+            html += `<div class="player-item"><span>${name}</span>${kick}</div>`;
         });
         document.getElementById('h-list').innerHTML = html;
         document.getElementById('g-list').innerHTML = html;
+        document.getElementById('game-list').innerHTML = html;
         document.getElementById('h-count').innerText = players.length;
         document.getElementById('g-count').innerText = players.length;
         if(isHost) {
-            let min = (gameMode === 'liar') ? 3 : 2;
-            document.getElementById('start-btn').disabled = players.length < min;
+            let minPlayers = (gameMode === 'liar') ? 3 : 2;
+            document.getElementById('start-btn').disabled = players.length < minPlayers;
         }
     }
 
     function hostRoom(cat, name, mode) {
-        isHost = true; gameMode = mode; gameCategory = cat;
-        myName = encodeURIComponent(document.getElementById('host-input').value + " 👑");
-        roomId = Math.floor(10000 + Math.random() * 90000).toString();
-        document.getElementById('invite-link').innerText = window.location.origin + window.location.pathname + "?room=" + roomId;
-        players = [{name: myName}];
-        connectMQTT();
-        navTo('p-lobby');
-        renderPlayers();
+        try {
+            if(typeof window.mqtt === 'undefined') {
+                alert("السيرفر لسه بيحمل، اتأكد إنك متصل بالنت ودوس تاني.");
+                return;
+            }
+            
+            isHost = true; gameMode = mode; gameCategory = cat; 
+            let n = document.getElementById('host-input').value || "Sasuke";
+            myName = encodeURIComponent(n + " 👑");
+            roomId = Math.floor(10000 + Math.random() * 90000).toString();
+            document.getElementById('invite-link').innerText = window.location.origin + window.location.pathname + "?room=" + roomId;
+            players = [{name: myName}];
+            renderPlayers();
+            navTo('p-lobby');
+
+            mqttClient = window.mqtt.connect('wss://broker.emqx.io:8084/mqtt');
+            mqttClient.on('connect', () => { mqttClient.subscribe('mx_sasuke_' + roomId); });
+            setupMessageHandler();
+        } catch (e) {
+            alert("خطأ في إنشاء الغرفة: " + e);
+        }
     }
 
     function joinRoom() {
-        let n = document.getElementById('guest-input').value;
-        if(!n) return alert("اكتب اسمك!");
-        myName = encodeURIComponent(n);
-        roomId = new URLSearchParams(window.location.search).get('room');
-        connectMQTT();
-        navTo('p-wait');
+        try {
+            if(typeof window.mqtt === 'undefined') {
+                alert("السيرفر لسه بيحمل، اتأكد إنك متصل بالنت ودوس تاني.");
+                return;
+            }
+            let n = document.getElementById('guest-input').value;
+            if(!n) return alert("اكتب اسمك!");
+            myName = encodeURIComponent(n);
+            roomId = new URLSearchParams(window.location.search).get('room');
+            navTo('p-wait');
+            mqttClient = window.mqtt.connect('wss://broker.emqx.io:8084/mqtt');
+            mqttClient.on('connect', () => {
+                mqttClient.subscribe('mx_sasuke_' + roomId);
+                mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'join', name: myName}));
+            });
+            setupMessageHandler();
+        } catch (e) {
+            alert("خطأ في دخول الغرفة: " + e);
+        }
     }
 
-    function connectMQTT() {
-        mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
-        mqttClient.on('connect', () => {
-            mqttClient.subscribe('mx_sasuke_' + roomId);
-            if(!isHost) mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'join', name: myName}));
-        });
-        mqttClient.on('message', handleMessage);
-    }
-
-    function handleMessage(topic, message) {
-        let d = JSON.parse(message.toString());
-        if(d.type === 'join' && isHost) {
-            if(players.length >= 5) return; // الحد الأقصى 5
-            if(!players.find(p => p.name === d.name)) {
-                players.push({name: d.name}); renderPlayers();
+    function setupMessageHandler() {
+        mqttClient.on('message', (t, m) => {
+            let d = JSON.parse(m.toString());
+            
+            if(d.type === 'join' && isHost) {
+                if(!players.find(p => p.name === d.name)) {
+                    // الحد الأقصى للعبة الكذابين 5
+                    if(gameMode === 'liar' && players.length >= 5) return;
+                    players.push({name: d.name}); renderPlayers();
+                    mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'sync', players: players, mode: gameMode}));
+                }
+            }
+            if(d.type === 'leave' && isHost) {
+                players = players.filter(p => p.name !== d.name); renderPlayers();
                 mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'sync', players: players, mode: gameMode}));
             }
-        }
-        if(d.type === 'sync') { players = d.players; gameMode = d.mode; renderPlayers(); }
-        
-        if(d.type === 'start_liar') {
-            liarState = d.state;
-            myCards = d.distribution[myName];
-            navTo('p-liar-game');
-            updateLiarUI();
-        }
+            if(d.type === 'sync') { 
+                players = d.players; 
+                if(d.mode) gameMode = d.mode;
+                renderPlayers(); 
+            }
+            
+            if(d.type === 'start') {
+                votes = {}; 
+                realImposter = d.imposter;
+                secretWord = d.actualWord;
+                gameMode = d.mode || 'imposter'; 
+                
+                document.getElementById('inline-vote-area').style.display = 'none';
+                document.getElementById('timer-display').style.display = 'none';
 
-        if(d.type === 'liar_update') {
-            liarState = d.state;
-            updateLiarUI();
-        }
+                let w = d.words[myName];
+                if(w) {
+                    document.getElementById('my-word').innerText = w;
+                    document.getElementById('my-word').style.color = w.includes('الجاسوس') ? 'var(--imposter)' : 'white';
+                    navTo('p-game');
+                    
+                    if(gameMode === 'imposter' || realImposter !== '') {
+                        startTimer(60); 
+                    }
+                }
+            }
 
-        if(d.type === 'liar_alert') {
-            alert(d.msg);
-        }
+            // استقبال أحداث لعبة الكذابين
+            if(d.type === 'start_liar') {
+                liarState = d.state;
+                myCards = d.distribution[myName];
+                navTo('p-liar-game');
+                updateLiarUI();
+            }
 
-        if(d.type === 'game_over') {
-            showFinalResult("انتهت اللعبة", d.msg, var(--liar));
-        }
+            if(d.type === 'liar_update') {
+                liarState = d.state;
+                updateLiarUI();
+            }
+
+            if(d.type === 'liar_alert') {
+                alert(d.msg);
+            }
+
+            if(d.type === 'show_vote') {
+                if (timerInterval) clearInterval(timerInterval);
+                document.getElementById('timer-display').innerText = "00:00";
+                showVotingPanel();
+            }
+
+            if(d.type === 'vote') {
+                votes[d.voter] = d.target;
+                if(isHost && Object.keys(votes).length >= players.length) {
+                    evaluateVotes();
+                }
+            }
+
+            if(d.type === 'vote_result') {
+                if(d.result === 'escaped') {
+                    showFinalResult("🕵️‍♂️ الإمبوستر ضحك عليكم!", `الناس معرفتش الإمبوستر أو اتعادلت!<br>الإمبوستر الحقيقي كان: <b>${decodeURIComponent(realImposter)}</b><br>الإجابة كانت: <b>${secretWord}</b>`, 'var(--fail)');
+                } else if(d.result === 'caught') {
+                    showImposterGuess();
+                }
+            }
+
+            if(d.type === 'imposter_guess') {
+                let isCorrect = (d.word.trim() === secretWord.trim());
+                if(isCorrect) {
+                    showFinalResult("🤯 الإمبوستر فاز!", `الإمبوستر قدر يخمن الإجابة صح!<br>الإجابة كانت: <b>${secretWord}</b>`, 'var(--fail)');
+                } else {
+                    showFinalResult("🎉 فوز السكّان!", `الإمبوستر اتقفش وخمن غلط!<br>هو كتب: (${d.word})<br>الإجابة الصح كانت: <b>${secretWord}</b>`, 'var(--accent)');
+                }
+            }
+
+            if(d.type === 'game_over_liar') {
+                showFinalResult("انتهت اللعبة", d.msg, 'var(--liar)');
+            }
+
+            if(d.type === 'kick' && d.target === myName) disconnectAndShowMsg("🚫 تم طردك!", "الهوست قام بطردك من الغرفة.");
+            if(d.type === 'room_closed' && !isHost) disconnectAndShowMsg("🚪 الغرفة اتقفلت", "الهوست قام بإغلاق الغرفة.");
+        });
     }
-
-    // --- منطق لعبة الكذابين ---
 
     function launchGame() {
         if(gameMode === 'liar') {
             let pCount = players.length;
             let deck = [];
-            let config = { K: 0, A: 0, Q: 0, J: 0 };
+            let config = { King: 0, Ace: 0, Queen: 0, Joker: 0 };
             
-            if(pCount === 5) config = { K: 7, A: 7, Q: 7, J: 3 };
-            else if(pCount === 4) config = { K: 6, A: 6, Q: 6, J: 3 };
-            else if(pCount === 3) config = { K: 4, A: 4, Q: 4, J: 2 };
+            if(pCount === 5) config = { King: 7, Ace: 7, Queen: 7, Joker: 3 };
+            else if(pCount === 4) config = { King: 6, Ace: 6, Queen: 6, Joker: 3 };
+            else if(pCount === 3) config = { King: 4, Ace: 4, Queen: 4, Joker: 2 };
 
             for(let key in config) for(let i=0; i<config[key]; i++) deck.push(key);
             deck.sort(() => Math.random() - 0.5);
@@ -227,130 +364,11 @@
             let distribution = {};
             let health = {};
             players.forEach((p, idx) => {
-                distribution[p.name] = deck.splice(0, Math.floor(deck.length / (players.length - idx)));
+                let numCards = Math.floor(deck.length / (players.length - idx));
+                distribution[p.name] = deck.splice(0, numCards);
                 health[p.name] = 0;
             });
 
             let state = {
                 turn: 0,
-                requiredCard: ['Ace', 'King', 'Queen'][Math.floor(Math.random()*3)],
-                lastPlayedCard: '',
-                lastPlayer: '',
-                health: health,
-                dead: []
-            };
-
-            mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'start_liar', distribution, state}));
-        }
-    }
-
-    function updateLiarUI() {
-        const currentPlayer = players[liarState.turn];
-        const isMyTurn = (currentPlayer.name === myName);
-        const amIDead = liarState.dead.includes(myName);
-
-        // تحديث معلومات الدور
-        document.getElementById('liar-info').innerHTML = `المطلوب لعب ورقة: <span style="color:white; font-size:20px;">${liarState.requiredCard}</span><br>` +
-            (isMyTurn ? "دورك الآن! 🫵" : `دور اللاعب: ${decodeURIComponent(currentPlayer.name)}`);
-
-        // تحديث الكروت
-        let cardsHtml = '';
-        myCards.forEach((c, idx) => {
-            cardsHtml += `<div class="card-item ${selectedCardIdx === idx ? 'selected' : ''}" onclick="selectCard(${idx})">${c}</div>`;
-        });
-        document.getElementById('my-cards').innerHTML = cardsHtml;
-        document.getElementById('my-cards-area').style.display = amIDead ? 'none' : 'block';
-
-        // تحديث الأزرار
-        document.getElementById('liar-actions').style.display = (isMyTurn && !amIDead) ? 'block' : 'none';
-        document.getElementById('call-liar-btn').style.display = (liarState.lastPlayer && liarState.lastPlayer !== myName) ? 'block' : 'none';
-
-        // تحديث قائمة اللاعبين والدم
-        let listHtml = '';
-        players.forEach(p => {
-            let isDead = liarState.dead.includes(p.name);
-            listHtml += `<div class="player-item ${isDead ? 'player-dead' : ''}">
-                <span>${decodeURIComponent(p.name)}</span>
-                <span class="health-bar">${liarState.health[p.name]}/6 💢</span>
-            </div>`;
-        });
-        document.getElementById('liar-players-list').innerHTML = listHtml;
-    }
-
-    function selectCard(idx) {
-        selectedCardIdx = idx;
-        updateLiarUI();
-    }
-
-    function liarPlay() {
-        if(selectedCardIdx === -1) return alert("اختار ورقة الأول!");
-        let card = myCards.splice(selectedCardIdx, 1)[0];
-        selectedCardIdx = -1;
-
-        liarState.lastPlayedCard = card;
-        liarState.lastPlayer = myName;
-        nextTurn();
-        mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'liar_update', state: liarState}));
-    }
-
-    function liarCallLiar() {
-        let actual = liarState.lastPlayedCard;
-        let req = liarState.requiredCard[0]; // K, A, or Q
-        let isLiar = (actual !== req && actual !== 'J');
-        
-        let victim = isLiar ? liarState.lastPlayer : myName;
-        let attacker = isLiar ? myName : liarState.lastPlayer;
-        
-        applyHit(victim);
-        
-        let msg = isLiar ? `طلع كذاب! ${decodeURIComponent(liarState.lastPlayer)} بياخد ضربة` : `طلع صادق! أنت اللي بتاخد ضربة`;
-        mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'liar_alert', msg: msg}));
-        
-        liarState.lastPlayedCard = '';
-        liarState.lastPlayer = '';
-        mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'liar_update', state: liarState}));
-    }
-
-    function applyHit(player) {
-        liarState.health[player]++;
-        let currentHealth = liarState.health[player];
-        let deathChance = (currentHealth >= 6) ? 1.0 : 0.10;
-
-        if(Math.random() < deathChance) {
-            liarState.dead.push(player);
-            mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'liar_alert', msg: `💀 للأسف! اللاعب ${decodeURIComponent(player)} مات!`}));
-        }
-
-        // فحص انتهاء اللعبة
-        let alive = players.filter(p => !liarState.dead.includes(p.name));
-        if(alive.length <= 1) {
-            let winner = alive.length === 1 ? decodeURIComponent(alive[0].name) : "لا أحد";
-            mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'game_over', msg: `الفائز هو: ${winner}`}));
-        }
-    }
-
-    function nextTurn() {
-        do {
-            liarState.turn = (liarState.turn + 1) % players.length;
-        } while (liarState.dead.includes(players[liarState.turn].name));
-    }
-
-    function showFinalResult(title, desc, color) {
-        document.getElementById('result-title').innerText = title;
-        document.getElementById('result-title').style.color = color;
-        document.getElementById('result-desc').innerHTML = desc;
-        navTo('p-result');
-    }
-
-    function leaveRoom() { location.reload(); }
-    function copyUrl() {
-        let el = document.createElement('textarea');
-        el.value = document.getElementById('invite-link').innerText;
-        document.body.appendChild(el); el.select();
-        document.execCommand('copy'); document.body.removeChild(el);
-        alert("تم نسخ الرابط!");
-    }
-</script>
-
-</body>
-</html>
+ 
