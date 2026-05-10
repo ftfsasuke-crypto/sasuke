@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MX_SASUKE | VIP Unlocker</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; }
@@ -141,11 +141,13 @@ try {
 
     if (urlParams.has('data') && urlParams.get('data').length > 5) {
         const raw = urlParams.get('data').split('|');
+        // تم تحديث المصفوفة لتستقبل رابط الشرح كخامس عنصر
         let config = {
             t: safeDecode(raw[0]),
             c: fixUrl(safeDecode(raw[1] || raw[0])),
             v: fixUrl(safeDecode(raw[2] || raw[1])),
-            f: fixUrl(safeDecode(raw[3] || raw[2]))
+            f: fixUrl(safeDecode(raw[3] || raw[2])),
+            tut: raw[4] ? fixUrl(safeDecode(raw[4])) : "#" // رابط فيديو طريقة التخطي
         };
 
         let vIdMatch = config.v.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/ytscreeningroom\?v=|\/sandayat\?v=|\/condition_video_id\/|\/watch\?feature=player_embedded&v=))([^#\&\?]*)/);
@@ -203,15 +205,11 @@ try {
                 
                 <h2 style="margin: 0 0 15px; font-size: 28px; color: white;">احسنت يا بطل 😎</h2>
                 
-                <p style="color: var(--accent); font-size: 15px; font-weight: bold; margin-bottom: 20px; line-height: 1.6;">
-                    هذا البداية فقط ولكن لانك اسطورة رح تقدر تتخطي بقية الروابط بسهولة
+                <p style="color: #fbbf24; font-family: 'Cairo', sans-serif; font-weight: 900; font-size: 17px; margin-bottom: 25px; line-height: 1.7; border: 2px dashed #fbbf24; padding: 12px; border-radius: 10px; background: rgba(251, 191, 36, 0.08);">
+                    قبل ما تعمل فتح للرابط شوف فيديو طريقة تخطي الروابط لكي تفهم كيفية تخطي الروابط 
                 </p>
-                
-                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 15px; margin-bottom: 25px;">
-                    <p style="color: #cbd5e1; font-size: 13px; margin: 0; line-height: 1.8;">
-                        انصحك تشاهد الفيديو بالكامل لاني بشرح فيه كيفية تخطي الروابط او تشوف التعليق المثبت رح تلاقي رابط شرح كيفية تخطي الروابط 🔥
-                    </p>
-                </div>
+
+                <button style="display: block; width: 100%; background: #3b82f6; padding: 15px; border-radius: 12px; color: white; border: none; font-weight: bold; font-size: 16px; cursor: pointer; margin-bottom: 12px; box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);" onclick="window.open('${config.tut}', '_blank')">📺 فيديو طريقة التخطي</button>
 
                 <button style="display: block; width: 100%; background: var(--accent); padding: 18px; border-radius: 12px; color: white; border: none; font-weight: bold; font-size: 18px; cursor: pointer; box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3);" onclick="window.location.href='${config.f}'">🔓 افتح الرابط</button>
             </div>
@@ -295,7 +293,6 @@ try {
                         document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
                     }
 
-                    // التحقق الصارم 100% فقط زيادة اللايكات هي اللي هتعديه
                     if (currentLikes > initialLikes) {
                         document.getElementById('tasks-container').style.display = 'none';
                         document.getElementById('top-logo').style.display = 'none';
@@ -325,29 +322,23 @@ try {
         };
 
     } else {
+        // تم إضافة خانة رابط فيديو التخطي هنا
         app.innerHTML = `
             <div class="task-box" style="display:block; text-align:center; cursor:default;">
                 <h2 style="color:var(--accent); margin-top:0;">MX_SASUKE VIP Generator</h2>
                 <input type="text" id="it" class="gen-input" value="لازم تعمل اشتراك ولايك وتعليق للحصول على السكربت">
                 <input type="url" id="ic" class="gen-input" placeholder="👇 رابط قناتك (اشتراك)">
                 <input type="url" id="iv" class="gen-input" placeholder="👇 رابط فيديو اليوتيوب (اللايك والصورة)">
+                <input type="url" id="itut" class="gen-input" placeholder="👇 رابط فيديو طريقة التخطي (مهم جداً)">
                 <input type="url" id="if" class="gen-input" placeholder="👇 الرابط النهائي (ميديا فاير)">
                 <button class="verify-btn" onclick="gen()">إنشاء الصفحة</button>
             </div>
         `;
         window.gen = function() {
+            // تم تحديث الدالة لتقوم بتشفير الرابط الخامس
             const d = [
                 safeEncode(document.getElementById('it').value),
                 safeEncode(document.getElementById('ic').value),
                 safeEncode(document.getElementById('iv').value),
-                safeEncode(document.getElementById('if').value)
-            ].join('|');
-            window.location.href = "?data=" + encodeURIComponent(d);
-        };
-    }
-} catch (error) {
-    document.getElementById('app').innerHTML = `<h3 style="color:red; margin-top:50px;">يوجد خطأ: تأكد من نسخ الكود بالكامل</h3>`;
-}
-</script>
-</body>
-</html>
+                safeEncode(document.getElementById('if').value),
+                safeEncode(document.getElementById(
