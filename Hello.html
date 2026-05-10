@@ -207,7 +207,8 @@
                 <button class="action-btn btn-green" onclick="liarMove('continue')" data-tr="liarContBtn">أكمل! ✅</button>
             </div>
         </div>
-        <button class="action-btn btn-ghost" style="margin-top: 10px;" onclick="location.reload()" data-tr="exitBtn">انسحاب</button>
+        
+        <button class="action-btn btn-ghost" style="margin-top: 20px; border-color: rgba(239, 68, 68, 0.4); color: #ef4444;" onclick="location.reload()" data-tr="exitBtn">انسحاب 🚪</button>
     </div>
 </div>
 
@@ -254,7 +255,7 @@
             joinTitle: "🛸 دخول السفينة", guestPh: "اكتب اسمك...", joinBtn: "انضمام 🚪", waitTitle: "⏳ جاري الانتظار...",
             secretWordTitle: "الكلمة السرية:", discussMsg: "ناقشوا بعض!", voteMsg: "صوّت على الجاسوس:", waitingVote: "في انتظار الباقين...",
             guessMsg: "خمن الكلمة السرية:", guessPh: "الكلمة هي...", confirmBtn: "تأكيد التخمين", impGuessing: "الجاسوس يخمن الآن...",
-            realWordLbl: "الكلمة:", impWordLbl: "تخمين الجاسوس:", exitBtn: "خروج 🚪",
+            realWordLbl: "الكلمة:", impWordLbl: "تخمين الجاسوس:", exitBtn: "انسحاب 🚪",
             reqCardLbl: "المطلوب:", liarCallBtn: "كاذب! 🤬", liarContBtn: "أكمل! ✅",
             online: "● متصل", impMission: "مهمتك:", youAreImp: "أنت الجاسوس 🕵️‍♂️", voteFor: "تصويت لـ",
             impCaught: "تم كشف الجاسوس! 😂", impEscaped: "الجاسوس هرب! 😱", impWon: "الجاسوس فاز! 😈", impLost: "الجاسوس خسر! 🎉",
@@ -467,10 +468,21 @@
         currentLiarState = s; changeUI('p-liar');
         document.getElementById('turn-display').innerText = t('turn') + " " + decodeURIComponent(players[s.turn].name);
         document.getElementById('liar-req').innerText = s.req;
+        
         let h = ""; players.forEach((p, i) => {
-            let st = s.stats[p.name]; h += `<div class="player-item ${st.d?'dead':''}"><span><span class="stat-badge">${st.h}/6</span> ${decodeURIComponent(p.name)}</span><span style="color:#fda085;">${i===s.turn?t('playing'):''}</span></div>`;
+            let st = s.stats[p.name];
+            let cCount = s.hands[p.name] ? s.hands[p.name].length : 0;
+            h += `<div class="player-item ${st.d?'dead':''}">
+                <span>
+                    <span class="stat-badge" title="الدروع/الضربات">${st.h}/6</span> 
+                    ${decodeURIComponent(p.name)} 
+                    <span style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:6px; font-size:11px; margin-inline-start:5px; color:#c084fc;">🃏 ${cCount}</span>
+                </span>
+                <span style="color:#fda085;">${i===s.turn?t('playing'):''}</span>
+            </div>`;
         });
         document.getElementById('liar-list').innerHTML = h;
+        
         let isMyTurn = (players[s.turn].name === myName && !s.stats[myName].d);
         document.getElementById('my-turn-controls').style.display = (isMyTurn && s.phase === 'play') ? 'block' : 'none';
         document.getElementById('decision-controls').style.display = (isMyTurn && s.phase === 'decision') ? 'block' : 'none';
