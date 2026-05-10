@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MX_SASUKE Hub | Neon Space 10 Players</title>
+    <title>MX_SASUKE Hub | Neon Space</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #0a0a0f; --card: rgba(20, 20, 25, 0.7); --liar: #f59e0b; }
@@ -23,43 +23,53 @@
         .lang-btn { padding: 5px 15px; border-radius: 16px; color: #888; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 14px; user-select: none; }
         .lang-btn.active { background: #ff0000; color: white; box-shadow: 0 0 10px rgba(255,0,0,0.5); }
 
-        #host-menu-btn { display: none; position: fixed; top: 20px; inset-inline-start: 20px; background: rgba(0,0,0,0.6); border: 1px solid #ff512f; color: white; padding: 8px 15px; border-radius: 20px; cursor: pointer; z-index: 1000; font-weight: bold; box-shadow: 0 0 10px rgba(255,81,47,0.4); }
-        #host-sidebar { position: fixed; top: 0; inset-inline-start: -300px; width: 260px; height: 100vh; background: rgba(10, 10, 15, 0.98); backdrop-filter: blur(10px); border-inline-end: 1px solid rgba(255,255,255,0.1); z-index: 1001; transition: 0.4s; padding: 20px; box-shadow: 5px 0 20px rgba(0,0,0,0.8); }
+        #host-menu-btn { display: none; position: fixed; top: 20px; inset-inline-start: 20px; background: rgba(0,0,0,0.6); border: 1px solid #ff512f; color: white; padding: 8px 15px; border-radius: 20px; cursor: pointer; z-index: 1000; font-weight: bold; font-family: 'Cairo'; box-shadow: 0 0 10px rgba(255,81,47,0.4); }
+        #host-sidebar { position: fixed; top: 0; inset-inline-start: -300px; width: 260px; height: 100vh; background: rgba(10, 10, 15, 0.98); backdrop-filter: blur(10px); border-inline-end: 1px solid rgba(255,255,255,0.1); z-index: 1001; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); padding: 20px; box-shadow: 5px 0 20px rgba(0,0,0,0.8); }
         #host-sidebar.open { inset-inline-start: 0; }
-        .kick-btn-side { background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .kick-btn-side { background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.2s; }
+        .kick-btn-side:active { transform: scale(0.9); }
 
         .box-container { width: 92%; max-width: 400px; background: var(--card); padding: 25px; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); box-shadow: 0 20px 50px rgba(0,0,0,0.7); position: relative; z-index: 10; }
-        h1 { color: white; margin-bottom: 25px; font-size: 24px; text-align: center; }
+        
+        h1 { color: white; margin-bottom: 25px; font-size: 24px; text-align: center; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
         
         .anim-icon { display: inline-block; animation: rainbowHue 2.5s infinite linear; }
         @keyframes rainbowHue { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
 
-        .input-field { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(0, 0, 0, 0.6); color: #fff; font-size: 16px; text-align: center; margin-bottom: 20px; font-weight: bold; }
+        .input-field { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(0, 0, 0, 0.6); color: #fff; font-size: 16px; text-align: center; margin-bottom: 20px; font-weight: bold; font-family: 'Cairo'; }
+        .input-field:focus { outline: none; border-color: #ff512f; box-shadow: 0 0 10px rgba(255, 81, 47, 0.3); }
 
-        .action-btn { color: white; border: none; padding: 16px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 12px; display: block; text-align: center; transition: 0.3s; }
-        .btn-orange { background: linear-gradient(135deg, #ff512f 0%, #dd2476 100%); }
-        .btn-red { background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%); }
-        .btn-green { background: linear-gradient(135deg, #0ba360 0%, #3cba92 100%); }
-        .btn-blue { background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%); }
-        .btn-purple { background: linear-gradient(135deg, #b224ef 0%, #7579ff 100%); }
-        .btn-gold { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); color: #000; }
-        .btn-ghost { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #ccc; }
-        .action-btn:disabled { background: #333; opacity: 0.5; cursor: not-allowed; }
+        .action-btn { color: white; border: none; padding: 16px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 12px; display: block; text-align: center; transition: all 0.3s ease; }
+        .btn-orange { background: linear-gradient(135deg, #ff512f 0%, #dd2476 100%); box-shadow: 0 5px 15px rgba(255, 81, 47, 0.4); }
+        .btn-red { background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%); box-shadow: 0 5px 15px rgba(255, 8, 68, 0.4); }
+        .btn-green { background: linear-gradient(135deg, #0ba360 0%, #3cba92 100%); box-shadow: 0 5px 15px rgba(11, 163, 96, 0.4); }
+        .btn-blue { background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%); box-shadow: 0 5px 15px rgba(0, 114, 255, 0.4); }
+        .btn-purple { background: linear-gradient(135deg, #b224ef 0%, #7579ff 100%); box-shadow: 0 5px 15px rgba(178, 36, 239, 0.4); }
+        .btn-gold { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); color: #000; box-shadow: 0 5px 15px rgba(246, 211, 101, 0.4); }
+        .btn-ghost { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #ccc; box-shadow: none; }
+        .action-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        .action-btn:active { transform: scale(0.96); }
+        .action-btn:disabled { background: #333; cursor: not-allowed; opacity: 0.5; box-shadow: none; transform: none; }
 
-        .players-list { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 10px; margin-bottom: 20px; max-height: 180px; overflow-y: auto; }
+        .panel { display: none; }
+        .panel.active { display: block !important; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .players-list { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 10px; margin-bottom: 20px; max-height: 140px; overflow-y: auto; }
         .player-item { padding: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
         
         .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; margin-bottom: 15px; }
-        .liar-card-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 15px 5px; border-radius: 10px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .liar-card-btn.selected { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); color: #000; transform: translateY(-6px); }
+        .liar-card-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 15px 5px; border-radius: 10px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .liar-card-btn.selected { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); color: #000; border-color: #fff; transform: translateY(-6px) scale(1.05); box-shadow: 0 8px 15px rgba(246, 211, 101, 0.5); }
+        .choice-container { display: flex; gap: 10px; margin-top: 20px; }
         .stat-badge { background: rgba(255,255,255,0.15); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; }
 
         #anim-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 5, 8, 0.95); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        .loader-ring { width: 60px; height: 60px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #f59e0b; border-radius: 50%; animation: spin 1s infinite; }
+        .loader-ring { width: 60px; height: 60px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #f59e0b; border-radius: 50%; animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite; margin-bottom: 20px; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         .fire-flash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ff0000; opacity: 0; z-index: 1001; pointer-events: none; }
         .shake { animation: shake 0.4s; }
-        @keyframes shake { 0% {transform:translate(0,0)} 25% {transform:translate(10px,0)} 50% {transform:translate(-10px,0)} 100% {transform:translate(0,0)} }
+        @keyframes shake { 0% {transform:translate(0,0)} 20% {transform:translate(10px,0)} 40% {transform:translate(-10px,0)} 60% {transform:translate(10px,0)} 100% {transform:translate(0,0)} }
     </style>
 </head>
 <body id="main-body">
@@ -271,6 +281,7 @@
     let selectedCards = [], impState = {}, timerInterval;
 
     function changeUI(id) { document.querySelectorAll('.panel').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+    
     window.toggleHostMenu = function() { document.getElementById('host-sidebar').classList.toggle('open'); }
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -289,7 +300,11 @@
         ["h-list", "g-list"].forEach(id => { if(document.getElementById(id)) document.getElementById(id).innerHTML = html; });
         if(isHost) {
             document.getElementById('sidebar-players-list').innerHTML = sideHtml;
-            document.getElementById('start-btn').disabled = (players.length < 3);
+            if(mode === 'liar') {
+                document.getElementById('start-btn').disabled = (players.length < 3 || players.length > 5);
+            } else {
+                document.getElementById('start-btn').disabled = (players.length < 3);
+            }
         }
     }
 
@@ -311,9 +326,9 @@
         client.on('connect', () => client.subscribe('sasuke_' + roomId));
         client.on('message', (topic, msg) => {
             let d = JSON.parse(msg.toString());
-            // الحد الأقصى 10 لاعبين
-            if(isHost && d.type === 'join' && players.length < 10) {
-                if(!players.find(p => p.name === d.name)) { 
+            if(isHost && d.type === 'join') {
+                let maxPlayers = (mode === 'liar') ? 5 : 10;
+                if(players.length < maxPlayers && !players.find(p => p.name === d.name)) { 
                     players.push({name: d.name}); 
                     updateLists(); 
                     client.publish('sasuke_' + roomId, JSON.stringify({type: 'sync', players: players, mode: mode})); 
@@ -344,12 +359,10 @@
     function gameLaunch() {
         if(!isHost) return;
         if(mode === 'liar') {
-            let deck = [];
-            // توزيع عادل لـ 10 لاعبين بـ 5 ورقات لكل لاعب
-            for(let i=0; i < players.length; i++) {
-                deck.push('King', 'Ace', 'Queen', 'Joker', 'King');
-            }
-            deck.sort(() => 0.5 - Math.random());
+            let deck = []; 
+            let counts = players.length === 5 ? [7,7,7,4] : (players.length === 4 ? [6,6,6,2] : [4,4,4,3]);
+            ['King','Ace','Queen'].forEach((v, i) => { for(let j=0; j<counts[i]; j++) deck.push(v); });
+            for(let j=0; j<counts[3]; j++) deck.push('Joker'); deck.sort(() => 0.5 - Math.random());
             let s = { turn: 0, req: ['King','Ace','Queen'][Math.floor(Math.random()*3)], last: null, phase: 'play', hands: {}, stats: {} };
             players.forEach(p => { s.hands[p.name] = []; s.stats[p.name] = {h:0, d:false}; });
             let i = 0; while(deck.length) { s.hands[players[i%players.length].name].push(deck.pop()); i++; }
@@ -370,7 +383,11 @@
         document.getElementById('imp-my-word').innerText = isImp ? t('youAreImp') : rawW;
         document.getElementById('imp-role-title').innerText = isImp ? t('impMission') : t('secretWordTitle');
         document.getElementById('imp-timer-sec').style.display = 'block';
-        let endTime = Date.now() + (60 * 1000);
+        document.getElementById('imp-vote-sec').style.display = 'none';
+        document.getElementById('imp-guess-sec').style.display = 'none';
+        document.getElementById('imp-end-sec').style.display = 'none';
+        
+        let endTime = Date.now() + (60 * 1000); document.getElementById('imp-countdown').innerText = "60";
         if(timerInterval) clearInterval(timerInterval);
         timerInterval = setInterval(() => {
             let timeLeft = Math.round((endTime - Date.now()) / 1000);
@@ -415,6 +432,7 @@
             document.getElementById('imp-guess-sec').style.display = 'none'; document.getElementById('imp-end-sec').style.display = 'block';
             let won = (s.guessWord.trim().toLowerCase() === s.word.trim().toLowerCase());
             document.getElementById('imp-final-title').innerText = won ? t('impWon') : t('impLost');
+            document.getElementById('imp-final-title').style.color = won ? "#f59e0b" : "#22c55e";
             document.getElementById('imp-real-word').innerText = s.word; document.getElementById('imp-guessed-word').innerText = s.guessWord;
         }
     }
@@ -443,15 +461,21 @@
         currentLiarState = s; changeUI('p-liar');
         document.getElementById('turn-display').innerText = t('turn') + " " + decodeURIComponent(players[s.turn].name);
         document.getElementById('liar-req').innerText = s.req;
+        
         let h = ""; players.forEach((p, i) => {
             let st = s.stats[p.name];
             let cCount = s.hands[p.name] ? s.hands[p.name].length : 0;
             h += `<div class="player-item ${st.d?'dead':''}">
-                <span><span class="stat-badge">${st.h}/6</span> ${decodeURIComponent(p.name)} <span style="color:#c084fc; font-size:11px;">🃏 ${cCount}</span></span>
+                <span>
+                    <span class="stat-badge" title="الدروع/الضربات">${st.h}/6</span> 
+                    ${decodeURIComponent(p.name)} 
+                    <span style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:6px; font-size:11px; margin-inline-start:5px; color:#c084fc;">🃏 ${cCount}</span>
+                </span>
                 <span style="color:#fda085;">${i===s.turn?t('playing'):''}</span>
             </div>`;
         });
         document.getElementById('liar-list').innerHTML = h;
+        
         let isMyTurn = (players[s.turn].name === myName && !s.stats[myName].d);
         document.getElementById('my-turn-controls').style.display = (isMyTurn && s.phase === 'play') ? 'block' : 'none';
         document.getElementById('decision-controls').style.display = (isMyTurn && s.phase === 'decision') ? 'block' : 'none';
@@ -489,14 +513,14 @@
 
     function startAnim(msg, sec) {
         const overlay = document.getElementById('anim-overlay'); document.getElementById('anim-msg').innerHTML = msg; document.getElementById('loader-part').style.display = 'block'; document.getElementById('gun-part').style.display = 'none'; overlay.style.display = 'flex';
-        let endTime = Date.now() + (sec * 1000);
+        let endTime = Date.now() + (sec * 1000); document.getElementById('anim-timer').innerText = sec;
         let int = setInterval(() => { let tl = Math.round((endTime - Date.now()) / 1000); if(tl <= 0) { clearInterval(int); overlay.style.display = 'none'; } else document.getElementById('anim-timer').innerText = tl; }, 500);
     }
 
     function startGunAnim(target, hits) {
         if(myName !== target) return;
         const overlay = document.getElementById('anim-overlay'); document.getElementById('loader-part').style.display = 'none'; document.getElementById('gun-part').style.display = 'block'; overlay.style.display = 'flex';
-        let endTime = Date.now() + (3 * 1000);
+        let endTime = Date.now() + (3 * 1000); document.getElementById('gun-timer').innerText = "3";
         let int = setInterval(() => {
             let tl = Math.round((endTime - Date.now()) / 1000);
             if(tl <= 0) {
@@ -508,6 +532,7 @@
 
     function liarMove(a) { client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_act', act: a, n: myName})); }
     function copyLink() { navigator.clipboard.writeText(window.location.origin + window.location.pathname + "?room=" + roomId); alert(t('copied')); }
+    
     setLang('ar');
 </script>
 </body>
