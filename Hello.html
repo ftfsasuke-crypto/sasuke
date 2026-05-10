@@ -35,18 +35,18 @@
     <div id="p-main" class="panel active-panel">
         <h1>🎮 اختار الغرفة يا هوست</h1>
         <input type="text" id="host-input" class="input-field" placeholder="اسمك كصاحب الغرفة..." value="Sasuke">
-        <button class="game-btn" onclick="hostRoom('naruto', 'ناروتو', 'guess')">🍥 من أنا؟ (ناروتو)</button>
-        <button class="game-btn" onclick="hostRoom('aot', 'هجوم العمالقة', 'guess')">⚔️ من أنا؟ (العمالقة)</button>
-        <button class="game-btn" onclick="hostRoom('dbz', 'دراجون بول', 'guess')">🐉 من أنا؟ (دراجون بول)</button>
+        <button class="game-btn" onclick="hostRoom('naruto', 'ناروتو', 'imposter')">🍥 من أنا؟ (ناروتو)</button>
+        <button class="game-btn" onclick="hostRoom('aot', 'هجوم العمالقة', 'imposter')">⚔️ من أنا؟ (العمالقة)</button>
+        <button class="game-btn" onclick="hostRoom('dbz', 'دراجون بول', 'imposter')">🐉 من أنا؟ (دراجون بول)</button>
         <button class="game-btn" onclick="navTo('p-global')">🌍 من أنا؟ (عالمي) ➡️</button>
         <button class="game-btn" onclick="navTo('p-imposter')" style="border-color: var(--imposter); margin-top: 20px;">🕵️‍♂️ لعبة الجاسوس ➡️</button>
     </div>
 
     <div id="p-global" class="panel">
-        <h1>🌍 تصنيفات التخمين</h1>
-        <button class="game-btn" onclick="hostRoom('food', 'أكلات', 'guess')">🍕 أكلات</button>
-        <button class="game-btn" onclick="hostRoom('animals', 'حيوانات', 'guess')">🦁 حيوانات</button>
-        <button class="game-btn" onclick="hostRoom('objects', 'جماد', 'guess')">📱 جماد</button>
+        <h1>🌍 تصنيفات عالمية</h1>
+        <button class="game-btn" onclick="hostRoom('food', 'أكلات', 'imposter')">🍕 أكلات</button>
+        <button class="game-btn" onclick="hostRoom('animals', 'حيوانات', 'imposter')">🦁 حيوانات</button>
+        <button class="game-btn" onclick="hostRoom('objects', 'جماد', 'imposter')">📱 جماد</button>
         <button class="leave-btn" onclick="navTo('p-main')">رجوع 🔙</button>
     </div>
 
@@ -85,7 +85,7 @@
     </div>
 
     <div id="p-game" class="panel">
-        <h2 id="role-title" style="text-align: center;">شخصيتك هي:</h2>
+        <h2 id="role-title" style="text-align: center;">شخصيتك أو كلمتك:</h2>
         <div class="secret-word-box" id="my-word">???</div>
         <div id="timer-display" style="display: none;">01:00</div>
         
@@ -103,7 +103,7 @@
     <div id="p-imposter-guess" class="panel">
         <h1 id="guess-title" style="text-align: center;"></h1>
         <div id="imposter-input-area" style="display:none;">
-            <input type="text" id="imposter-word-input" class="input-field" placeholder="اكتب الكلمة هنا...">
+            <input type="text" id="imposter-word-input" class="input-field" placeholder="اكتب الكلمة / الشخصية هنا...">
             <button class="action-btn" onclick="submitImposterGuess()">إرسال التخمين 🚀</button>
         </div>
         <h3 id="guess-wait-text" style="text-align: center; color: var(--accent);">في انتظار الجاسوس يخمن الكلمة... ⏳</h3>
@@ -135,13 +135,18 @@
     let realImposter = '';
     let secretWord = '';
 
+    // تم إضافة شخصيات الأنمي للقاعدة
     const wordsDB = {
         food: ['بيتزا', 'شاورما', 'برجر', 'كشري', 'مكرونة بشاميل', 'محشي', 'سوشي', 'كباب', 'فلافل', 'بطاطس مقلية', 'ستيك', 'بان كيك', 'اندومي', 'حواوشي', 'طاجن بامية'],
         animals: ['أسد', 'فيل', 'زرافة', 'قرد', 'نمر', 'حصان', 'كلب', 'قطة', 'تمساح', 'ثعبان', 'غزال', 'صقر', 'دب', 'كنغر', 'بطريق'],
         objects: ['موبايل', 'لابتوب', 'كرسي', 'تلاجة', 'غسالة', 'تليفزيون', 'ساعة', 'نظارة', 'قلم', 'عجلة', 'طيارة', 'كاميرا', 'شاحن', 'سرير', 'ميكروويف'],
         jobs: ['دكتور', 'مهندس', 'مدرس', 'ظابط', 'محامي', 'طيار', 'محاسب', 'سباك', 'نجار', 'مبرمج', 'طباخ', 'حلاق', 'صحفي', 'ممثل', 'رسام'],
         countries: ['مصر', 'السعودية', 'الإمارات', 'المغرب', 'فرنسا', 'إيطاليا', 'اليابان', 'البرازيل', 'إسبانيا', 'ألمانيا', 'أمريكا', 'الصين', 'الهند', 'تركيا', 'روسيا'],
-        sports: ['كرة قدم', 'تنس', 'سباحة', 'كرة سلة', 'ملاكمة', 'جودو', 'جمباز', 'كرة طائرة', 'جري', 'فروسية', 'مصارعة', 'بلياردو', 'شطرنج', 'رماية']
+        sports: ['كرة قدم', 'تنس', 'سباحة', 'كرة سلة', 'ملاكمة', 'جودو', 'جمباز', 'كرة طائرة', 'جري', 'فروسية', 'مصارعة', 'بلياردو', 'شطرنج', 'رماية'],
+        // إضافات الأنمي
+        naruto: ['ناروتو', 'ساسكي', 'ساكورا', 'كاكاشي', 'إيتاشي', 'مادارا', 'جيرايا', 'أوروتشيمارو', 'تسونادي', 'شيكامارو', 'هيناتا', 'غارا', 'باين', 'أوبيتو', 'ميناتو'],
+        aot: ['إيرين', 'ميكاسا', 'أرمين', 'ليفاي', 'إروين', 'هانجي', 'راينر', 'زيك', 'آني', 'جان', 'ساشا', 'هيستوريا', 'يمير', 'بيرتولدت', 'فالكو'],
+        dbz: ['غوكو', 'فيجيتا', 'جوهان', 'بيكولو', 'فريزا', 'سيل', 'ماجين بو', 'ترانكس', 'بولما', 'كوريرين', 'بيروس', 'ويز', 'اندرويد 18', 'غوتين', 'برولي']
     };
 
     function navTo(id) {
@@ -239,26 +244,23 @@
                 votes = {}; 
                 realImposter = d.imposter;
                 secretWord = d.actualWord;
-                gameMode = d.mode || 'imposter'; // التأكيد إن النوع بيوصل للجميع
+                gameMode = d.mode || 'imposter'; 
                 
-                // إخفاء العداد والتصويت في البداية كإجراء احتياطي
                 document.getElementById('inline-vote-area').style.display = 'none';
                 document.getElementById('timer-display').style.display = 'none';
 
                 let w = d.words[myName];
                 if(w) {
                     document.getElementById('my-word').innerText = w;
-                    document.getElementById('my-word').style.color = w.includes('جاسوس') ? 'var(--imposter)' : 'white';
+                    document.getElementById('my-word').style.color = w.includes('الجاسوس') ? 'var(--imposter)' : 'white';
                     navTo('p-game');
                     
-                    // تشغيل التايمر لو اللعبة جاسوس أو لو هو الجاسوس
                     if(gameMode === 'imposter' || realImposter !== '') {
                         startTimer(60); 
                     }
                 }
             }
 
-            // الاستقبال المركزي لأمر ظهور التصويت (الكل هيشوفه في نفس اللحظة)
             if(d.type === 'show_vote') {
                 if (timerInterval) clearInterval(timerInterval);
                 document.getElementById('timer-display').innerText = "00:00";
@@ -274,7 +276,7 @@
 
             if(d.type === 'vote_result') {
                 if(d.result === 'escaped') {
-                    showFinalResult("🕵️‍♂️ الجاسوس ضحك عليكم!", `الناس معرفتش الجاسوس أو اتعادلت!<br>الجاسوس الحقيقي كان: <b>${decodeURIComponent(realImposter)}</b><br>الكلمة كانت: <b>${secretWord}</b>`, 'var(--fail)');
+                    showFinalResult("🕵️‍♂️ الإمبوستر ضحك عليكم!", `الناس معرفتش الإمبوستر أو اتعادلت!<br>الإمبوستر الحقيقي كان: <b>${decodeURIComponent(realImposter)}</b><br>الإجابة كانت: <b>${secretWord}</b>`, 'var(--fail)');
                 } else if(d.result === 'caught') {
                     showImposterGuess();
                 }
@@ -283,9 +285,9 @@
             if(d.type === 'imposter_guess') {
                 let isCorrect = (d.word.trim() === secretWord.trim());
                 if(isCorrect) {
-                    showFinalResult("🤯 الجاسوس فاز!", `الجاسوس قدر يخمن الكلمة صح!<br>الكلمة كانت: <b>${secretWord}</b>`, 'var(--fail)');
+                    showFinalResult("🤯 الإمبوستر فاز!", `الإمبوستر قدر يخمن الإجابة صح!<br>الإجابة كانت: <b>${secretWord}</b>`, 'var(--fail)');
                 } else {
-                    showFinalResult("🎉 فوز السكّان!", `الجاسوس اتقفش وخمن غلط!<br>هو كتب: (${d.word})<br>الكلمة الصح كانت: <b>${secretWord}</b>`, 'var(--accent)');
+                    showFinalResult("🎉 فوز السكّان!", `الإمبوستر اتقفش وخمن غلط!<br>هو كتب: (${d.word})<br>الإجابة الصح كانت: <b>${secretWord}</b>`, 'var(--accent)');
                 }
             }
 
@@ -304,12 +306,12 @@
             actualWord = currentList[Math.floor(Math.random() * currentList.length)];
             imp = players[Math.floor(Math.random() * players.length)].name;
             
-            players.forEach(p => { assigned[p.name] = (p.name === imp) ? "أنت الجاسوس 🕵️‍♂️" : "الكلمة: " + actualWord; });
+            // تعديل النص ليناسب الأنمي والجاسوس مع بعض
+            players.forEach(p => { assigned[p.name] = (p.name === imp) ? "أنت الجاسوس 🕵️‍♂️" : actualWord; });
         } else {
             players.forEach(p => assigned[p.name] = "شخصية عشوائية");
         }
         
-        // إرسال اللعبة وكل تفاصيلها لكل المتصلين
         mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'start', mode: gameMode, words: assigned, imposter: imp, actualWord: actualWord}));
     }
 
@@ -318,7 +320,6 @@
         let timerEl = document.getElementById('timer-display');
         timerEl.style.display = 'block';
         
-        // تأكيد مسح أي تايمر قديم
         if(timerInterval) clearInterval(timerInterval);
         
         timerInterval = setInterval(() => {
@@ -326,7 +327,6 @@
                 clearInterval(timerInterval);
                 timerEl.innerText = "00:00";
                 
-                // الهوست فقط هو اللي بيبعت الأمر ده للجميع عشان التزامن يكون مثالي
                 if(isHost) {
                     mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'show_vote'}));
                 }
@@ -377,7 +377,7 @@
             document.getElementById('imposter-input-area').style.display = 'block';
             document.getElementById('guess-wait-text').style.display = 'none';
         } else {
-            document.getElementById('guess-title').innerText = "🎉 مسكتوا الجاسوس!";
+            document.getElementById('guess-title').innerText = "🎉 مسكتوا الإمبوستر!";
             document.getElementById('guess-title').style.color = "var(--accent)";
             document.getElementById('imposter-input-area').style.display = 'none';
             document.getElementById('guess-wait-text').style.display = 'block';
