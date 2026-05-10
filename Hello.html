@@ -9,7 +9,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     
     <style>
-        :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; --imposter: #a855f7; --warn: #f59e0b; --liar: #3b82f6; }
+        :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; --imposter: #a855f7; --warn: #f59e0b; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden; touch-action: manipulation; }
         .box-container { width: 92%; max-width: 400px; background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #333; position: relative; z-index: 10; }
@@ -18,7 +18,6 @@
         .game-btn:active { transform: scale(0.98); background: #222; }
         .input-field { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #444; background: #000; color: var(--accent); font-size: 16px; text-align: center; margin-bottom: 20px; font-weight: bold; display: block; }
         .action-btn { background: var(--main); color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; font-size: 18px; font-weight: bold; cursor: pointer; margin-bottom: 10px; display: block; }
-        .action-btn:disabled { background: #555; cursor: not-allowed; }
         .leave-btn { background: #333; border: 1px solid #555; color: white; padding: 12px; border-radius: 10px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; display: block; }
         .panel { display: none; visibility: hidden; }
         .active-panel { display: block !important; visibility: visible !important; }
@@ -27,13 +26,6 @@
         .secret-word-box { background: #111; border: 2px dashed var(--accent); border-radius: 15px; padding: 30px 15px; margin: 20px 0; font-size: 30px; font-weight: bold; text-align: center; }
         .kick-btn { background: var(--fail); color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 12px; cursor: pointer; }
         #timer-display { font-size: 35px; color: var(--warn); text-align: center; margin: 15px 0; font-weight: bold; letter-spacing: 2px; }
-        
-        /* إضافات لعبة الكذابين */
-        .player-dead { text-decoration: line-through; color: #555; }
-        .card-container { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; margin-bottom: 20px; }
-        .card-item { background: #222; border: 2px solid #444; padding: 10px; border-radius: 8px; cursor: pointer; min-width: 60px; text-align: center; }
-        .card-item.selected { border-color: var(--accent); background: #1a3a1a; }
-        .health-bar { font-size: 12px; color: var(--warn); }
     </style>
 </head>
 <body>
@@ -47,7 +39,6 @@
         <button class="game-btn" onclick="hostRoom('aot', 'هجوم العمالقة', 'imposter')">⚔️ من أنا؟ (العمالقة)</button>
         <button class="game-btn" onclick="hostRoom('dbz', 'دراجون بول', 'imposter')">🐉 من أنا؟ (دراجون بول)</button>
         <button class="game-btn" onclick="navTo('p-imposter')" style="border-color: var(--imposter); margin-top: 20px;">🕵️‍♂️ لعبة الجاسوس ➡️</button>
-        <button class="game-btn" onclick="hostRoom('liar', 'لعبة الكذابين', 'liar')" style="border-color: var(--liar); margin-top: 10px;">🃏 لعبة الكذابين (الجديدة) ➡️</button>
     </div>
 
     <div id="p-imposter" class="panel">
@@ -100,25 +91,6 @@
         <button class="leave-btn" onclick="leaveRoom()">🚪 مغادرة</button>
     </div>
 
-    <div id="p-liar-game" class="panel">
-        <h2 style="text-align: center; color: var(--liar);">🃏 لعبة الكذابين</h2>
-        <div id="liar-info" style="text-align: center; margin-bottom: 10px; font-weight: bold; color: var(--warn);"></div>
-        
-        <div id="my-cards-area">
-            <p>كروتك:</p>
-            <div class="card-container" id="my-cards"></div>
-        </div>
-
-        <div id="liar-actions" style="display:none;">
-            <button class="action-btn" id="play-card-btn" onclick="liarPlay()">العب الورقة المختارة</button>
-            <button class="action-btn" id="call-liar-btn" onclick="liarCallLiar()" style="background: var(--fail); display:none;">كـذاب! 👺</button>
-        </div>
-
-        <h3 style="font-size: 14px;">حالة اللاعبين:</h3>
-        <div class="players-list" id="liar-players-list"></div>
-        <button class="leave-btn" onclick="leaveRoom()">🚪 مغادرة</button>
-    </div>
-
     <div id="p-imposter-guess" class="panel">
         <h1 id="guess-title" style="text-align: center;"></h1>
         <div id="imposter-input-area" style="display:none;">
@@ -153,11 +125,6 @@
     let votes = {};
     let realImposter = '';
     let secretWord = '';
-
-    // متغيرات لعبة الكذابين
-    let liarState = { turn: 0, requiredCard: '', lastPlayedCard: '', lastPlayer: '', health: {}, dead: [] };
-    let myCards = [];
-    let selectedCardIdx = -1;
 
     const wordsDB = {
         food: ['بيتزا', 'شاورما', 'برجر', 'كشري', 'مكرونة بشاميل', 'محشي', 'سوشي', 'كباب', 'فلافل', 'بطاطس مقلية', 'ستيك', 'بان كيك', 'اندومي', 'حواوشي', 'طاجن بامية'],
@@ -197,10 +164,7 @@
         document.getElementById('game-list').innerHTML = html;
         document.getElementById('h-count').innerText = players.length;
         document.getElementById('g-count').innerText = players.length;
-        if(isHost) {
-            let minPlayers = (gameMode === 'liar') ? 3 : 2;
-            document.getElementById('start-btn').disabled = players.length < minPlayers;
-        }
+        if(isHost) document.getElementById('start-btn').disabled = players.length < 2;
     }
 
     function hostRoom(cat, name, mode) {
@@ -255,21 +219,15 @@
             
             if(d.type === 'join' && isHost) {
                 if(!players.find(p => p.name === d.name)) {
-                    // الحد الأقصى للعبة الكذابين 5
-                    if(gameMode === 'liar' && players.length >= 5) return;
                     players.push({name: d.name}); renderPlayers();
-                    mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'sync', players: players, mode: gameMode}));
+                    mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'sync', players: players}));
                 }
             }
             if(d.type === 'leave' && isHost) {
                 players = players.filter(p => p.name !== d.name); renderPlayers();
-                mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'sync', players: players, mode: gameMode}));
+                mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'sync', players: players}));
             }
-            if(d.type === 'sync') { 
-                players = d.players; 
-                if(d.mode) gameMode = d.mode;
-                renderPlayers(); 
-            }
+            if(d.type === 'sync') { players = d.players; renderPlayers(); }
             
             if(d.type === 'start') {
                 votes = {}; 
@@ -290,23 +248,6 @@
                         startTimer(60); 
                     }
                 }
-            }
-
-            // استقبال أحداث لعبة الكذابين
-            if(d.type === 'start_liar') {
-                liarState = d.state;
-                myCards = d.distribution[myName];
-                navTo('p-liar-game');
-                updateLiarUI();
-            }
-
-            if(d.type === 'liar_update') {
-                liarState = d.state;
-                updateLiarUI();
-            }
-
-            if(d.type === 'liar_alert') {
-                alert(d.msg);
             }
 
             if(d.type === 'show_vote') {
@@ -339,36 +280,97 @@
                 }
             }
 
-            if(d.type === 'game_over_liar') {
-                showFinalResult("انتهت اللعبة", d.msg, 'var(--liar)');
-            }
-
             if(d.type === 'kick' && d.target === myName) disconnectAndShowMsg("🚫 تم طردك!", "الهوست قام بطردك من الغرفة.");
             if(d.type === 'room_closed' && !isHost) disconnectAndShowMsg("🚪 الغرفة اتقفلت", "الهوست قام بإغلاق الغرفة.");
         });
     }
 
     function launchGame() {
-        if(gameMode === 'liar') {
-            let pCount = players.length;
-            let deck = [];
-            let config = { King: 0, Ace: 0, Queen: 0, Joker: 0 };
+        let assigned = {};
+        let actualWord = '';
+        let imp = '';
+
+        if(gameMode === 'imposter') {
+            let currentList = wordsDB[gameCategory] || wordsDB['food'];
+            actualWord = currentList[Math.floor(Math.random() * currentList.length)];
+            imp = players[Math.floor(Math.random() * players.length)].name;
             
-            if(pCount === 5) config = { King: 7, Ace: 7, Queen: 7, Joker: 3 };
-            else if(pCount === 4) config = { King: 6, Ace: 6, Queen: 6, Joker: 3 };
-            else if(pCount === 3) config = { King: 4, Ace: 4, Queen: 4, Joker: 2 };
+            players.forEach(p => { assigned[p.name] = (p.name === imp) ? "أنت الجاسوس 🕵️‍♂️" : actualWord; });
+        } else {
+            players.forEach(p => assigned[p.name] = "شخصية عشوائية");
+        }
+        
+        mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'start', mode: gameMode, words: assigned, imposter: imp, actualWord: actualWord}));
+    }
 
-            for(let key in config) for(let i=0; i<config[key]; i++) deck.push(key);
-            deck.sort(() => Math.random() - 0.5);
+    function startTimer(seconds) {
+        let timeLeft = seconds;
+        let timerEl = document.getElementById('timer-display');
+        timerEl.style.display = 'block';
+        
+        if(timerInterval) clearInterval(timerInterval);
+        
+        timerInterval = setInterval(() => {
+            if(timeLeft <= 0) {
+                clearInterval(timerInterval);
+                timerEl.innerText = "00:00";
+                
+                if(isHost) {
+                    mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'show_vote'}));
+                }
+                return;
+            }
 
-            let distribution = {};
-            let health = {};
-            players.forEach((p, idx) => {
-                let numCards = Math.floor(deck.length / (players.length - idx));
-                distribution[p.name] = deck.splice(0, numCards);
-                health[p.name] = 0;
-            });
+            let m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            let s = (timeLeft % 60).toString().padStart(2, '0');
+            timerEl.innerText = `${m}:${s}`;
+            timeLeft--;
+        }, 1000);
+    }
 
-            let state = {
-                turn: 0,
- 
+    function showVotingPanel() {
+        let html = '';
+        players.forEach(p => {
+            let pName = decodeURIComponent(p.name);
+            html += `<button class="game-btn" onclick="submitVote('${p.name}')">${pName}</button>`;
+        });
+        document.getElementById('inline-vote-list').innerHTML = html;
+        document.getElementById('inline-vote-area').style.display = 'block';
+    }
+
+    function submitVote(targetName) {
+        document.getElementById('inline-vote-list').innerHTML = '<h3 style="text-align:center; color:var(--accent);">✅ تم تسجيل صوتك، في انتظار الباقي...</h3>';
+        mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'vote', voter: myName, target: targetName}));
+    }
+
+    function evaluateVotes() {
+        let counts = {};
+        for(let v in votes) counts[votes[v]] = (counts[votes[v]] || 0) + 1;
+        
+        let maxVotes = 0, votedOut = null, tie = false;
+        for(let p in counts) {
+            if(counts[p] > maxVotes) { maxVotes = counts[p]; votedOut = p; tie = false; }
+            else if (counts[p] === maxVotes) { tie = true; }
+        }
+
+        let resultType = (tie || votedOut !== realImposter) ? 'escaped' : 'caught';
+        mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'vote_result', result: resultType, votedOut: votedOut}));
+    }
+
+    function showImposterGuess() {
+        navTo('p-imposter-guess');
+        if(myName === realImposter) {
+            document.getElementById('guess-title').innerText = "تم القبض عليك! 😱";
+            document.getElementById('guess-title').style.color = "var(--fail)";
+            document.getElementById('imposter-input-area').style.display = 'block';
+            document.getElementById('guess-wait-text').style.display = 'none';
+        } else {
+            document.getElementById('guess-title').innerText = "🎉 مسكتوا الإمبوستر!";
+            document.getElementById('guess-title').style.color = "var(--accent)";
+            document.getElementById('imposter-input-area').style.display = 'none';
+            document.getElementById('guess-wait-text').style.display = 'block';
+        }
+    }
+</script>
+</body>
+</html>
