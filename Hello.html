@@ -148,6 +148,7 @@
         </div>
 
         <div id="imp-vote-sec" style="display: none;">
+            <p id="live-vote-counter" style="text-align: center; color: #0ba360; font-size: 16px; font-weight: bold; margin-bottom: 5px;"></p>
             <p style="text-align: center;" data-tr="voteMsg">صوّت على الجاسوس:</p>
             <div id="imp-vote-list" style="display: flex; flex-direction: column; gap: 8px; max-height:200px; overflow-y:auto; padding:5px;"></div>
             <p id="imp-wait-vote-msg" style="display: none; text-align: center; color: #aaa; font-weight: bold;" data-tr="waitingVote">في انتظار الباقين...</p>
@@ -310,11 +311,19 @@
         }
     }
 
+    // أمر طرد مستخدم وتحديث اللعبة
     window.kickUser = function(target) {
         if(confirm("طرد / Kick " + decodeURIComponent(target) + "؟")) {
             client.publish('sasuke_' + roomId, JSON.stringify({type: 'kick', target: target}));
-            players = players.filter(p => p.name !== target); updateLists();
+            players = players.filter(p => p.name !== target); 
+            updateLists();
             client.publish('sasuke_' + roomId, JSON.stringify({type: 'sync', players: players, mode: mode}));
+
+            // إعادة تقييم التصويت لو كنا في مرحلة الجاسوس عشان اللعبة متقفلش
+            if(mode === 'imposter' && impState.phase === 'vote') {
+                if(impState.votes && impState.votes[target]) { delete impState.votes[target]; }
+                checkVoteCompletion();
+            }
         }
     }
 
@@ -352,7 +361,6 @@
             if(d.type === 'liar_start' || d.type === 'liar_sync') { updateLiarUI(d.state); }
             if(d.type === 'imp_start') { handleImpStart(d); }
             if(d.type === 'imp_sync') { updateImpUI(d.state); }
-            if(d.type === 'imp_skip_timer') { handleSkipTimer(); } // استماع لتخطي الوقت
             if(d.type === 'anim') { startAnim(t(d.msgKey), d.sec); }
             if(d.type === 'gun') { startGunAnim(d.target, d.hits); }
             if(d.type === 'kick' && d.target === myName) { changeUI('p-kicked'); if(client) client.end(); }
@@ -385,20 +393,21 @@
         let rawW = d.words[myName]; let isImp = (rawW === "IMPOSTER_FLAG");
         document.getElementById('imp-my-word').innerText = isImp ? t('youAreImp') : rawW;
         document.getElementById('imp-role-title').innerText = isImp ? t('impMission') : t('secretWordTitle');
-        document.getElementById('imp-timer-sec').style.display = 'block';
-        document.getElementById('imp-vote-sec').style.display = 'none';
-        document.getElementById('imp-guess-sec').style.display = 'none';
-        document.getElementById('imp-end-sec').style.display = 'none';
         
-        document.getElementById('host-skip-btn').style.display = isHost ? 'block' : 'none';
+        updateImpUI(impState); // تجهيز الشاشة فوراً
         
         let endTime = Date.now() + (600 * 1000); 
         document.getElementById('imp-countdown').innerText = "10:00";
         if(timerInterval) clearInterval(timerInterval);
+        
         timerInterval = setInterval(() => {
+            // لو اتنقلنا من حالة التايمر لأي سبب (تخطي)، نوقف العداد
+            if(impState.phase !== 'timer') { clearInterval(timerInterval); return; }
+            
             let timeLeft = Math.round((endTime - Date.now()) / 1000);
             if(timeLeft <= 0) { 
-                handleSkipTimer(); // انتهاء الوقت طبيعي
+                clearInterval(timerInterval); 
+                if(isHost) { client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_act', act: 'skip_timer'})); }
             } else { 
                 let m = Math.floor(timeLeft / 60);
                 let s = (timeLeft % 60).toString().padStart(2, '0');
@@ -407,83 +416,107 @@
         }, 500);
     }
 
-    // أمر التخطي من الهوست
+    // أمر تخطي الوقت
     window.skipTimer = function() {
         if(!isHost) return;
-        client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_skip_timer'}));
-        // تم إزالة الاستدعاء المحلي هنا لتجنب التكرار والتعليق
+        client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_act', act: 'skip_timer'}));
     }
 
-    // الدالة اللي بتنفذ التخطي لكل اللاعبين متزامنة
-    function handleSkipTimer() {
-        if(timerInterval) clearInterval(timerInterval);
-        document.getElementById('imp-timer-sec').style.display = 'none';
-        showImpVoting();
-    }
-
-    function showImpVoting() {
-        document.getElementById('imp-vote-sec').style.display = 'block';
-        document.getElementById('imp-wait-vote-msg').style.display = 'none';
-        document.getElementById('imp-vote-list').style.display = 'flex'; // تأكيد ظهور القائمة
-        
-        let vHtml = ""; players.forEach(p => { if(p.name !== myName) vHtml += `<button class="action-btn btn-ghost" onclick="castVote('${p.name}')">${t('voteFor')} ${decodeURIComponent(p.name)}</button>`; });
-        document.getElementById('imp-vote-list').innerHTML = vHtml;
-
-        // إظهار زرار إنهاء التصويت الإجباري للهوست فقط
-        document.getElementById('host-force-vote-btn').style.display = isHost ? 'block' : 'none';
-    }
-
+    // أمر التصويت
     window.castVote = function(target) {
-        document.getElementById('imp-vote-list').style.display = 'none'; 
-        document.getElementById('imp-wait-vote-msg').style.display = 'block';
-        document.getElementById('imp-wait-vote-msg').innerText = t('waitingVote') + ` (1/${players.length})`;
+        // نسجل الصوت محلياً للسرعة قبل السيرفر
+        impState.votes = impState.votes || {};
+        impState.votes[myName] = target;
+        updateImpUI(impState);
         client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_act', act: 'vote', n: myName, target: target}));
     }
 
-    // أمر إنهاء التصويت الإجباري من الهوست
+    // أمر إنهاء التصويت الإجباري للهوست
     window.forceEndVote = function() {
         if(!isHost) return;
         client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_act', act: 'force_vote'}));
     }
 
+    // معالجة أوامر الجاسوس (للهوست فقط)
     function handleImpLogic(d) {
         if(!isHost) return;
         
-        if(d.act === 'vote') {
+        if (d.act === 'skip_timer') {
+            impState.phase = 'vote';
+            client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_sync', state: impState}));
+            updateImpUI(impState);
+        } 
+        else if (d.act === 'vote') {
             impState.votes = impState.votes || {};
             impState.votes[d.n] = d.target;
-            client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_sync', state: impState}));
-        }
-
-        // لو كل الناس صوتت، أو الهوست ضغط "إنهاء التصويت"
-        if(d.act === 'force_vote' || (impState.votes && Object.keys(impState.votes).length === players.length)) {
-            let counts = {}; 
-            if(impState.votes && Object.keys(impState.votes).length > 0) {
-                Object.values(impState.votes).forEach(v => counts[v] = (counts[v]||0)+1);
-                let highest = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
-                impState.caught = (highest === impState.imp);
-            } else {
-                impState.caught = false; // لو محدش صوت خالص والجاسوس هرب
-            }
-            impState.phase = 'guess'; 
-            client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_sync', state: impState})); 
-            updateImpUI(impState);
-        } else if (d.act === 'guess') {
-            impState.phase = 'end'; impState.guessWord = d.word;
+            checkVoteCompletion(false);
+        } 
+        else if (d.act === 'force_vote') {
+            checkVoteCompletion(true);
+        } 
+        else if (d.act === 'guess') {
+            impState.phase = 'end';
+            impState.guessWord = d.word;
             client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_sync', state: impState})); 
             updateImpUI(impState);
         }
     }
 
+    // فحص إنهاء التصويت
+    function checkVoteCompletion(force = false) {
+        let voteCount = impState.votes ? Object.keys(impState.votes).length : 0;
+        if(force || voteCount >= players.length) {
+            let counts = {}; 
+            if(voteCount > 0) {
+                Object.values(impState.votes).forEach(v => counts[v] = (counts[v]||0)+1);
+                let highest = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+                impState.caught = (highest === impState.imp);
+            } else {
+                impState.caught = false; // لو محدش صوت خالص
+            }
+            impState.phase = 'guess'; 
+        }
+        client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_sync', state: impState})); 
+        updateImpUI(impState);
+    }
+
+    // نظام تحكم ذكي بشاشات اللعبة بناءً على حالتها (State-Driven UI)
     function updateImpUI(s) {
         impState = s;
-        if(s.votes && document.getElementById('imp-wait-vote-msg').style.display === 'block') {
-            let vc = Object.keys(s.votes).length;
-            document.getElementById('imp-wait-vote-msg').innerText = t('waitingVote') + ` (${vc}/${players.length})`;
-        }
+        
+        // إخفاء الكل كبداية
+        document.getElementById('imp-timer-sec').style.display = 'none';
+        document.getElementById('imp-vote-sec').style.display = 'none';
+        document.getElementById('imp-guess-sec').style.display = 'none';
+        document.getElementById('imp-end-sec').style.display = 'none';
 
-        if(s.phase === 'guess') {
-            document.getElementById('imp-vote-sec').style.display = 'none'; 
+        if (s.phase === 'timer') {
+            document.getElementById('imp-timer-sec').style.display = 'block';
+            document.getElementById('host-skip-btn').style.display = isHost ? 'block' : 'none';
+        } 
+        else if (s.phase === 'vote') {
+            document.getElementById('imp-vote-sec').style.display = 'block';
+            document.getElementById('host-force-vote-btn').style.display = isHost ? 'block' : 'none';
+
+            let voteCount = s.votes ? Object.keys(s.votes).length : 0;
+            document.getElementById('live-vote-counter').innerText = t('waitingVote') + ` (${voteCount}/${players.length})`;
+
+            let hasVoted = s.votes && s.votes[myName];
+
+            if(hasVoted) {
+                document.getElementById('imp-vote-list').style.display = 'none'; 
+                document.getElementById('imp-wait-vote-msg').style.display = 'none'; 
+            } else {
+                document.getElementById('imp-vote-list').style.display = 'flex';
+                document.getElementById('imp-wait-vote-msg').style.display = 'none';
+                let vHtml = ""; 
+                players.forEach(p => { 
+                    if(p.name !== myName) vHtml += `<button class="action-btn btn-ghost" onclick="castVote('${p.name}')">${t('voteFor')} ${decodeURIComponent(p.name)}</button>`; 
+                });
+                document.getElementById('imp-vote-list').innerHTML = vHtml;
+            }
+        } 
+        else if (s.phase === 'guess') {
             document.getElementById('imp-guess-sec').style.display = 'block';
             document.getElementById('imp-status-msg').innerText = s.caught ? t('impCaught') : t('impEscaped');
             if(myName === s.imp) {
@@ -493,12 +526,14 @@
                 document.getElementById('imp-input-area').style.display = 'none';
                 document.getElementById('imp-wait-guess-msg').style.display = 'block';
             }
-        } else if (s.phase === 'end') {
-            document.getElementById('imp-guess-sec').style.display = 'none'; document.getElementById('imp-end-sec').style.display = 'block';
+        } 
+        else if (s.phase === 'end') {
+            document.getElementById('imp-end-sec').style.display = 'block';
             let won = (s.guessWord.trim().toLowerCase() === s.word.trim().toLowerCase());
             document.getElementById('imp-final-title').innerText = won ? t('impWon') : t('impLost');
             document.getElementById('imp-final-title').style.color = won ? "#f59e0b" : "#22c55e";
-            document.getElementById('imp-real-word').innerText = s.word; document.getElementById('imp-guessed-word').innerText = s.guessWord;
+            document.getElementById('imp-real-word').innerText = s.word; 
+            document.getElementById('imp-guessed-word').innerText = s.guessWord;
         }
     }
 
