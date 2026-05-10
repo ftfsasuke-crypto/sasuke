@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MX_SASUKE Hub | Neon Space 10 Players</title>
+    <title>MX_SASUKE Hub | Neon Space</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #0a0a0f; --card: rgba(20, 20, 25, 0.7); --liar: #f59e0b; }
+        :root { --bg: #0a0a0f; --card: rgba(20, 20, 25, 0.7); --liar: #f59e0b; --fail: #ef4444; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body { 
-            background: var(--bg);
+            background: #0a0a0f;
             background-image: radial-gradient(ellipse at 20% 50%, #1a0a2e 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, #0a1a2e 0%, transparent 60%);
             color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; touch-action: manipulation; overflow: hidden; 
         }
@@ -77,52 +77,52 @@
 <div class="stars-container" id="stars"></div>
 
 <div class="lang-switch">
-    <div class="lang-btn active" id="btn-ar" onclick="setLang('ar')">AR</div>
-    <div class="lang-btn" id="btn-en" onclick="setLang('en')">EN</div>
+    <div class="lang-btn active" id="btn-ar" onclick="window.setLang('ar')">AR</div>
+    <div class="lang-btn" id="btn-en" onclick="window.setLang('en')">EN</div>
 </div>
 
-<button id="host-menu-btn" onclick="toggleHostMenu()" data-tr="hostMenu">⚙️ الإدارة</button>
+<button id="host-menu-btn" onclick="window.toggleHostMenu()" data-tr="hostMenu">⚙️ الإدارة</button>
 
 <div id="host-sidebar">
     <h3 style="color: white; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-top: 30px;" data-tr="managePlayers">إدارة اللاعبين</h3>
     <div id="sidebar-players-list" style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;"></div>
-    <button class="action-btn btn-ghost" onclick="toggleHostMenu()" data-tr="closeMenu">إغلاق</button>
+    <button class="action-btn btn-ghost" onclick="window.toggleHostMenu()" data-tr="closeMenu">إغلاق</button>
 </div>
 
 <div class="box-container">
-    <div id="p-main" class="panel active">
+    <div id="p-main" class="panel">
         <h1 data-tr="gamesTitle">🎮 الألعاب</h1>
         <input type="text" id="host-input" class="input-field" data-tr-ph="namePh" placeholder="اكتب اسمك..." value="Sasuke">
-        <button class="action-btn btn-gold" onclick="startHost('liar', 'liarTitle', 'liar')"><span class="anim-icon">🃏</span> <span data-tr="liarBtn">لعبة الكذابين ☠️</span></button>
-        <button class="action-btn btn-purple" onclick="changeUI('p-imposter')"><span class="anim-icon">🕵️‍♂️</span> <span data-tr="impBtn">لعبة الجاسوس ➡️</span></button>
+        <button class="action-btn btn-gold" onclick="window.startHost('liar', 'liarTitle', 'liar')"><span class="anim-icon">🃏</span> <span data-tr="liarBtn">لعبة الكذابين ☠️</span></button>
+        <button class="action-btn btn-purple" onclick="window.changeUI('p-imposter')"><span class="anim-icon">🕵️‍♂️</span> <span data-tr="impBtn">لعبة الجاسوس ➡️</span></button>
     </div>
 
     <div id="p-imposter" class="panel">
         <h1 data-tr="impCatsTitle">🕵️‍♂️ تصنيفات الجاسوس</h1>
         <div style="max-height: 350px; overflow-y: auto; padding-right: 5px;">
-            <button class="action-btn btn-orange" onclick="startHost('food', 'catFood', 'imposter')"><span class="anim-icon">🍕</span> <span data-tr="catFood">أكلات</span></button>
-            <button class="action-btn btn-green" onclick="startHost('animals', 'catAnimals', 'imposter')"><span class="anim-icon">🦁</span> <span data-tr="catAnimals">حيوانات</span></button>
-            <button class="action-btn btn-blue" onclick="startHost('countries', 'catCountries', 'imposter')"><span class="anim-icon">🌍</span> <span data-tr="catCountries">دول وأماكن</span></button>
-            <button class="action-btn btn-purple" onclick="startHost('jobs', 'catJobs', 'imposter')"><span class="anim-icon">👨‍⚕️</span> <span data-tr="catJobs">مهن ووظائف</span></button>
-            <button class="action-btn btn-orange" onclick="startHost('tech', 'catTech', 'imposter')"><span class="anim-icon">💻</span> <span data-tr="catTech">أجهزة وتكنولوجيا</span></button>
-            <button class="action-btn btn-green" onclick="startHost('fruits', 'catFruits', 'imposter')"><span class="anim-icon">🍎</span> <span data-tr="catFruits">فواكه وخضروات</span></button>
-            <button class="action-btn btn-blue" onclick="startHost('objects', 'catObjects', 'imposter')"><span class="anim-icon">👕</span> <span data-tr="catObjects">أغراض وملابس</span></button>
+            <button class="action-btn btn-orange" onclick="window.startHost('food', 'catFood', 'imposter')"><span class="anim-icon">🍕</span> <span data-tr="catFood">أكلات</span></button>
+            <button class="action-btn btn-green" onclick="window.startHost('animals', 'catAnimals', 'imposter')"><span class="anim-icon">🦁</span> <span data-tr="catAnimals">حيوانات</span></button>
+            <button class="action-btn btn-blue" onclick="window.startHost('countries', 'catCountries', 'imposter')"><span class="anim-icon">🌍</span> <span data-tr="catCountries">دول وأماكن</span></button>
+            <button class="action-btn btn-purple" onclick="window.startHost('jobs', 'catJobs', 'imposter')"><span class="anim-icon">👨‍⚕️</span> <span data-tr="catJobs">مهن ووظائف</span></button>
+            <button class="action-btn btn-orange" onclick="window.startHost('tech', 'catTech', 'imposter')"><span class="anim-icon">💻</span> <span data-tr="catTech">أجهزة وتكنولوجيا</span></button>
+            <button class="action-btn btn-green" onclick="window.startHost('fruits', 'catFruits', 'imposter')"><span class="anim-icon">🍎</span> <span data-tr="catFruits">فواكه وخضروات</span></button>
+            <button class="action-btn btn-blue" onclick="window.startHost('objects', 'catObjects', 'imposter')"><span class="anim-icon">👕</span> <span data-tr="catObjects">أغراض وملابس</span></button>
         </div>
-        <button class="action-btn btn-ghost" onclick="changeUI('p-main')" style="margin-top: 10px;" data-tr="backBtn">رجوع 🔙</button>
+        <button class="action-btn btn-ghost" onclick="window.changeUI('p-main')" style="margin-top: 10px;" data-tr="backBtn">رجوع 🔙</button>
     </div>
 
     <div id="p-lobby" class="panel">
         <h1 data-tr="lobbyTitle">🛰️ غرفة الانتظار</h1>
-        <button class="action-btn btn-ghost" onclick="copyLink()" data-tr="copyLinkBtn">📋 نسخ الرابط</button>
+        <button class="action-btn btn-ghost" onclick="window.copyLink()" data-tr="copyLinkBtn">📋 نسخ الرابط</button>
         <div class="players-list" id="h-list"></div>
-        <button class="action-btn btn-red" id="start-btn" onclick="gameLaunch()" disabled data-tr="startBtn">🚀 إطلاق اللعبة</button>
-        <button class="action-btn btn-ghost" onclick="exitGameHost()" data-tr="cancelBtn">إلغاء ❌</button>
+        <button class="action-btn btn-red" id="start-btn" onclick="window.gameLaunch()" disabled data-tr="startBtn">🚀 إطلاق اللعبة</button>
+        <button class="action-btn btn-ghost" onclick="window.exitGameHost()" data-tr="cancelBtn">إلغاء ❌</button>
     </div>
 
     <div id="p-join" class="panel">
         <h1 data-tr="joinTitle">🛸 بدء اللعبة</h1>
         <input type="text" id="guest-input" class="input-field" data-tr-ph="guestPh" placeholder="اكتب اسمك...">
-        <button class="action-btn btn-orange" onclick="joinRoomAction()" data-tr="joinBtn">انضمام 🚪</button>
+        <button class="action-btn btn-orange" onclick="window.joinRoomAction()" data-tr="joinBtn">انضمام 🚪</button>
     </div>
 
     <div id="p-wait" class="panel">
@@ -151,7 +151,7 @@
         <div id="imp-timer-sec" style="text-align: center; margin: 20px 0;">
             <h1 id="imp-countdown" style="font-size: 50px; margin: 0; color: #0ba360; letter-spacing: 2px;">10:00</h1>
             <p style="color: #aaa;" data-tr="discussMsg">ناقشوا بعض!</p>
-            <button id="host-skip-btn" class="action-btn btn-red" style="display: none; width: 60%; margin: 15px auto 0; padding: 8px;" onclick="skipTimer()" data-tr="skipTimerBtn">تخطي الوقت ⏩</button>
+            <button id="host-skip-btn" class="action-btn btn-red" style="display: none; width: 60%; margin: 15px auto 0; padding: 8px;" onclick="window.skipTimer()" data-tr="skipTimerBtn">تخطي الوقت ⏩</button>
         </div>
 
         <div id="imp-vote-sec" style="display: none;">
@@ -159,7 +159,7 @@
             <p style="text-align: center;" data-tr="voteMsg">صوّت على الجاسوس:</p>
             <div id="imp-vote-list" style="display: flex; flex-direction: column; gap: 8px; max-height:200px; overflow-y:auto; padding:5px;"></div>
             <p id="imp-wait-vote-msg" style="display: none; text-align: center; color: #aaa; font-weight: bold;" data-tr="waitingVote">في انتظار الباقين...</p>
-            <button id="host-force-vote-btn" class="action-btn btn-red" style="display: none; width: 60%; margin: 15px auto 0; padding: 8px;" onclick="forceEndVote()" data-tr="forceVoteBtn">إنهاء التصويت 🏁</button>
+            <button id="host-force-vote-btn" class="action-btn btn-red" style="display: none; width: 60%; margin: 15px auto 0; padding: 8px;" onclick="window.forceEndVote()" data-tr="forceVoteBtn">إنهاء التصويت 🏁</button>
         </div>
 
         <div id="imp-guess-sec" style="display: none; text-align: center;">
@@ -167,7 +167,7 @@
             <div id="imp-input-area" style="display: none;">
                 <p data-tr="guessMsg">خمن الكلمة السرية:</p>
                 <input type="text" id="imp-word-guess" class="input-field" data-tr-ph="guessPh" placeholder="الكلمة هي...">
-                <button class="action-btn btn-purple" onclick="submitImpGuess()" data-tr="confirmBtn">تأكيد التخمين</button>
+                <button class="action-btn btn-purple" onclick="window.submitImpGuess()" data-tr="confirmBtn">تأكيد التخمين</button>
             </div>
             <p id="imp-wait-guess-msg" style="display: none;" data-tr="impGuessing">الجاسوس يخمن الآن...</p>
         </div>
@@ -178,7 +178,7 @@
                 <p><span data-tr="realWordLbl">الكلمة:</span> <span id="imp-real-word" style="color: #00c6ff;"></span></p>
                 <p><span data-tr="impWordLbl">تخمين الجاسوس:</span> <span id="imp-guessed-word" style="color: #ff512f;"></span></p>
             </div>
-            <button class="action-btn btn-ghost" style="margin-top: 15px;" onclick="location.reload()" data-tr="refreshBtn">تحديث الصفحة 🔄</button>
+            <button class="action-btn btn-ghost" style="margin-top: 15px;" id="imp-exit-btn" onclick="window.exitGameGuest()" data-tr="refreshBtn">تحديث الصفحة 🔄</button>
         </div>
     </div>
 
@@ -193,11 +193,11 @@
         </div>
         <div id="decision-controls" style="display: none;">
             <div class="choice-container">
-                <button class="action-btn btn-red" onclick="liarMove('call')" data-tr="liarCallBtn">كاذب! 🤬</button>
-                <button class="action-btn btn-green" onclick="liarMove('continue')" data-tr="liarContBtn">أكمل! ✅</button>
+                <button class="action-btn btn-red" onclick="window.liarMove('call')" data-tr="liarCallBtn">كاذب! 🤬</button>
+                <button class="action-btn btn-green" onclick="window.liarMove('continue')" data-tr="liarContBtn">أكمل! ✅</button>
             </div>
         </div>
-        <button class="action-btn btn-ghost" style="margin-top: 20px; border-color: rgba(239, 68, 68, 0.4); color: #ef4444;" onclick="location.reload()" data-tr="refreshBtn">تحديث الصفحة 🔄</button>
+        <button class="action-btn btn-ghost" style="margin-top: 20px; border-color: rgba(239, 68, 68, 0.4); color: #ef4444;" id="liar-exit-btn" onclick="window.exitGameGuest()" data-tr="refreshBtn">تحديث الصفحة 🔄</button>
     </div>
 </div>
 
@@ -217,6 +217,7 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
 <script>
+    // إنشاء النجوم بشكل سليم
     function createStars() {
         const container = document.getElementById('stars');
         for (let i = 0; i < 80; i++) {
@@ -233,8 +234,9 @@
     }
     createStars();
 
-    let lang = 'ar';
-    const tr = {
+    // القاموس والمتغيرات الأساسية (محمية بالكامل)
+    window.lang = 'ar';
+    window.tr = {
         ar: {
             gamesTitle: "🎮 الألعاب", namePh: "اكتب اسمك...", liarBtn: "لعبة الكذابين ☠️", impBtn: "لعبة الجاسوس ➡️",
             impCatsTitle: "🕵️‍♂️ تصنيفات الجاسوس", catFood: "أكلات", catAnimals: "حيوانات", catCountries: "دول وأماكن", catJobs: "مهن ووظائف", catTech: "أجهزة وتكنولوجيا", catFruits: "فواكه وخضروات", catObjects: "أغراض وملابس", backBtn: "رجوع 🔙",
@@ -248,7 +250,4 @@
             impCaught: "تم كشف الجاسوس! 😂", impEscaped: "الجاسوس هرب! 😱", impWon: "الجاسوس فاز! 😈", impLost: "الجاسوس خسر! 🎉",
             turn: "دور:", playing: "🎲 بيلعب", emptyDeck: "المخزون فارغ!", skipTurn: "تخطي الدور", playSelected: "العب المحددة",
             animVerify: "جاري التحقق...", animReveal: "كشف الأوراق...", animLiar: "كاذب! 😂", animTruth: "صادق للأسف 😱", survived: "نجوت!<br>الدروع:",
-            maxSelect: "الحد الأقصى 3 أوراق!", selectOne: "حدد ورقة واحدة على الأقل!", copied: "تم النسخ! 🚀",
-            hostMenu: "⚙️ الإدارة", managePlayers: "إدارة اللاعبين", closeMenu: "إغلاق", kickBtn: "طرد 🥾", kickedTitle: "تم طردك!", kickedMsg: "لقد تم طردك من الغرفة بواسطة الهوست.",
-            skipTimerBtn: "تخطي الوقت ⏩", forceVoteBtn: "إنهاء التصويت 🏁",
- 
+            maxSelect: "الحد الأقصى 3 أوراق!", selectOne: "حدد ورقة واحدة على الأق
