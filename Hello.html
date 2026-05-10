@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MX_SASUKE Hub | Neon Space</title>
+    <title>MX_SASUKE Hub | Neon Space 10 Players</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #0a0a0f; --card: rgba(20, 20, 25, 0.7); --liar: #f59e0b; }
@@ -337,6 +337,11 @@
             }
             if(d.type === 'liar_act') handleLiarLogic(d);
             if(d.type === 'imp_act') handleImpLogic(d);
+            
+            // تحديثات الهوست عشان يشوفها فوراً زيه زي الضيوف
+            if(d.type === 'imp_skip_timer') { handleSkipTimer(); }
+            if(d.type === 'anim') { startAnim(t(d.msgKey), d.sec); }
+            if(d.type === 'gun') { startGunAnim(d.target, d.hits); }
         });
     }
 
@@ -351,7 +356,7 @@
             if(d.type === 'liar_start' || d.type === 'liar_sync') { updateLiarUI(d.state); }
             if(d.type === 'imp_start') { handleImpStart(d); }
             if(d.type === 'imp_sync') { updateImpUI(d.state); }
-            if(d.type === 'imp_skip_timer') { handleSkipTimer(); } // استماع الكل لتخطي التايمر
+            if(d.type === 'imp_skip_timer') { handleSkipTimer(); } // استماع لتخطي الوقت
             if(d.type === 'anim') { startAnim(t(d.msgKey), d.sec); }
             if(d.type === 'gun') { startGunAnim(d.target, d.hits); }
             if(d.type === 'kick' && d.target === myName) { changeUI('p-kicked'); if(client) client.end(); }
@@ -399,9 +404,7 @@
         timerInterval = setInterval(() => {
             let timeLeft = Math.round((endTime - Date.now()) / 1000);
             if(timeLeft <= 0) { 
-                clearInterval(timerInterval); 
-                document.getElementById('imp-timer-sec').style.display = 'none'; 
-                showImpVoting(); 
+                handleSkipTimer(); 
             } else { 
                 let m = Math.floor(timeLeft / 60);
                 let s = (timeLeft % 60).toString().padStart(2, '0');
@@ -414,9 +417,10 @@
     window.skipTimer = function() {
         if(!isHost) return;
         client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_skip_timer'}));
+        handleSkipTimer(); // تحديث شاشة الهوست فوراً
     }
 
-    // تنفيذ التخطي عند كل اللاعبين فوراً
+    // الدالة اللي بتنفذ التخطي لكل اللاعبين (إخفاء التايمر بالكامل)
     function handleSkipTimer() {
         if(timerInterval) clearInterval(timerInterval);
         document.getElementById('imp-timer-sec').style.display = 'none';
