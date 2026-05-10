@@ -22,7 +22,19 @@
             overflow-x: hidden; 
         }
 
-        .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; }
+        /* حاوية النجوم المتساقطة */
+        .stars-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1;
+        }
+        .star {
+            position: absolute; background: white; border-radius: 50%; opacity: 0.5; animation: fall linear infinite;
+        }
+        @keyframes fall {
+            from { transform: translateY(-10vh); }
+            to { transform: translateY(110vh); }
+        }
+
+        .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; position: relative; z-index: 10; }
         
         .yt-logo { width: 50px; margin-bottom: 10px; transition: 0.3s; }
         .page-title { font-size: 24px; font-weight: bold; margin-bottom: 25px; word-wrap: break-word; line-height: 1.4; transition: 0.3s; }
@@ -72,6 +84,8 @@
 </head>
 <body>
 
+<div class="stars-container" id="stars"></div>
+
 <div id="countdown-overlay">
     <div class="countdown-wrapper">
         <svg class="progress-ring" width="100" height="100">
@@ -93,6 +107,24 @@
 <div id="app" class="container"></div>
 
 <script>
+// إنشاء النجوم المتساقطة
+function createStars() {
+    const container = document.getElementById('stars');
+    const starCount = 80;
+    for (let i = 0; i < starCount; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        const size = Math.random() * 3 + 'px';
+        star.style.width = size; star.style.height = size;
+        star.style.left = Math.random() * 100 + '%';
+        star.style.animationDuration = (Math.random() * 3 + 2) + 's';
+        star.style.animationDelay = (Math.random() * 5) + 's';
+        star.style.opacity = Math.random();
+        container.appendChild(star);
+    }
+}
+createStars();
+
 try {
     const YOUTUBE_API_KEY = "AIzaSyA6NebhJLqT8ZEG56cmMEm4xsRR5byisPI"; 
 
