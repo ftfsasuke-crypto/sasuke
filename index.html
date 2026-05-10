@@ -8,16 +8,29 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; }
-        body { background: var(--bg); color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; min-height: 100vh; overflow-x: hidden; }
+        
+        body { 
+            background: #0a0a0f;
+            background-image: radial-gradient(ellipse at 20% 50%, #1a0a2e 0%, transparent 60%),
+                              radial-gradient(ellipse at 80% 20%, #0a1a2e 0%, transparent 60%);
+            color: white; 
+            font-family: 'Cairo', sans-serif; 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            min-height: 100vh; 
+            overflow-x: hidden; 
+        }
+
         .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; }
         
         .yt-logo { width: 50px; margin-bottom: 10px; transition: 0.3s; }
         .page-title { font-size: 24px; font-weight: bold; margin-bottom: 25px; word-wrap: break-word; line-height: 1.4; transition: 0.3s; }
         
-        .video-card { position: relative; width: 100%; border-radius: 15px; overflow: hidden; margin-bottom: 25px; border: 1px solid #333; cursor: pointer; background: #111; min-height: 180px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .video-card { position: relative; width: 100%; border-radius: 15px; overflow: hidden; margin-bottom: 25px; border: 1px solid #333; cursor: pointer; background: rgba(17, 17, 17, 0.8); min-height: 180px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(5px); }
         .video-card img { width: 100%; display: block; }
         
-        .task-box { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; border: 2px solid transparent; text-align: right; cursor: pointer; transition: 0.3s; }
+        .task-box { background: rgba(21, 21, 23, 0.8); backdrop-filter: blur(10px); border-radius: 15px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; border: 2px solid transparent; text-align: right; cursor: pointer; transition: 0.3s; }
         .task-box.active { border-color: var(--main); }
         .task-box.done { border-color: var(--accent); cursor: default; }
         
@@ -29,7 +42,7 @@
         .task-box.active .step-num { border-color: var(--main); background: rgba(255,0,0,0.1); }
         .task-box.done .step-num { background: var(--accent); color: white; border-color: var(--accent); }
         
-        .checker-card { background: #0f0f10; border: 1px solid #222; border-radius: 15px; padding: 15px; margin-top: 20px; }
+        .checker-card { background: rgba(15, 15, 16, 0.8); backdrop-filter: blur(10px); border: 1px solid #222; border-radius: 15px; padding: 15px; margin-top: 20px; }
         #count-num { font-size: 32px; font-weight: bold; display: block; margin: 5px 0; }
         
         .verify-btn { background: var(--main); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; transition: 0.3s; }
@@ -150,7 +163,7 @@ try {
                 </div>
             </div>
 
-            <div id="success-container" style="display: none; background: var(--card); border-radius: 15px; padding: 35px 20px; text-align: center; border: 1px solid #333; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
+            <div id="success-container" style="display: none; background: rgba(21, 21, 23, 0.8); backdrop-filter: blur(10px); border-radius: 15px; padding: 35px 20px; text-align: center; border: 1px solid #333; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
                 <div style="font-size: 70px; margin-bottom: 10px; animation: bounce-icon 2s infinite;">🎉</div>
                 
                 <h2 style="margin: 0 0 15px; font-size: 28px; color: white;">احسنت يا بطل 😎</h2>
@@ -247,7 +260,6 @@ try {
                         document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
                     }
 
-                    // هنا التعديل: لو داس المرة التانية علطول هيفتحله الرابط
                     if (currentLikes > initialLikes || failedAttempts >= 1) {
                         document.getElementById('tasks-container').style.display = 'none';
                         document.getElementById('top-logo').style.display = 'none';
