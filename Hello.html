@@ -6,19 +6,19 @@
     <title>MX_SASUKE Hub | Neon Space 10 Players</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #0a0a0f; --card: rgba(20, 20, 25, 0.7); --liar: #f59e0b; }
+        :root { --bg: #0a0a0f; --card: rgba(20, 20, 25, 0.7); --liar: #f59e0b; --fail: #ef4444; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        body { 
+
+        body {
             background: var(--bg);
             background-image: radial-gradient(ellipse at 20% 50%, #1a0a2e 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, #0a1a2e 0%, transparent 60%);
-            color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; touch-action: manipulation; overflow: hidden; 
+            color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; touch-action: manipulation; overflow: hidden;
         }
 
         .stars-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
         .star { position: absolute; background: white; border-radius: 50%; opacity: 0.5; animation: fall linear infinite; }
         @keyframes fall { from { transform: translateY(-10vh); } to { transform: translateY(110vh); } }
-        
+
         .lang-switch { position: fixed; top: 20px; inset-inline-end: 20px; background: #1a1a1c; border-radius: 20px; padding: 4px; display: flex; z-index: 1000; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         .lang-btn { padding: 5px 15px; border-radius: 16px; color: #888; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 14px; user-select: none; }
         .lang-btn.active { background: #ff0000; color: white; box-shadow: 0 0 10px rgba(255,0,0,0.5); }
@@ -30,9 +30,9 @@
         .kick-btn-side:active { transform: scale(0.9); }
 
         .box-container { width: 92%; max-width: 400px; background: var(--card); padding: 25px; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); box-shadow: 0 20px 50px rgba(0,0,0,0.7); position: relative; z-index: 10; }
-        
+
         h1 { color: white; margin-bottom: 25px; font-size: 24px; text-align: center; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
-        
+
         .anim-icon { display: inline-block; animation: rainbowHue 2.5s infinite linear; }
         @keyframes rainbowHue { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
 
@@ -57,7 +57,7 @@
 
         .players-list { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 10px; margin-bottom: 20px; max-height: 180px; overflow-y: auto; }
         .player-item { padding: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
-        
+
         .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; margin-bottom: 15px; }
         .liar-card-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 15px 5px; border-radius: 10px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .liar-card-btn.selected { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); color: #000; border-color: #fff; transform: translateY(-6px) scale(1.05); box-shadow: 0 8px 15px rgba(246, 211, 101, 0.5); }
@@ -147,7 +147,7 @@
     <div id="p-imp-game" class="panel">
         <h2 id="imp-role-title" style="text-align: center; font-size: 18px;" data-tr="secretWordTitle">الكلمة السرية:</h2>
         <div id="imp-my-word" style="background: rgba(0,0,0,0.6); border: 2px dashed #b224ef; border-radius: 15px; padding: 20px; margin: 15px 0; font-size: 24px; font-weight: bold; text-align: center;"></div>
-        
+
         <div id="imp-timer-sec" style="text-align: center; margin: 20px 0;">
             <h1 id="imp-countdown" style="font-size: 50px; margin: 0; color: #0ba360; letter-spacing: 2px;">10:00</h1>
             <p style="color: #aaa;" data-tr="discussMsg">ناقشوا بعض!</p>
@@ -184,8 +184,8 @@
 
     <div id="p-liar" class="panel">
         <h2 id="turn-display" style="color: #fda085; text-align: center; font-size: 18px;">دور: ...</h2>
-        <div style="background: rgba(0,0,0,0.5); padding: 10px; border-radius: 12px; text-align: center; margin-bottom: 15px; border: 1px solid rgba(253, 160, 133, 0.3);"> 
-            <span data-tr="reqCardLbl">المطلوب:</span> <span id="liar-req" style="color: white; font-weight: bold; font-size:18px;">...</span> 
+        <div style="background: rgba(0,0,0,0.5); padding: 10px; border-radius: 12px; text-align: center; margin-bottom: 15px; border: 1px solid rgba(253, 160, 133, 0.3);">
+            <span data-tr="reqCardLbl">المطلوب:</span> <span id="liar-req" style="color: white; font-weight: bold; font-size:18px;">...</span>
         </div>
         <div class="players-list" id="liar-list"></div>
         <div id="my-turn-controls" style="display: none;">
@@ -217,6 +217,22 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
 <script>
+    function safeJsonParse(str) {
+        try { return JSON.parse(str); } catch (e) { return null; }
+    }
+
+    const MQTT_OPTS = {
+        reconnectPeriod: 4000,
+        connectTimeout: 20000,
+        keepalive: 60
+    };
+
+    function connectMqtt() {
+        var c = mqtt.connect('wss://broker.emqx.io:8084/mqtt', MQTT_OPTS);
+        c.on('error', function () { /* broker public — أحياناً ينقطع؛ إعادة الاتصال تلقائياً */ });
+        return c;
+    }
+
     function createStars() {
         const container = document.getElementById('stars');
         for (let i = 0; i < 80; i++) {
@@ -293,13 +309,16 @@
     let isGuestFlow = new URLSearchParams(window.location.search).has('room');
     let client, myName, roomId, isHost = false, players = [], mode = '', cat = '', currentLiarState = {};
     let selectedCards = [], impState = { votes: {} }, timerInterval, joinTimeout, heartbeatInterval;
+    /** خريطة الكلمات لكل لاعب — محفوظة عند الهوست لإعادة الإرسال بعد انقطاع MQTT */
+    let impWords = {};
+    let guestInitialConnect = true;
 
-    function changeUI(id) { 
+    function changeUI(id) {
         if (isGuestFlow && (id === 'p-main' || id === 'p-imposter')) return;
-        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active')); 
-        document.getElementById(id).classList.add('active'); 
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
     }
-    
+
     window.toggleHostMenu = function() { document.getElementById('host-sidebar').classList.toggle('open'); }
 
     if (isGuestFlow) {
@@ -309,11 +328,11 @@
         changeUI('p-main');
     }
 
-    // خروج الهوست فقط يودي للرئيسية
     window.exitGameHost = function() {
         if(isHost && client) {
-            client.publish('sasuke_' + roomId, JSON.stringify({type: 'room_closed'}));
+            try { client.publish('sasuke_' + roomId, JSON.stringify({type: 'room_closed'})); } catch (e) { /* ignore */ }
         }
+        if (heartbeatInterval) { clearInterval(heartbeatInterval); heartbeatInterval = null; }
         setTimeout(() => {
             window.location.href = window.location.pathname;
         }, 300);
@@ -325,7 +344,7 @@
             let n = decodeURIComponent(p.name);
             html += `<div class="player-item"><span>${n}</span><span style="color:#0ba360; font-size:10px;">${t('online')}</span></div>`;
             if(isHost) {
-                let kickHtml = (p.name !== myName) ? `<button class="kick-btn-side" onclick="kickUser('${p.name}')">${t('kickBtn')}</button>` : '';
+                let kickHtml = (p.name !== myName) ? `<button class="kick-btn-side" onclick="kickUser(${JSON.stringify(p.name)})">${t('kickBtn')}</button>` : '';
                 sideHtml += `<div class="player-item" style="background:rgba(0,0,0,0.5); border-radius:8px;"><span>${n}</span>${kickHtml}</div>`;
             }
         });
@@ -343,7 +362,7 @@
     window.kickUser = function(target) {
         if(confirm("طرد / Kick " + decodeURIComponent(target) + "؟")) {
             client.publish('sasuke_' + roomId, JSON.stringify({type: 'kick', target: target}));
-            players = players.filter(p => p.name !== target); 
+            players = players.filter(p => p.name !== target);
             updateLists();
             client.publish('sasuke_' + roomId, JSON.stringify({type: 'sync', players: players, mode: mode}));
 
@@ -354,54 +373,85 @@
         }
     }
 
+    function hostSendGameSnapshotToPlayer(name) {
+        if (!isHost || !client || !roomId) return;
+        try {
+            client.publish('sasuke_' + roomId, JSON.stringify({type: 'sync', players: players, mode: mode}));
+            if (mode === 'liar' && currentLiarState && currentLiarState.phase !== undefined) {
+                client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_sync', state: currentLiarState}));
+            }
+            if (mode === 'imposter' && impState && impState.phase) {
+                if (Object.keys(impWords).length) {
+                    client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_start', words: impWords, state: impState}));
+                }
+                client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_sync', state: impState}));
+            }
+        } catch (e) { /* ignore */ }
+    }
+
     function startHost(c, nameKey, m) {
-        isHost = true; mode = m; cat = c;
+        isHost = true; mode = m; cat = c; impWords = {};
         myName = encodeURIComponent((document.getElementById('host-input').value || "Sasuke") + " 👑");
         roomId = Math.floor(10000 + Math.random() * 90000).toString();
         players = [{name: myName}]; updateLists(); changeUI('p-lobby');
-        document.getElementById('host-menu-btn').style.display = 'block'; 
-        client = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
+        document.getElementById('host-menu-btn').style.display = 'block';
+        client = connectMqtt();
         client.on('connect', () => {
             client.subscribe('sasuke_' + roomId);
-            // إرسال إشارة للضيوف كل 3 ثواني عشان الرابط ما يخلصش عندهم
             heartbeatInterval = setInterval(() => {
-                client.publish('sasuke_' + roomId, JSON.stringify({type: 'ping'}));
+                try { client.publish('sasuke_' + roomId, JSON.stringify({type: 'ping'})); } catch (e) { /* ignore */ }
             }, 3000);
         });
         client.on('message', (topic, msg) => {
-            let d = JSON.parse(msg.toString());
+            const d = safeJsonParse(msg.toString());
+            if (!d) return;
             if(isHost && d.type === 'join') {
                 let maxPlayers = (mode === 'liar') ? 5 : 10;
-                if(players.length < maxPlayers && !players.find(p => p.name === d.name)) { 
-                    players.push({name: d.name}); 
-                    updateLists(); 
-                    client.publish('sasuke_' + roomId, JSON.stringify({type: 'sync', players: players, mode: mode})); 
+                if(players.length < maxPlayers && !players.find(p => p.name === d.name)) {
+                    players.push({name: d.name});
+                    updateLists();
+                    client.publish('sasuke_' + roomId, JSON.stringify({type: 'sync', players: players, mode: mode}));
                 }
+            }
+            if (isHost && d.type === 'resync' && d.name && players.some(p => p.name === d.name)) {
+                hostSendGameSnapshotToPlayer(d.name);
             }
             if(d.type === 'liar_act') handleLiarLogic(d);
             if(d.type === 'imp_act') handleImpLogic(d);
         });
     }
 
+    function guestRequestStateFromHost() {
+        if (!isGuestFlow || !myName || !roomId || !client) return;
+        try {
+            if (typeof client.connected === 'boolean' && !client.connected) return;
+            client.publish('sasuke_' + roomId, JSON.stringify({type: 'resync', name: myName}));
+        } catch (e) { /* ignore */ }
+    }
+
     function joinRoomAction() {
         let n = document.getElementById('guest-input').value; if(!n) return;
         myName = encodeURIComponent(n);
-        client = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
-        client.on('connect', () => { 
-            client.subscribe('sasuke_' + roomId); 
-            client.publish('sasuke_' + roomId, JSON.stringify({type: 'join', name: myName})); 
-            changeUI('p-wait'); 
-            
-            // الضيف بينتظر إشارة من الهوست لمدة 15 ثانية، لو مفيش يبقى الرابط قديم
-            joinTimeout = setTimeout(() => {
-                changeUI('p-expired');
-                if(client) client.end();
-            }, 15000);
+        guestInitialConnect = true;
+        client = connectMqtt();
+        client.on('connect', () => {
+            client.subscribe('sasuke_' + roomId);
+            if (guestInitialConnect) {
+                guestInitialConnect = false;
+                client.publish('sasuke_' + roomId, JSON.stringify({type: 'join', name: myName}));
+                changeUI('p-wait');
+                joinTimeout = setTimeout(() => {
+                    changeUI('p-expired');
+                    if(client) client.end();
+                }, 15000);
+            } else {
+                guestRequestStateFromHost();
+            }
         });
         client.on('message', (topic, msg) => {
-            let d = JSON.parse(msg.toString());
-            
-            // أي رسالة من الهوست تلغي تايمر الانتهاء
+            const d = safeJsonParse(msg.toString());
+            if (!d) return;
+
             if(d.type === 'sync' || d.type === 'ping' || d.type === 'imp_start' || d.type === 'liar_start' || d.type === 'imp_sync' || d.type === 'liar_sync') {
                 if(joinTimeout) clearTimeout(joinTimeout);
             }
@@ -425,19 +475,20 @@
     function gameLaunch() {
         if(!isHost) return;
         if(mode === 'liar') {
-            let deck = []; 
+            let deck = [];
             let counts = players.length === 5 ? [7,7,7,4] : (players.length === 4 ? [6,6,6,2] : [4,4,4,3]);
             ['King','Ace','Queen'].forEach((v, i) => { for(let j=0; j<counts[i]; j++) deck.push(v); });
             for(let j=0; j<counts[3]; j++) deck.push('Joker'); deck.sort(() => 0.5 - Math.random());
             let s = { turn: 0, req: ['King','Ace','Queen'][Math.floor(Math.random()*3)], last: null, phase: 'play', hands: {}, stats: {} };
             players.forEach(p => { s.hands[p.name] = []; s.stats[p.name] = {h:0, d:false}; });
             let i = 0; while(deck.length) { s.hands[players[i%players.length].name].push(deck.pop()); i++; }
-            client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_start', state: s})); updateLiarUI(s); 
+            client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_start', state: s})); updateLiarUI(s);
         } else if (mode === 'imposter') {
             let words = DB[lang][cat]; let w = words[Math.floor(Math.random()*words.length)];
             let imp = players[Math.floor(Math.random()*players.length)].name; let assigned = {};
             players.forEach(p => assigned[p.name] = (p.name === imp ? "IMPOSTER_FLAG" : w));
-            impState = { phase: 'timer', word: w, imp: imp, votes: {} };
+            impWords = assigned;
+            impState = { phase: 'timer', word: w, imp: imp, votes: {}, timerEndsAt: Date.now() + 600000 };
             client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_start', words: assigned, state: impState}));
             handleImpStart({words: assigned, state: impState});
         }
@@ -445,27 +496,37 @@
 
     function handleImpStart(d) {
         impState = d.state; changeUI('p-imp-game');
-        let rawW = d.words[myName]; let isImp = (rawW === "IMPOSTER_FLAG");
-        document.getElementById('imp-my-word').innerText = isImp ? t('youAreImp') : rawW;
-        document.getElementById('imp-role-title').innerText = isImp ? t('impMission') : t('secretWordTitle');
-        
-        updateImpUI(impState); 
-        
-        let endTime = Date.now() + (600 * 1000); 
-        document.getElementById('imp-countdown').innerText = "10:00";
+        if (d.words && d.words[myName] !== undefined) {
+            let rawW = d.words[myName]; let isImp = (rawW === "IMPOSTER_FLAG");
+            document.getElementById('imp-my-word').innerText = isImp ? t('youAreImp') : rawW;
+            document.getElementById('imp-role-title').innerText = isImp ? t('impMission') : t('secretWordTitle');
+        }
+
+        updateImpUI(impState);
+
         if(timerInterval) clearInterval(timerInterval);
-        
+
+        if (!d.state || d.state.phase !== 'timer') return;
+
+        var endTime = (typeof d.state.timerEndsAt === 'number')
+            ? d.state.timerEndsAt
+            : (Date.now() + 600000);
+        document.getElementById('imp-countdown').innerText = "10:00";
+
         timerInterval = setInterval(() => {
             if(impState.phase !== 'timer') { clearInterval(timerInterval); return; }
-            
+
             let timeLeft = Math.round((endTime - Date.now()) / 1000);
-            if(timeLeft <= 0) { 
-                clearInterval(timerInterval); 
+            if(timeLeft <= 0) {
+                clearInterval(timerInterval);
                 if(isHost) { client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_act', act: 'skip_timer'})); }
-            } else { 
+                else {
+                    document.getElementById('imp-countdown').innerText = "0:00";
+                }
+            } else {
                 let m = Math.floor(timeLeft / 60);
                 let s = (timeLeft % 60).toString().padStart(2, '0');
-                document.getElementById('imp-countdown').innerText = `${m}:${s}`; 
+                document.getElementById('imp-countdown').innerText = `${m}:${s}`;
             }
         }, 500);
     }
@@ -478,7 +539,7 @@
     window.castVote = function(target) {
         impState.votes = impState.votes || {};
         impState.votes[myName] = target;
-        updateImpUI(impState); // تحديث الـ UI فوراً عشان تختفي القائمة
+        updateImpUI(impState);
         client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_act', act: 'vote', n: myName, target: target}));
     }
 
@@ -489,24 +550,25 @@
 
     function handleImpLogic(d) {
         if(!isHost) return;
-        
+
         if (d.act === 'skip_timer') {
             impState.phase = 'vote';
+            if (impState.timerEndsAt) delete impState.timerEndsAt;
             client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_sync', state: impState}));
             updateImpUI(impState);
-        } 
+        }
         else if (d.act === 'vote') {
             impState.votes = impState.votes || {};
             impState.votes[d.n] = d.target;
             checkVoteCompletion(false);
-        } 
+        }
         else if (d.act === 'force_vote') {
             checkVoteCompletion(true);
-        } 
+        }
         else if (d.act === 'guess') {
             impState.phase = 'end';
             impState.guessWord = d.word;
-            client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_sync', state: impState})); 
+            client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_sync', state: impState}));
             updateImpUI(impState);
         }
     }
@@ -514,23 +576,23 @@
     function checkVoteCompletion(force = false) {
         let voteCount = impState.votes ? Object.keys(impState.votes).length : 0;
         if(force || voteCount >= players.length) {
-            let counts = {}; 
+            let counts = {};
             if(voteCount > 0) {
                 Object.values(impState.votes).forEach(v => counts[v] = (counts[v]||0)+1);
                 let highest = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
                 impState.caught = (highest === impState.imp);
             } else {
-                impState.caught = false; 
+                impState.caught = false;
             }
-            impState.phase = 'guess'; 
+            impState.phase = 'guess';
         }
-        client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_sync', state: impState})); 
+        client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_sync', state: impState}));
         updateImpUI(impState);
     }
 
     function updateImpUI(s) {
         impState = s;
-        
+
         document.getElementById('imp-timer-sec').style.display = 'none';
         document.getElementById('imp-vote-sec').style.display = 'none';
         document.getElementById('imp-guess-sec').style.display = 'none';
@@ -539,7 +601,7 @@
         if (s.phase === 'timer') {
             document.getElementById('imp-timer-sec').style.display = 'block';
             document.getElementById('host-skip-btn').style.display = isHost ? 'block' : 'none';
-        } 
+        }
         else if (s.phase === 'vote') {
             document.getElementById('imp-vote-sec').style.display = 'block';
             document.getElementById('host-force-vote-btn').style.display = isHost ? 'block' : 'none';
@@ -550,18 +612,18 @@
             let hasVoted = s.votes && s.votes[myName];
 
             if(hasVoted) {
-                document.getElementById('imp-vote-list').style.display = 'none'; 
-                document.getElementById('imp-wait-vote-msg').style.display = 'block'; 
+                document.getElementById('imp-vote-list').style.display = 'none';
+                document.getElementById('imp-wait-vote-msg').style.display = 'block';
             } else {
                 document.getElementById('imp-vote-list').style.display = 'flex';
                 document.getElementById('imp-wait-vote-msg').style.display = 'none';
-                let vHtml = ""; 
-                players.forEach(p => { 
-                    if(p.name !== myName) vHtml += `<button class="action-btn btn-ghost" onclick="castVote('${p.name}')">${t('voteFor')} ${decodeURIComponent(p.name)}</button>`; 
+                let vHtml = "";
+                players.forEach(p => {
+                    if(p.name !== myName) vHtml += `<button class="action-btn btn-ghost" onclick="castVote(${JSON.stringify(p.name)})">${t('voteFor')} ${decodeURIComponent(p.name)}</button>`;
                 });
                 document.getElementById('imp-vote-list').innerHTML = vHtml;
             }
-        } 
+        }
         else if (s.phase === 'guess') {
             document.getElementById('imp-guess-sec').style.display = 'block';
             document.getElementById('imp-status-msg').innerText = s.caught ? t('impCaught') : t('impEscaped');
@@ -572,14 +634,16 @@
                 document.getElementById('imp-input-area').style.display = 'none';
                 document.getElementById('imp-wait-guess-msg').style.display = 'block';
             }
-        } 
+        }
         else if (s.phase === 'end') {
             document.getElementById('imp-end-sec').style.display = 'block';
-            let won = (s.guessWord.trim().toLowerCase() === s.word.trim().toLowerCase());
+            var gw = (s.guessWord != null && s.guessWord !== undefined) ? String(s.guessWord).trim() : '';
+            var ww = (s.word != null && s.word !== undefined) ? String(s.word).trim() : '';
+            var won = (gw.toLowerCase() === ww.toLowerCase());
             document.getElementById('imp-final-title').innerText = won ? t('impWon') : t('impLost');
             document.getElementById('imp-final-title').style.color = won ? "#f59e0b" : "#22c55e";
-            document.getElementById('imp-real-word').innerText = s.word; 
-            document.getElementById('imp-guessed-word').innerText = s.guessWord;
+            document.getElementById('imp-real-word').innerText = ww;
+            document.getElementById('imp-guessed-word').innerText = gw;
         }
     }
 
@@ -607,21 +671,21 @@
         currentLiarState = s; changeUI('p-liar');
         document.getElementById('turn-display').innerText = t('turn') + " " + decodeURIComponent(players[s.turn].name);
         document.getElementById('liar-req').innerText = s.req;
-        
+
         let h = ""; players.forEach((p, i) => {
             let st = s.stats[p.name];
             let cCount = s.hands[p.name] ? s.hands[p.name].length : 0;
             h += `<div class="player-item ${st.d?'dead':''}">
                 <span>
-                    <span class="stat-badge" title="الدروع/الضربات">${st.h}/6</span> 
-                    ${decodeURIComponent(p.name)} 
+                    <span class="stat-badge" title="الدروع/الضربات">${st.h}/6</span>
+                    ${decodeURIComponent(p.name)}
                     <span style="background:rgba(255,255,255,0.1); padding:2px 6px; border-radius:6px; font-size:11px; margin-inline-start:5px; color:#c084fc;">🃏 ${cCount}</span>
                 </span>
                 <span style="color:#fda085;">${i===s.turn?t('playing'):''}</span>
             </div>`;
         });
         document.getElementById('liar-list').innerHTML = h;
-        
+
         let isMyTurn = (players[s.turn].name === myName && !s.stats[myName].d);
         document.getElementById('my-turn-controls').style.display = (isMyTurn && s.phase === 'play') ? 'block' : 'none';
         document.getElementById('decision-controls').style.display = (isMyTurn && s.phase === 'decision') ? 'block' : 'none';
@@ -643,6 +707,12 @@
         } else if(d.act === 'call' || d.act === 'continue') {
             if(d.act === 'continue') { s.phase = 'play'; client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_sync', state: s})); updateLiarUI(s); }
             else {
+                if (!s.last || !s.last.c || !s.last.c.length) {
+                    s.phase = 'play';
+                    client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_sync', state: s}));
+                    updateLiarUI(s);
+                    return;
+                }
                 client.publish('sasuke_' + roomId, JSON.stringify({type: 'anim', msgKey: 'animReveal', sec: 4}));
                 setTimeout(() => {
                     let wasLying = s.last.c.some(c => c !== s.req && c !== 'Joker'); let victim = wasLying ? s.last.n : d.n;
@@ -663,22 +733,80 @@
         let int = setInterval(() => { let tl = Math.round((endTime - Date.now()) / 1000); if(tl <= 0) { clearInterval(int); overlay.style.display = 'none'; } else document.getElementById('anim-timer').innerText = tl; }, 500);
     }
 
+    function resetGunPart() {
+        var gm = document.getElementById('gun-msg');
+        var gt = document.getElementById('gun-timer');
+        if (gm) { gm.innerHTML = '...'; gm.style.color = '#ff0844'; gm.style.fontSize = ''; }
+        if (gt) { gt.style.display = ''; gt.innerText = '3'; }
+        var gp = document.getElementById('gun-part');
+        if (gp) { var first = gp.querySelector('div'); if (first) first.style.display = ''; }
+    }
+
     function startGunAnim(target, hits) {
         if(myName !== target) return;
-        const overlay = document.getElementById('anim-overlay'); document.getElementById('loader-part').style.display = 'none'; document.getElementById('gun-part').style.display = 'block'; overlay.style.display = 'flex';
-        let endTime = Date.now() + (3 * 1000); document.getElementById('gun-timer').innerText = "3";
+        resetGunPart();
+        const overlay = document.getElementById('anim-overlay');
+        document.getElementById('loader-part').style.display = 'none';
+        document.getElementById('gun-part').style.display = 'block';
+        overlay.style.display = 'flex';
+        let endTime = Date.now() + (3 * 1000);
+        document.getElementById('gun-timer').innerText = "3";
         let int = setInterval(() => {
             let tl = Math.round((endTime - Date.now()) / 1000);
+            let gunTimer = document.getElementById('gun-timer');
             if(tl <= 0) {
-                clearInterval(int); document.getElementById('main-body').classList.add('shake'); document.getElementById('flash').style.opacity = '1';
-                setTimeout(() => { document.getElementById('flash').style.opacity = '0'; document.getElementById('main-body').classList.remove('shake'); document.getElementById('gun-part').innerHTML = `<h2 style='font-size:18px; color:#3cba92;'>${t('survived')} ${6-hits}</h2>`; setTimeout(() => overlay.style.display = 'none', 3000); }, 150);
-            } else document.getElementById('gun-timer').innerText = tl;
+                clearInterval(int);
+                document.getElementById('main-body').classList.add('shake');
+                document.getElementById('flash').style.opacity = '1';
+                setTimeout(() => {
+                    document.getElementById('flash').style.opacity = '0';
+                    document.getElementById('main-body').classList.remove('shake');
+                    var gm = document.getElementById('gun-msg');
+                    if (gm) { gm.innerHTML = t('survived') + ' ' + (6 - hits); gm.style.color = '#3cba92'; gm.style.fontSize = '18px'; }
+                    if (gunTimer) gunTimer.style.display = 'none';
+                    setTimeout(() => { overlay.style.display = 'none'; resetGunPart(); }, 3000);
+                }, 150);
+            } else if (gunTimer) document.getElementById('gun-timer').innerText = tl;
         }, 500);
     }
 
     function liarMove(a) { client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_act', act: a, n: myName})); }
-    function copyLink() { navigator.clipboard.writeText(window.location.origin + window.location.pathname + "?room=" + roomId); alert(t('copied')); }
-    
+
+    function fallbackCopyLink(text) {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed'; ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.select();
+        try {
+            document.execCommand('copy');
+            alert(t('copied'));
+        } catch (e) {
+            window.prompt('انسخ الرابط / Copy URL:', text);
+        }
+        document.body.removeChild(ta);
+    }
+
+    function copyLink() {
+        var url = window.location.origin + window.location.pathname + "?room=" + roomId;
+        if (navigator.clipboard && window.isSecureContext && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(url).then(function () { alert(t('copied')); }).catch(function () { fallbackCopyLink(url); });
+        } else {
+            fallbackCopyLink(url);
+        }
+    }
+
+    if (isGuestFlow) {
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible') guestRequestStateFromHost();
+        });
+        window.addEventListener('pageshow', function(ev) {
+            if (ev.persisted) guestRequestStateFromHost();
+        });
+        window.addEventListener('online', guestRequestStateFromHost);
+    }
+
     setLang('ar');
 </script>
 </body>
