@@ -9,25 +9,35 @@
         :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; --liar: #f59e0b; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; touch-action: manipulation; overflow-x: hidden; }
+        
         .box-container { width: 92%; max-width: 400px; background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #333; position: relative; z-index: 10; }
         h1 { color: white; margin-bottom: 20px; font-size: 22px; text-align: center; }
+        
         .game-btn { background: #111; border: 2px solid #333; color: white; padding: 16px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 12px; display: block; text-align: center; text-decoration: none; border-color: #333; }
+        .game-btn:active { background: #222; transform: scale(0.98); }
+        
         .input-field { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #444; background: #000; color: var(--accent); font-size: 16px; text-align: center; margin-bottom: 20px; font-weight: bold; display: block; }
         .action-btn { background: var(--main); color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; font-size: 18px; font-weight: bold; cursor: pointer; margin-bottom: 10px; display: block; width: 100%; }
         .action-btn:disabled { background: #444; cursor: not-allowed; opacity: 0.6; }
         .leave-btn { background: #333; border: 1px solid #555; color: white; padding: 12px; border-radius: 10px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+        
         .panel { display: none; }
         .panel.active { display: block !important; }
         .players-list { background: #000; border: 1px solid #333; border-radius: 10px; padding: 10px; margin-bottom: 20px; max-height: 150px; overflow-y: auto; }
         .player-item { padding: 8px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
-        #anim-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
-        .loader-ring { width: 80px; height: 80px; border: 5px solid #222; border-top: 5px solid var(--liar); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+        
+        /* طبقة الأنيميشن */
+        #anim-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
+        .loader-ring { width: 70px; height: 80px; border: 5px solid #222; border-top: 5px solid var(--liar); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+        
         .fire-flash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; opacity: 0; z-index: 1001; pointer-events: none; }
-        .shake { animation: shake 0.5s; }
-        @keyframes shake { 0%, 100% { transform: translate(0, 0); } 10%, 30%, 50%, 70%, 90% { transform: translate(-10px, 0); } }
-        .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 15px; }
-        .liar-card-btn { background: #222; border: 1px solid #444; color: white; padding: 10px 5px; border-radius: 8px; font-size: 12px; cursor: pointer; }
+        .shake { animation: shake 0.3s; }
+        @keyframes shake { 0% {transform: translate(0,0)} 25% {transform: translate(10px,0)} 50% {transform: translate(-10px,0)} 100% {transform: translate(0,0)} }
+
+        .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 15px; }
+        .liar-card-btn { background: #222; border: 1px solid #444; color: white; padding: 12px 5px; border-radius: 8px; font-size: 12px; cursor: pointer; transition: 0.2s; }
+        .liar-card-btn:active { background: var(--liar); }
         .choice-container { display: flex; gap: 10px; margin-top: 20px; }
     </style>
 </head>
@@ -65,12 +75,14 @@
         <h2 id="turn-display" style="color: var(--liar); text-align: center; font-size: 18px;">دور: ...</h2>
         <div style="background: #222; padding: 10px; border-radius: 8px; text-align: center; margin-bottom: 15px;"> الورقة المطلوبة: <span id="liar-req" style="color: var(--liar); font-weight: bold;">...</span> </div>
         <div class="players-list" id="liar-list"></div>
+        
         <div id="my-turn-controls" style="display: none;">
-            <p style="text-align: center; font-size: 14px; margin-bottom: 10px;">اختر ورقة:</p>
+            <p style="text-align: center; font-size: 14px;">اختر ورقة لتمويههم:</p>
             <div class="card-grid" id="my-hand"></div>
         </div>
+
         <div id="decision-controls" style="display: none;">
-            <p style="text-align: center; font-size: 14px; margin-bottom: 10px;">كاذب أم تكمل؟</p>
+            <p style="text-align: center; font-size: 14px;">اللاعب لعب.. هل هو كاذب؟</p>
             <div class="choice-container">
                 <button class="action-btn" style="background: var(--fail);" onclick="liarMove('call')">كاذب! 🤬</button>
                 <button class="action-btn" style="background: var(--accent);" onclick="liarMove('continue')">اكمل! ✅</button>
@@ -87,7 +99,7 @@
     </div>
     <div id="gun-part" style="display: none;">
         <div style="font-size: 60px;">🔫</div>
-        <h2 style="color: var(--fail);">خسرت المواجهة!</h2>
+        <h2 id="gun-msg" style="color: var(--fail);">خسرت المواجهة!</h2>
         <h1 id="gun-timer">3</h1>
     </div>
 </div>
@@ -96,6 +108,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
 <script>
     let client, myName, roomId, isHost = false, players = [], mode = '', currentLiarState = {};
+
+    function playSfx() { try { new Audio('https://www.soundjay.com/buttons/button-16.mp3').play(); } catch(e){} }
 
     function changeUI(id) {
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -107,7 +121,7 @@
 
     function updateLists() {
         let html = "";
-        players.forEach(p => html += `<div class="player-item"><span>${decodeURIComponent(p.name)}</span><span style="color:var(--accent)">● متصل</span></div>`);
+        players.forEach(p => html += `<div class="player-item"><span>${decodeURIComponent(p.name)}</span><span style="color:var(--accent)">●</span></div>`);
         ["h-list", "g-list"].forEach(id => { if(document.getElementById(id)) document.getElementById(id).innerHTML = html; });
         if(isHost) document.getElementById('start-btn').disabled = (players.length < 3);
     }
@@ -122,7 +136,7 @@
         client.on('connect', () => client.subscribe('sasuke_' + roomId));
         client.on('message', (t, msg) => {
             let d = JSON.parse(msg.toString());
-            if(isHost && d.type === 'join' && players.length < 5) {
+            if(isHost && d.type === 'join') {
                 if(!players.find(p => p.name === d.name)) {
                     players.push({name: d.name}); updateLists();
                     client.publish('sasuke_' + roomId, JSON.stringify({type: 'sync', players: players, mode: mode}));
@@ -162,6 +176,7 @@
         players.forEach(p => { s.hands[p.name] = []; s.stats[p.name] = {h:0, d:false}; });
         let i = 0; while(deck.length) { s.hands[players[i%players.length].name].push(deck.pop()); i++; }
         
+        currentLiarState = s; // تحديث حالة الهوست محلياً
         client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_start', state: s}));
         updateLiarUI(s); 
     }
@@ -175,10 +190,14 @@
             h += `<div class="player-item ${st.d?'dead':''}"><span>${st.h}/6 ${decodeURIComponent(p.name)}</span><span>${i===s.turn?'👈':''}</span></div>`;
         });
         document.getElementById('liar-list').innerHTML = h;
+        
         let isMyTurn = (players[s.turn].name === myName && !s.stats[myName].d);
         document.getElementById('my-turn-controls').style.display = (isMyTurn && s.phase === 'play') ? 'block' : 'none';
         document.getElementById('decision-controls').style.display = (isMyTurn && s.phase === 'decision') ? 'block' : 'none';
-        let cards = ""; (s.hands[myName] || []).forEach(c => { cards += `<button class="liar-card-btn" onclick="liarMove('play','${c}')">${c}</button>`; });
+        
+        let cards = ""; (s.hands[myName] || []).forEach(c => { 
+            cards += `<button class="liar-card-btn" onclick="liarMove('play','${c}')">${c}</button>`; 
+        });
         document.getElementById('my-hand').innerHTML = cards || "ورقك خلص!";
     }
 
@@ -186,6 +205,7 @@
         if(!isHost) return;
         let s = currentLiarState;
         if(d.act === 'play') {
+            playSfx();
             let h = s.hands[d.n]; h.splice(h.indexOf(d.c), 1);
             s.last = {n: d.n, c: d.c}; s.phase = 'wait';
             client.publish('sasuke_' + roomId, JSON.stringify({type: 'anim', msg: "جاري التحميل...", sec: 3}));
@@ -205,8 +225,8 @@
             setTimeout(() => {
                 let wasLying = (s.last.c !== s.req && s.last.c !== 'Joker');
                 let victim = wasLying ? s.last.n : d.n;
-                let msg = wasLying ? "طلع كذاب فعلاً! 😂" : "للآسف هو طلع صادق 😱";
-                client.publish('sasuke_' + roomId, JSON.stringify({type: 'anim', msg: msg, sec: 4}));
+                let m = wasLying ? "طلع كذاب فعلاً! 😂" : "للآسف هو طلع صادق 😱";
+                client.publish('sasuke_' + roomId, JSON.stringify({type: 'anim', msg: m, sec: 4}));
                 setTimeout(() => {
                     s.stats[victim].h++;
                     if (s.stats[victim].h >= 6 || Math.random() < 0.1) s.stats[victim].d = true;
@@ -224,13 +244,12 @@
 
     function startAnim(msg, sec) {
         const overlay = document.getElementById('anim-overlay');
-        const timerEl = document.getElementById('anim-timer');
         document.getElementById('anim-msg').innerText = msg;
         document.getElementById('loader-part').style.display = 'block';
         document.getElementById('gun-part').style.display = 'none';
         overlay.style.display = 'flex';
-        let count = sec; timerEl.innerText = count;
-        let int = setInterval(() => { count--; timerEl.innerText = count; if(count <= 0) { clearInterval(int); overlay.style.display = 'none'; } }, 1000);
+        let count = sec; document.getElementById('anim-timer').innerText = count;
+        let int = setInterval(() => { count--; document.getElementById('anim-timer').innerText = count; if(count <= 0) { clearInterval(int); overlay.style.display = 'none'; } }, 1000);
     }
 
     function startGunAnim(target, hits) {
@@ -238,6 +257,7 @@
         const overlay = document.getElementById('anim-overlay');
         document.getElementById('loader-part').style.display = 'none';
         document.getElementById('gun-part').style.display = 'block';
+        document.getElementById('gun-msg').innerText = "خسرت المواجهة!";
         overlay.style.display = 'flex';
         let count = 3; document.getElementById('gun-timer').innerText = count;
         let int = setInterval(() => {
@@ -249,7 +269,7 @@
                 setTimeout(() => {
                     document.getElementById('flash').style.opacity = '0';
                     document.getElementById('main-body').classList.remove('shake');
-                    document.getElementById('gun-part').innerHTML = `<h2>حظك حلو لم تمت بعد!<br>فاضلك ${6-hits} مرات كمان</h2>`;
+                    document.getElementById('gun-part').innerHTML = `<h2 style='font-size:18px;'>حظك حلو لم تمت بعد!<br>فاضلك ${6-hits} مرات كمان<br>ركز ولا تخاطر</h2>`;
                     setTimeout(() => overlay.style.display = 'none', 3000);
                 }, 200);
             }
