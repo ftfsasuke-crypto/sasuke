@@ -54,6 +54,9 @@
         .task-box.active .step-num { border-color: var(--main); background: rgba(255,0,0,0.1); }
         .task-box.done .step-num { background: var(--accent); color: white; border-color: var(--accent); }
         
+        /* ضبط حجم الأيقونات داخل أرقام الخطوات */
+        .step-num svg { width: 70%; height: 70%; }
+
         .checker-card { background: rgba(15, 15, 16, 0.8); backdrop-filter: blur(10px); border: 1px solid #222; border-radius: 15px; padding: 15px; margin-top: 20px; }
         #count-num { font-size: 32px; font-weight: bold; display: block; margin: 5px 0; }
         
@@ -171,7 +174,7 @@ try {
                         <h4>Subscribe to channel</h4>
                         <p>اضغط هنا للاشتراك في القناة</p>
                     </div>
-                    <div class="step-num"><span>1</span></div>
+                    <div class="step-num"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 4-8 4z"/></svg></div>
                 </div>
 
                 <div class="task-box" id="tk2" onclick="openT('v')">
@@ -179,7 +182,7 @@ try {
                         <h4>Like & comment on video</h4>
                         <p>اعمل لايك وكومنت على الفيديو</p>
                     </div>
-                    <div class="step-num"><span>2</span></div>
+                    <div class="step-num"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M23 10a2 2 0 0 0-2-2h-6.32l.96-4.57c.02-.1.03-.21.03-.32a1.5 1.5 0 0 0-.44-1.06L14.17 1 7.59 7.58C7.22 7.95 7 8.45 7 9v10a2 2 0 0 0 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2zM5 21V9H1v12h4z"/></svg></div>
                 </div>
 
                 <div class="checker-card">
@@ -265,13 +268,15 @@ try {
                         sub = true; 
                         document.getElementById('tk1').classList.remove('active');
                         document.getElementById('tk1').classList.add('done'); 
-                        document.getElementById('tk1').querySelector('.step-num span').innerText = '✓';
+                        document.getElementById('tk1').querySelector('.step-num').style.background = 'var(--accent)'; // ضبط الخلفية عند الإنجاز
+                        document.getElementById('tk1').querySelector('.step-num').innerHTML = '✓'; // إظهار الصح عند الإنجاز
                         document.getElementById('tk2').classList.add('active'); 
                     } else { 
                         vid = true; 
                         document.getElementById('tk2').classList.remove('active');
                         document.getElementById('tk2').classList.add('done'); 
-                        document.getElementById('tk2').querySelector('.step-num span').innerText = '✓';
+                        document.getElementById('tk2').querySelector('.step-num').style.background = 'var(--accent)'; // ضبط الخلفية عند الإنجاز
+                        document.getElementById('tk2').querySelector('.step-num').innerHTML = '✓'; // إظهار الصح عند الإنجاز
                     }
                 }
             }, 1000);
