@@ -116,7 +116,7 @@
         <button class="action-btn btn-ghost" onclick="copyLink()" data-tr="copyLinkBtn">📋 نسخ الرابط</button>
         <div class="players-list" id="h-list"></div>
         <button class="action-btn btn-red" id="start-btn" onclick="gameLaunch()" disabled data-tr="startBtn">🚀 إطلاق اللعبة</button>
-        <button class="action-btn btn-ghost" onclick="location.reload()" data-tr="cancelBtn">إلغاء ❌</button>
+        <button class="action-btn btn-ghost" onclick="exitGame()" data-tr="cancelBtn">إلغاء ❌</button>
     </div>
 
     <div id="p-join" class="panel">
@@ -130,11 +130,18 @@
         <div class="players-list" id="g-list"></div>
     </div>
 
+    <div id="p-expired" class="panel" style="text-align: center;">
+        <h1 style="font-size: 80px; margin-bottom: 10px;">⏳</h1>
+        <h2 style="color: var(--fail);" data-tr="expiredTitle">انتهت صلاحية الرابط!</h2>
+        <p style="color: #ccc; margin-bottom: 25px;" data-tr="expiredMsg">هذه الغرفة لم تعد متاحة أو تم إنهاء اللعبة.</p>
+        <button class="action-btn btn-ghost" onclick="window.location.href = window.location.pathname" data-tr="backBtn">العودة للرئيسية 🔙</button>
+    </div>
+
     <div id="p-kicked" class="panel" style="text-align: center;">
         <h1 style="font-size: 80px; margin-bottom: 10px;">🥾</h1>
         <h2 style="color: var(--fail);" data-tr="kickedTitle">تم طردك!</h2>
         <p style="color: #ccc; margin-bottom: 25px;" data-tr="kickedMsg">لقد تم طردك من الغرفة بواسطة الهوست.</p>
-        <button class="action-btn btn-ghost" onclick="location.reload()" data-tr="backBtn">العودة للرئيسية 🔙</button>
+        <button class="action-btn btn-ghost" onclick="window.location.href = window.location.pathname" data-tr="backBtn">العودة للرئيسية 🔙</button>
     </div>
 
     <div id="p-imp-game" class="panel">
@@ -148,7 +155,6 @@
         </div>
 
         <div id="imp-vote-sec" style="display: none;">
-            <p id="live-vote-counter" style="text-align: center; color: #0ba360; font-size: 16px; font-weight: bold; margin-bottom: 5px;"></p>
             <p style="text-align: center;" data-tr="voteMsg">صوّت على الجاسوس:</p>
             <div id="imp-vote-list" style="display: flex; flex-direction: column; gap: 8px; max-height:200px; overflow-y:auto; padding:5px;"></div>
             <p id="imp-wait-vote-msg" style="display: none; text-align: center; color: #aaa; font-weight: bold;" data-tr="waitingVote">في انتظار الباقين...</p>
@@ -171,7 +177,7 @@
                 <p><span data-tr="realWordLbl">الكلمة:</span> <span id="imp-real-word" style="color: #00c6ff;"></span></p>
                 <p><span data-tr="impWordLbl">تخمين الجاسوس:</span> <span id="imp-guessed-word" style="color: #ff512f;"></span></p>
             </div>
-            <button class="action-btn btn-ghost" style="margin-top: 15px;" onclick="location.reload()" data-tr="exitBtn">انسحاب 🚪</button>
+            <button class="action-btn btn-ghost" style="margin-top: 15px;" onclick="exitGame()" data-tr="exitBtn">انسحاب 🚪</button>
         </div>
     </div>
 
@@ -190,7 +196,7 @@
                 <button class="action-btn btn-green" onclick="liarMove('continue')" data-tr="liarContBtn">أكمل! ✅</button>
             </div>
         </div>
-        <button class="action-btn btn-ghost" style="margin-top: 20px; border-color: rgba(239, 68, 68, 0.4); color: #ef4444;" onclick="location.reload()" data-tr="exitBtn">انسحاب 🚪</button>
+        <button class="action-btn btn-ghost" style="margin-top: 20px; border-color: rgba(239, 68, 68, 0.4); color: #ef4444;" onclick="exitGame()" data-tr="exitBtn">انسحاب 🚪</button>
     </div>
 </div>
 
@@ -243,7 +249,8 @@
             animVerify: "جاري التحقق...", animReveal: "كشف الأوراق...", animLiar: "كاذب! 😂", animTruth: "صادق للأسف 😱", survived: "نجوت!<br>الدروع:",
             maxSelect: "الحد الأقصى 3 أوراق!", selectOne: "حدد ورقة واحدة على الأقل!", copied: "تم النسخ! 🚀",
             hostMenu: "⚙️ الإدارة", managePlayers: "إدارة اللاعبين", closeMenu: "إغلاق", kickBtn: "طرد 🥾", kickedTitle: "تم طردك!", kickedMsg: "لقد تم طردك من الغرفة بواسطة الهوست.",
-            skipTimerBtn: "تخطي الوقت ⏩", forceVoteBtn: "إنهاء التصويت 🏁"
+            skipTimerBtn: "تخطي الوقت ⏩", forceVoteBtn: "إنهاء التصويت 🏁",
+            expiredTitle: "انتهت صلاحية الرابط!", expiredMsg: "هذه الغرفة لم تعد متاحة أو تم إنهاء اللعبة."
         },
         en: {
             gamesTitle: "🎮 Games", namePh: "Enter your name...", liarBtn: "Liar Game ☠️", impBtn: "Imposter Game ➡️",
@@ -260,7 +267,8 @@
             animVerify: "Verifying...", animReveal: "Revealing...", animLiar: "LIAR! 😂", animTruth: "Told the truth 😱", survived: "Survived!<br>Shields:",
             maxSelect: "Max 3 cards!", selectOne: "Select at least 1 card!", copied: "Copied! 🚀",
             hostMenu: "⚙️ Manage", managePlayers: "Manage Players", closeMenu: "Close", kickBtn: "Kick 🥾", kickedTitle: "Kicked Out!", kickedMsg: "You have been kicked out of the room by the host.",
-            skipTimerBtn: "Skip Time ⏩", forceVoteBtn: "End Voting 🏁"
+            skipTimerBtn: "Skip Time ⏩", forceVoteBtn: "End Voting 🏁",
+            expiredTitle: "Link Expired!", expiredMsg: "This room is no longer available or the game has ended."
         }
     };
 
@@ -282,13 +290,23 @@
     }
 
     let client, myName, roomId, isHost = false, players = [], mode = '', cat = '', currentLiarState = {};
-    let selectedCards = [], impState = { votes: {} }, timerInterval;
+    let selectedCards = [], impState = { votes: {} }, timerInterval, joinTimeout;
 
     function changeUI(id) { document.querySelectorAll('.panel').forEach(p => p.classList.remove('active')); document.getElementById(id).classList.add('active'); }
     window.toggleHostMenu = function() { document.getElementById('host-sidebar').classList.toggle('open'); }
 
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('room')) { roomId = urlParams.get('room'); changeUI('p-join'); }
+
+    // دالة الخروج/إنهاء اللعبة وتدمير الرابط
+    window.exitGame = function() {
+        if(isHost && client) {
+            client.publish('sasuke_' + roomId, JSON.stringify({type: 'room_closed'}));
+        }
+        setTimeout(() => {
+            window.location.href = window.location.pathname;
+        }, 300);
+    }
 
     function updateLists() {
         let html = "", sideHtml = "";
@@ -311,7 +329,6 @@
         }
     }
 
-    // أمر طرد مستخدم وتحديث اللعبة
     window.kickUser = function(target) {
         if(confirm("طرد / Kick " + decodeURIComponent(target) + "؟")) {
             client.publish('sasuke_' + roomId, JSON.stringify({type: 'kick', target: target}));
@@ -319,7 +336,6 @@
             updateLists();
             client.publish('sasuke_' + roomId, JSON.stringify({type: 'sync', players: players, mode: mode}));
 
-            // إعادة تقييم التصويت لو كنا في مرحلة الجاسوس عشان اللعبة متقفلش
             if(mode === 'imposter' && impState.phase === 'vote') {
                 if(impState.votes && impState.votes[target]) { delete impState.votes[target]; }
                 checkVoteCompletion();
@@ -354,9 +370,31 @@
         let n = document.getElementById('guest-input').value; if(!n) return;
         myName = encodeURIComponent(n);
         client = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
-        client.on('connect', () => { client.subscribe('sasuke_' + roomId); client.publish('sasuke_' + roomId, JSON.stringify({type: 'join', name: myName})); changeUI('p-wait'); });
+        client.on('connect', () => { 
+            client.subscribe('sasuke_' + roomId); 
+            client.publish('sasuke_' + roomId, JSON.stringify({type: 'join', name: myName})); 
+            changeUI('p-wait'); 
+            
+            // مؤقت للتحقق من صلاحية الرابط (لو الهوست مش موجود)
+            joinTimeout = setTimeout(() => {
+                changeUI('p-expired');
+                if(client) client.end();
+            }, 6000);
+        });
         client.on('message', (topic, msg) => {
             let d = JSON.parse(msg.toString());
+            
+            if(d.type === 'sync' || d.type === 'imp_start' || d.type === 'liar_start') {
+                if(joinTimeout) clearTimeout(joinTimeout);
+            }
+
+            if(d.type === 'room_closed') {
+                if(joinTimeout) clearTimeout(joinTimeout);
+                changeUI('p-expired');
+                if(client) client.end();
+                return;
+            }
+
             if(d.type === 'sync') { players = d.players; mode = d.mode; updateLists(); }
             if(d.type === 'liar_start' || d.type === 'liar_sync') { updateLiarUI(d.state); }
             if(d.type === 'imp_start') { handleImpStart(d); }
@@ -394,14 +432,13 @@
         document.getElementById('imp-my-word').innerText = isImp ? t('youAreImp') : rawW;
         document.getElementById('imp-role-title').innerText = isImp ? t('impMission') : t('secretWordTitle');
         
-        updateImpUI(impState); // تجهيز الشاشة فوراً
+        updateImpUI(impState); 
         
         let endTime = Date.now() + (600 * 1000); 
         document.getElementById('imp-countdown').innerText = "10:00";
         if(timerInterval) clearInterval(timerInterval);
         
         timerInterval = setInterval(() => {
-            // لو اتنقلنا من حالة التايمر لأي سبب (تخطي)، نوقف العداد
             if(impState.phase !== 'timer') { clearInterval(timerInterval); return; }
             
             let timeLeft = Math.round((endTime - Date.now()) / 1000);
@@ -416,28 +453,23 @@
         }, 500);
     }
 
-    // أمر تخطي الوقت
     window.skipTimer = function() {
         if(!isHost) return;
         client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_act', act: 'skip_timer'}));
     }
 
-    // أمر التصويت
     window.castVote = function(target) {
-        // نسجل الصوت محلياً للسرعة قبل السيرفر
         impState.votes = impState.votes || {};
         impState.votes[myName] = target;
         updateImpUI(impState);
         client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_act', act: 'vote', n: myName, target: target}));
     }
 
-    // أمر إنهاء التصويت الإجباري للهوست
     window.forceEndVote = function() {
         if(!isHost) return;
         client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_act', act: 'force_vote'}));
     }
 
-    // معالجة أوامر الجاسوس (للهوست فقط)
     function handleImpLogic(d) {
         if(!isHost) return;
         
@@ -462,7 +494,6 @@
         }
     }
 
-    // فحص إنهاء التصويت
     function checkVoteCompletion(force = false) {
         let voteCount = impState.votes ? Object.keys(impState.votes).length : 0;
         if(force || voteCount >= players.length) {
@@ -472,7 +503,7 @@
                 let highest = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
                 impState.caught = (highest === impState.imp);
             } else {
-                impState.caught = false; // لو محدش صوت خالص
+                impState.caught = false; 
             }
             impState.phase = 'guess'; 
         }
@@ -480,11 +511,9 @@
         updateImpUI(impState);
     }
 
-    // نظام تحكم ذكي بشاشات اللعبة بناءً على حالتها (State-Driven UI)
     function updateImpUI(s) {
         impState = s;
         
-        // إخفاء الكل كبداية
         document.getElementById('imp-timer-sec').style.display = 'none';
         document.getElementById('imp-vote-sec').style.display = 'none';
         document.getElementById('imp-guess-sec').style.display = 'none';
@@ -499,13 +528,13 @@
             document.getElementById('host-force-vote-btn').style.display = isHost ? 'block' : 'none';
 
             let voteCount = s.votes ? Object.keys(s.votes).length : 0;
-            document.getElementById('live-vote-counter').innerText = t('waitingVote') + ` (${voteCount}/${players.length})`;
+            document.getElementById('imp-wait-vote-msg').innerText = t('waitingVote') + ` (${voteCount}/${players.length})`;
 
             let hasVoted = s.votes && s.votes[myName];
 
             if(hasVoted) {
                 document.getElementById('imp-vote-list').style.display = 'none'; 
-                document.getElementById('imp-wait-vote-msg').style.display = 'none'; 
+                document.getElementById('imp-wait-vote-msg').style.display = 'block'; 
             } else {
                 document.getElementById('imp-vote-list').style.display = 'flex';
                 document.getElementById('imp-wait-vote-msg').style.display = 'none';
