@@ -188,7 +188,7 @@
                 <p><span data-tr="realWordLbl">الكلمة:</span> <span id="imp-real-word" style="color: #00c6ff;"></span></p>
                 <p><span data-tr="impWordLbl">تخمين الجاسوس:</span> <span id="imp-guessed-word" style="color: #ff512f;"></span></p>
             </div>
-            <button class="action-btn btn-ghost" style="margin-top: 15px;" onclick="location.reload()" data-tr="exitBtn">خروج</button>
+            <button class="action-btn btn-ghost" style="margin-top: 15px;" onclick="location.reload()" data-tr="exitBtn">انسحاب 🚪</button>
         </div>
     </div>
 
@@ -372,7 +372,9 @@
     function gameLaunch() {
         if(!isHost) return;
         if(mode === 'liar') {
-            let deck = []; let counts = players.length === 5 ? [7,7,7,3] : (players.length === 4 ? [6,6,6,3] : [4,4,4,2]);
+            // حل مشكلة التوزيع حسب عدد اللاعبين:
+            let counts = players.length === 5 ? [7,7,7,4] : (players.length === 4 ? [6,6,6,2] : [4,4,4,3]);
+            let deck = []; 
             ['King','Ace','Queen'].forEach((v, i) => { for(let j=0; j<counts[i]; j++) deck.push(v); });
             for(let j=0; j<counts[3]; j++) deck.push('Joker'); deck.sort(() => 0.5 - Math.random());
             let s = { turn: 0, req: ['King','Ace','Queen'][Math.floor(Math.random()*3)], last: null, phase: 'play', hands: {}, stats: {} };
