@@ -3,149 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MX_SASUKE Hub | Neon Space</title>
+    <title>MX_SASUKE Hub</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        :root { --bg: #0a0a0f; --card: rgba(20, 20, 25, 0.7); --liar: #f59e0b; --fail: #ef4444; }
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        
-        body { 
-            background: #0a0a0f;
-            background-image: radial-gradient(ellipse at 20% 50%, #1a0a2e 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, #0a1a2e 0%, transparent 60%);
-            color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; touch-action: manipulation; overflow: hidden; 
-        }
-
-        .stars-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
-        .star { position: absolute; background: white; border-radius: 50%; opacity: 0.5; animation: fall linear infinite; }
+        <style>
+        :root { --bg: #0a0a0f; --card: rgba(20, 20, 25, 0.7); --fail: #ef4444; }
+        body { background: #0a0a0f; color: white; font-family: 'Cairo'; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
+        .stars-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+        .star { position: absolute; background: white; border-radius: 50%; animation: fall linear infinite; }
         @keyframes fall { from { transform: translateY(-10vh); } to { transform: translateY(110vh); } }
-        
-        .lang-switch { position: fixed; top: 20px; inset-inline-end: 20px; background: #1a1a1c; border-radius: 20px; padding: 4px; display: flex; z-index: 1000; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .lang-btn { padding: 5px 15px; border-radius: 16px; color: #888; font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 14px; user-select: none; }
-        .lang-btn.active { background: #ff0000; color: white; box-shadow: 0 0 10px rgba(255,0,0,0.5); }
-
-        #host-menu-btn { display: none; position: fixed; top: 20px; inset-inline-start: 20px; background: rgba(0,0,0,0.6); border: 1px solid #ff512f; color: white; padding: 8px 15px; border-radius: 20px; cursor: pointer; z-index: 1000; font-weight: bold; font-family: 'Cairo'; box-shadow: 0 0 10px rgba(255,81,47,0.4); }
-        #host-sidebar { position: fixed; top: 0; inset-inline-start: -300px; width: 260px; height: 100vh; background: rgba(10, 10, 15, 0.98); backdrop-filter: blur(10px); border-inline-end: 1px solid rgba(255,255,255,0.1); z-index: 1001; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); padding: 20px; box-shadow: 5px 0 20px rgba(0,0,0,0.8); }
-        #host-sidebar.open { inset-inline-start: 0; }
-
-        .box-container { width: 92%; max-width: 400px; background: var(--card); padding: 25px; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); box-shadow: 0 20px 50px rgba(0,0,0,0.7); position: relative; z-index: 10; }
-        
-        h1 { color: white; margin-bottom: 25px; font-size: 24px; text-align: center; }
-        .input-field { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(0, 0, 0, 0.6); color: #fff; font-size: 16px; text-align: center; margin-bottom: 20px; font-family: 'Cairo'; }
-
-        .action-btn { color: white; border: none; padding: 16px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 12px; transition: 0.3s; }
-        .btn-orange { background: linear-gradient(135deg, #ff512f 0%, #dd2476 100%); }
-        .btn-purple { background: linear-gradient(135deg, #b224ef 0%, #7579ff 100%); }
-        .btn-gold { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); color: #000; }
-        .btn-ghost { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
-        .btn-red { background: #ef4444; }
-
-        .panel { display: none; }
-        .panel.active { display: block !important; animation: fadeIn 0.4s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        .players-list { background: rgba(0, 0, 0, 0.4); border-radius: 12px; padding: 10px; margin-bottom: 20px; max-height: 180px; overflow-y: auto; }
+        .box-container { width: 90%; max-width: 400px; background: var(--card); padding: 25px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px); position: relative; z-index: 10; }
+        .panel { display: none; text-align: center; }
+        .panel.active { display: block; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .action-btn { color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; margin-bottom: 10px; cursor: pointer; }
+        .btn-gold { background: linear-gradient(135deg, #f6d365, #fda085); color: #000; }
+        .btn-purple { background: linear-gradient(135deg, #b224ef, #7579ff); }
+        .input-field { width: 100%; padding: 12px; border-radius: 10px; margin-bottom: 15px; background: #000; color: #fff; border: 1px solid #444; text-align: center; }
     </style>
 </head>
-<body id="main-body">
-
+<body>
 <div class="stars-container" id="stars"></div>
-
-<div class="lang-switch">
-    <div class="lang-btn active" id="btn-ar" onclick="setLang('ar')">AR</div>
-    <div class="lang-btn" id="btn-en" onclick="setLang('en')">EN</div>
-</div>
-
 <div class="box-container">
-    <div id="p-main" class="panel">
-        <h1 data-tr="gamesTitle">🎮 الألعاب</h1>
-        <input type="text" id="host-input" class="input-field" data-tr-ph="namePh" placeholder="اكتب اسمك..." value="Sasuke">
-        <button class="action-btn btn-gold" onclick="changeUI('p-liar')">🃏 <span data-tr="liarBtn">لعبة الكذابين ☠️</span></button>
-        <button class="action-btn btn-purple" onclick="changeUI('p-imposter')">🕵️‍♂️ <span data-tr="impBtn">لعبة الجاسوس ➡️</span></button>
+    <div id="p-main" class="panel active">
+        <h1>🎮 الألعاب</h1>
+        <input type="text" id="name" class="input-field" placeholder="اسمك...">
+        <button class="action-btn btn-gold" onclick="changeUI('p-liar')">لعبة الكذابين ☠️</button>
+        <button class="action-btn btn-purple" onclick="changeUI('p-imposter')">لعبة الجاسوس 🕵️‍♂️</button>
     </div>
-
+    <div id="p-liar" class="panel">
+        <h1>🃏 الكذابين</h1>
+        <button class="action-btn" style="background:#444" onclick="changeUI('p-main')">رجوع</button>
+    </div>
     <div id="p-imposter" class="panel">
-        <h1 data-tr="impCatsTitle">🕵️‍♂️ تصنيفات الجاسوس</h1>
-        <button class="action-btn btn-orange" onclick="alert('قريباً...')">🍕 <span data-tr="catFood">أكلات</span></button>
-        <button class="action-btn btn-ghost" onclick="changeUI('p-main')" data-tr="backBtn">رجوع 🔙</button>
-    </div>
-
-    <div id="p-lobby" class="panel">
-        <h1 data-tr="lobbyTitle">🛰️ غرفة الانتظار</h1>
-        <div class="players-list" id="h-list"></div>
-        <button class="action-btn btn-red" onclick="changeUI('p-main')" data-tr="cancelBtn">إلغاء ❌</button>
-    </div>
-
-    <div id="p-join" class="panel">
-        <h1 data-tr="joinTitle">🛸 بدء اللعبة</h1>
-        <input type="text" id="guest-input" class="input-field" data-tr-ph="guestPh" placeholder="اكتب اسمك...">
-        <button class="action-btn btn-orange" onclick="alert('جاري الانضمام...')">انضمام 🚪</button>
+        <h1>🕵️‍♂️ الجاسوس</h1>
+        <button class="action-btn" style="background:#444" onclick="changeUI('p-main')">رجوع</button>
     </div>
 </div>
-
 <script>
-    // 1. نظام النجوم الخلفية
-    function createStars() {
-        const container = document.getElementById('stars');
-        for (let i = 0; i < 80; i++) {
-            const star = document.createElement('div');
-            star.className = 'star';
-            const size = Math.random() * 3 + 'px';
-            star.style.width = size; star.style.height = size;
-            star.style.left = Math.random() * 100 + '%';
-            star.style.animationDuration = (Math.random() * 3 + 2) + 's';
-            star.appendChild(star);
-            container.appendChild(star);
-        }
+    // إنشاء النجوم
+    const container = document.getElementById('stars');
+    for (let i = 0; i < 50; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        star.style.width = '2px'; star.style.height = '2px';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.animationDuration = (Math.random() * 3 + 2) + 's';
+        container.appendChild(star);
     }
-    createStars();
 
-    // 2. نظام الترجمة وتغيير اللغة
-    window.lang = 'ar';
-    const tr = {
-        ar: {
-            gamesTitle: "🎮 الألعاب", namePh: "اكتب اسمك...", liarBtn: "لعبة الكذابين ☠️", impBtn: "لعبة الجاسوس ➡️",
-            impCatsTitle: "🕵️‍♂️ تصنيفات الجاسوس", catFood: "أكلات", backBtn: "رجوع 🔙",
-            lobbyTitle: "🛰️ غرفة الانتظار", cancelBtn: "إلغاء ❌", joinTitle: "🛸 بدء اللعبة", guestPh: "اكتب اسمك..."
-        },
-        en: {
-            gamesTitle: "🎮 Games", namePh: "Your Name...", liarBtn: "Liar Game ☠️", impBtn: "Spy Game ➡️",
-            impCatsTitle: "🕵️‍♂️ Spy Categories", catFood: "Food", backBtn: "Back 🔙",
-            lobbyTitle: "🛰️ Waiting Lobby", cancelBtn: "Cancel ❌", joinTitle: "🛸 Join Game", guestPh: "Your Name..."
-        }
-    };
-
-    window.setLang = function(l) {
-        window.lang = l;
-        document.querySelectorAll('[data-tr]').forEach(el => {
-            const key = el.getAttribute('data-tr');
-            el.innerText = tr[l][key] || el.innerText;
-        });
-        document.querySelectorAll('[data-tr-ph]').forEach(el => {
-            const key = el.getAttribute('data-tr-ph');
-            el.placeholder = tr[l][key] || el.placeholder;
-        });
-        document.getElementById('btn-ar').classList.toggle('active', l === 'ar');
-        document.getElementById('btn-en').classList.toggle('active', l === 'en');
-        document.body.dir = (l === 'ar') ? 'rtl' : 'ltr';
-    };
-
-    // 3. وظيفة التنقل بين الصفحات (إصلاح الشاشة السوداء)
-    window.changeUI = function(panelId) {
+    // التنقل بين الصفحات
+    function changeUI(id) {
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-        const target = document.getElementById(panelId);
-        if (target) target.classList.add('active');
-    };
+        document.getElementById(id).classList.add('active');
+    }
 
-    // 4. التشغيل عند فتح الصفحة
-    window.onload = () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('room')) {
-            changeUI('p-join'); // لو داخل من رابط دعوة
-        } else {
-            changeUI('p-main'); // لو فاتح الموقع عادي
-        }
-    };
+    // التأكد من العمل عند التحميل
+    window.onload = () => changeUI('p-main');
 </script>
-
 </body>
 </html>
