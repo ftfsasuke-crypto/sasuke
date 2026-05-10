@@ -239,18 +239,30 @@
                 votes = {}; 
                 realImposter = d.imposter;
                 secretWord = d.actualWord;
+                gameMode = d.mode || 'imposter'; // التأكيد إن النوع بيوصل للجميع
                 
-                // إخفاء مساحة التصويت لو كانت ظاهرة من الجولة اللي فاتت
+                // إخفاء العداد والتصويت في البداية كإجراء احتياطي
                 document.getElementById('inline-vote-area').style.display = 'none';
+                document.getElementById('timer-display').style.display = 'none';
 
                 let w = d.words[myName];
                 if(w) {
                     document.getElementById('my-word').innerText = w;
-                    if(w.includes('جاسوس')) document.getElementById('my-word').style.color = 'var(--imposter)';
+                    document.getElementById('my-word').style.color = w.includes('جاسوس') ? 'var(--imposter)' : 'white';
                     navTo('p-game');
-                    // خليت الوقت 60 ثانية (دقيقة)
-                    if(gameMode === 'imposter') startTimer(60); 
+                    
+                    // تشغيل التايمر لو اللعبة جاسوس أو لو هو الجاسوس
+                    if(gameMode === 'imposter' || realImposter !== '') {
+                        startTimer(60); 
+                    }
                 }
+            }
+
+            // الاستقبال المركزي لأمر ظهور التصويت (الكل هيشوفه في نفس اللحظة)
+            if(d.type === 'show_vote') {
+                if (timerInterval) clearInterval(timerInterval);
+                document.getElementById('timer-display').innerText = "00:00";
+                showVotingPanel();
             }
 
             if(d.type === 'vote') {
@@ -297,7 +309,8 @@
             players.forEach(p => assigned[p.name] = "شخصية عشوائية");
         }
         
-        mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'start', words: assigned, imposter: imp, actualWord: actualWord}));
+        // إرسال اللعبة وكل تفاصيلها لكل المتصلين
+        mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'start', mode: gameMode, words: assigned, imposter: imp, actualWord: actualWord}));
     }
 
     function startTimer(seconds) {
@@ -305,21 +318,29 @@
         let timerEl = document.getElementById('timer-display');
         timerEl.style.display = 'block';
         
+        // تأكيد مسح أي تايمر قديم
+        if(timerInterval) clearInterval(timerInterval);
+        
         timerInterval = setInterval(() => {
+            if(timeLeft <= 0) {
+                clearInterval(timerInterval);
+                timerEl.innerText = "00:00";
+                
+                // الهوست فقط هو اللي بيبعت الأمر ده للجميع عشان التزامن يكون مثالي
+                if(isHost) {
+                    mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'show_vote'}));
+                }
+                return;
+            }
+
             let m = Math.floor(timeLeft / 60).toString().padStart(2, '0');
             let s = (timeLeft % 60).toString().padStart(2, '0');
             timerEl.innerText = `${m}:${s}`;
             timeLeft--;
-
-            if(timeLeft < 0) {
-                clearInterval(timerInterval);
-                showVotingPanel();
-            }
         }, 1000);
     }
 
     function showVotingPanel() {
-        // إظهار التصويت في نفس الصفحة بدل الانتقال
         let html = '';
         players.forEach(p => {
             let pName = decodeURIComponent(p.name);
@@ -394,8 +415,8 @@
     }
     
     function forceLeave() {
-        clearInterval(timerInterval);
-        document.getElementById('inline-vote-area').style.display = 'none'; // إعادة إخفاء التصويت
+        if (timerInterval) clearInterval(timerInterval);
+        document.getElementById('inline-vote-area').style.display = 'none'; 
         if(mqttClient) mqttClient.end();
         players = []; isHost = false; roomId = null; votes = {};
         window.history.replaceState({}, document.title, window.location.pathname);
@@ -403,8 +424,8 @@
     }
     
     function disconnectAndShowMsg(title, text) {
-        clearInterval(timerInterval);
-        document.getElementById('inline-vote-area').style.display = 'none'; // إعادة إخفاء التصويت
+        if (timerInterval) clearInterval(timerInterval);
+        document.getElementById('inline-vote-area').style.display = 'none'; 
         if(mqttClient) mqttClient.end();
         players = []; isHost = false; roomId = null; votes = {};
         window.history.replaceState({}, document.title, window.location.pathname);
