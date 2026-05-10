@@ -376,4 +376,34 @@
         if(!isHost) return;
         players = players.filter(p => p.name !== targetName); renderPlayers();
         mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'kick', target: targetName}));
-        mqttClient.publish('mx_sasuke
+        mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'sync', players: players}));
+    }
+    
+    function leaveRoom() {
+        if (mqttClient) {
+            if (isHost) mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'room_closed'}));
+            else mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'leave', name: myName}));
+            forceLeave();
+        } else navTo('p-main');
+    }
+    
+    function forceLeave() {
+        clearInterval(timerInterval);
+        if(mqttClient) mqttClient.end();
+        players = []; isHost = false; roomId = null; votes = {};
+        window.history.replaceState({}, document.title, window.location.pathname);
+        navTo('p-main');
+    }
+    
+    function disconnectAndShowMsg(title, text) {
+        clearInterval(timerInterval);
+        if(mqttClient) mqttClient.end();
+        players = []; isHost = false; roomId = null; votes = {};
+        window.history.replaceState({}, document.title, window.location.pathname);
+        document.getElementById('msg-title').innerText = title;
+        document.getElementById('msg-text').innerText = text;
+        navTo('p-msg');
+    }
+</script>
+</body>
+</html>
