@@ -2,320 +2,375 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MX_SASUKE | VIP Unlocker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MX_SASUKE | Multiplayer Hub</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --main: #ff0000; --card: #151517; --accent: #22c55e; --fail: #ef4444; }
+        :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; --imposter: #a855f7; --liar: #f59e0b; }
+        
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         
         body { 
-            background: #0a0a0f;
-            background-image: radial-gradient(ellipse at 20% 50%, #1a0a2e 0%, transparent 60%),
-                              radial-gradient(ellipse at 80% 20%, #0a1a2e 0%, transparent 60%);
-            color: white; 
-            font-family: 'Cairo', sans-serif; 
-            margin: 0; 
-            display: flex; 
-            justify-content: center; 
-            min-height: 100vh; 
-            overflow-x: hidden; 
+            background: var(--bg); color: white; font-family: 'Cairo', sans-serif; margin: 0; 
+            display: flex; justify-content: center; align-items: center; min-height: 100vh; 
+            overflow-x: hidden; touch-action: manipulation; 
+        }
+        
+        .box-container { 
+            width: 92%; max-width: 400px; background: var(--card); padding: 25px; 
+            border-radius: 20px; border: 1px solid #333; position: relative; z-index: 10;
+        }
+        
+        h1 { color: white; margin-bottom: 20px; font-size: 22px; text-align: center; }
+        
+        .game-btn { 
+            background: #111; border: 2px solid #333; color: white; padding: 16px; 
+            border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; 
+            cursor: pointer; margin-bottom: 12px; transition: 0.2s; 
+            display: block; position: relative; z-index: 20;
+        }
+        .game-btn:active { transform: scale(0.98); background: #222; }
+
+        .input-field { 
+            width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #444; 
+            background: #000; color: var(--accent); font-size: 16px; text-align: center; 
+            margin-bottom: 20px; font-weight: bold; display: block;
         }
 
-        .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; }
-        
-        .yt-logo { width: 50px; margin-bottom: 10px; transition: 0.3s; }
-        .page-title { font-size: 24px; font-weight: bold; margin-bottom: 25px; word-wrap: break-word; line-height: 1.4; transition: 0.3s; }
-        
-        .video-card { position: relative; width: 100%; border-radius: 15px; overflow: hidden; margin-bottom: 25px; border: 1px solid #333; cursor: pointer; background: rgba(17, 17, 17, 0.8); min-height: 180px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(5px); }
-        .video-card img { width: 100%; display: block; }
-        
-        .task-box { background: rgba(21, 21, 23, 0.8); backdrop-filter: blur(10px); border-radius: 15px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; border: 2px solid transparent; text-align: right; cursor: pointer; transition: 0.3s; }
-        .task-box.active { border-color: var(--main); }
-        .task-box.done { border-color: var(--accent); cursor: default; }
-        
-        .task-info { flex-grow: 1; margin-right: 15px; }
-        .task-info h4 { margin: 0; font-size: 16px; color: white; }
-        .task-info p { margin: 5px 0 0; font-size: 12px; color: #94a3b8; }
-        
-        .step-num { width: 35px; height: 35px; background: #222; border: 2px solid #444; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--main); transition: 0.3s; }
-        .task-box.active .step-num { border-color: var(--main); background: rgba(255,0,0,0.1); }
-        .task-box.done .step-num { background: var(--accent); color: white; border-color: var(--accent); }
-        
-        .checker-card { background: rgba(15, 15, 16, 0.8); backdrop-filter: blur(10px); border: 1px solid #222; border-radius: 15px; padding: 15px; margin-top: 20px; }
-        #count-num { font-size: 32px; font-weight: bold; display: block; margin: 5px 0; }
-        
-        .verify-btn { background: var(--main); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; transition: 0.3s; }
-        .verify-btn:disabled { background: #1a1a1c; color: #555; cursor: not-allowed; }
-        
-        #error-msg { display: none; color: var(--fail); font-size: 13px; margin-top: 10px; font-weight: bold; line-height: 1.5; }
+        .action-btn { 
+            background: var(--main); color: white; border: none; padding: 15px; 
+            border-radius: 10px; width: 100%; font-size: 18px; font-weight: bold; 
+            cursor: pointer; margin-bottom: 10px; display: block;
+        }
+        .action-btn:disabled { background: #444; cursor: not-allowed; }
 
-        .warning-box { background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 10px; padding: 15px; margin-top: 15px; text-align: right; }
-        .warning-box h4 { color: var(--fail); margin: 0 0 5px; font-size: 14px; }
-        .warning-box p { color: #94a3b8; font-size: 12px; margin: 0; line-height: 1.6; }
+        .leave-btn { 
+            background: #333; border: 1px solid #555; color: white; padding: 12px; 
+            border-radius: 10px; width: 100%; font-size: 16px; font-weight: bold; 
+            cursor: pointer; margin-top: 20px; display: block;
+        }
 
-        #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .circle-timer { width: 60px; height: 60px; border: 5px solid #222; border-top: 5px solid var(--main); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        
-        #countdown-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 999; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
-        .countdown-wrapper { position: relative; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
-        .countdown-num { position: absolute; font-size: 40px; font-weight: bold; color: white; }
-        .progress-ring { transform: rotate(-90deg); }
-        #progress-circle { stroke-dasharray: 264; stroke-dashoffset: 0; stroke-linecap: round; }
-        @keyframes circle-deplete { 0% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 264; } }
-        
-        @keyframes bounce-icon { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-15px); } 60% { transform: translateY(-7px); } }
+        .panel { display: none; animation: fadeIn 0.4s; }
+        .active-panel { display: block; }
 
-        .gen-input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #333; background: #111; color: white; box-sizing: border-box; text-align: right; font-family: 'Cairo', sans-serif; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .players-list { background: #000; border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 20px; max-height: 200px; overflow-y: auto; }
+        .player-item { padding: 10px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; font-size: 14px;}
+        .player-item:last-child { border-bottom: none; }
+        .online-dot { width: 10px; height: 10px; background: var(--accent); border-radius: 50%; display: inline-block; box-shadow: 0 0 8px var(--accent); margin-right: 10px;}
+        
+        .kick-btn { background: var(--fail); color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 12px; cursor: pointer; }
+
+        .secret-word-box { 
+            background: #111; border: 2px dashed var(--accent); border-radius: 15px; 
+            padding: 30px 15px; margin: 20px 0; font-size: 30px; font-weight: bold; 
+            text-align: center;
+        }
+
+        .liar-log { background: #1a1a1c; border: 1px solid #333; padding: 12px; border-radius: 10px; font-size: 13px; margin-bottom: 15px; color: #cbd5e1; text-align: center; line-height: 1.6; min-height: 50px; }
+        .liar-card-btn { background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; flex: 1 1 calc(33% - 10px); text-align: center; margin: 2px;}
+        .liar-card-btn:hover { background: #333; border-color: var(--liar); }
+        .dead-text { color: var(--fail); text-decoration: line-through; }
+        .health-badge { background: #333; padding: 2px 6px; border-radius: 4px; font-size: 12px; margin-right: 10px; color: var(--liar); font-weight: bold;}
     </style>
 </head>
 <body>
 
-<div id="countdown-overlay">
-    <div class="countdown-wrapper">
-        <svg class="progress-ring" width="100" height="100">
-            <circle stroke="#333" stroke-width="6" fill="transparent" r="42" cx="50" cy="50"/>
-            <circle id="progress-circle" stroke="var(--main)" stroke-width="6" fill="transparent" r="42" cx="50" cy="50"/>
-        </svg>
-        <span id="countdown-number" class="countdown-num">7</span>
+<div class="box-container">
+
+    <script>
+        if (window.location.search.includes('room=')) {
+            document.write('<style>#p-join { display: block !important; }</style>');
+        } else {
+            document.write('<style>#p-main { display: block !important; }</style>');
+        }
+    </script>
+
+    <div id="p-main" class="panel">
+        <h1>🎮 اختار الغرفة يا هوست</h1>
+        <input type="text" id="host-input" class="input-field" placeholder="اسمك كصاحب الغرفة..." value="Sasuke">
+        
+        <button class="game-btn" onclick="hostRoom('naruto', 'أنمي ناروتو', 'guess')">🍥 من أنا؟ (ناروتو)</button>
+        <button class="game-btn" onclick="hostRoom('aot', 'هجوم العمالقة', 'guess')">⚔️ من أنا؟ (العمالقة)</button>
+        <button class="game-btn" onclick="navTo('p-global')">🌍 من أنا؟ (عالمي) ➡️</button>
+        <button class="game-btn" onclick="navTo('p-imposter')" style="border-color: var(--imposter); margin-top: 15px;">🕵️‍♂️ لعبة الجاسوس ➡️</button>
+        <button class="game-btn" onclick="hostRoom('liar', 'لعبة الكذابين', 'liar')" style="border-color: var(--liar); margin-top: 15px; box-shadow: 0 0 10px rgba(245, 158, 11, 0.3);">🃏 لعبة الكذابين ☠️ (3-5 لاعبين)</button>
     </div>
-    <h2 style="margin-top: 10px; font-size: 24px;">انتظر قليلاً... ⏳</h2>
-    <p style="color: #888; font-size: 14px; text-align: center; width: 80%;">انتظر فقط، النظام يتحقق من إتمامك للشرط<br>بعد الانتهاء ستكتمل المهمة 👍</p>
-</div>
 
-<div id="loader">
-    <div class="circle-timer"></div>
-    <h2 id="timer-text" style="font-size: 30px; margin: 20px 0;">جاري التحقق</h2>
-    <p>بنتأكد من اللايك في سيرفر يوتيوب... ⏳</p>
-</div>
+    <div id="p-global" class="panel">
+        <h1>🌍 تصنيفات التخمين</h1>
+        <button class="game-btn" onclick="hostRoom('food', 'أكلات مشهورة', 'guess')">🍕 أكلات مشهورة</button>
+        <button class="game-btn" onclick="hostRoom('fruits', 'فواكه', 'guess')">🍎 فواكه</button>
+        <button class="game-btn" onclick="hostRoom('objects', 'جماد وأشياء', 'guess')">📱 جماد وأشياء</button>
+        <button class="leave-btn" onclick="navTo('p-main')">رجوع للقائمة الرئيسية 🔙</button>
+    </div>
 
-<div id="app" class="container">
-    <p style="color: #888; margin-top: 50px;">جاري التحميل...</p>
+    <div id="p-imposter" class="panel">
+        <h1>🕵️‍♂️ تصنيفات الإمبوستر</h1>
+        <button class="game-btn" onclick="hostRoom('food', 'جاسوس الأكلات', 'imposter')">🍕 أكلات</button>
+        <button class="game-btn" onclick="hostRoom('animals', 'جاسوس الحيوانات', 'imposter')">🦁 حيوانات</button>
+        <button class="game-btn" onclick="hostRoom('jobs', 'جاسوس المهن', 'imposter')">👨‍⚕️ مهن ووظائف</button>
+        <button class="leave-btn" onclick="navTo('p-main')">رجوع للقائمة الرئيسية 🔙</button>
+    </div>
+
+    <div id="p-lobby" class="panel">
+        <h1 id="lobby-title">غرفة الانتظار ⏳</h1>
+        <div id="invite-link" style="font-size: 10px; color: #888; margin-bottom: 10px; word-break: break-all;"></div>
+        <button class="action-btn" onclick="copyUrl()" style="background: #333; font-size: 14px; margin-bottom: 20px;">📋 نسخ الرابط</button>
+        <h3 style="text-align: right; font-size: 14px; color: var(--accent);">المتصلين: <span id="h-count">1</span></h3>
+        <div class="players-list" id="h-list"></div>
+        <button class="action-btn" id="start-btn" onclick="launchGame()" disabled>🚀 ابدأ اللعبة</button>
+        <button class="leave-btn" onclick="leaveRoom()">🚪 إغلاق</button>
+    </div>
+
+    <div id="p-join" class="panel">
+        <h1>👋 أهلاً بيك</h1>
+        <input type="text" id="guest-input" class="input-field" placeholder="اكتب اسمك...">
+        <button class="action-btn" id="join-btn" onclick="joinRoom()">دخول الغرفة 🚪</button>
+        <p id="join-loading" style="color: var(--accent); margin-top: 10px; display: none; font-weight: bold;">جاري الاتصال... ⏳</p>
+    </div>
+
+    <div id="p-wait" class="panel">
+        <h1>⏳ مستنيين الهوست...</h1>
+        <h3 style="text-align: right; font-size: 14px; color: var(--accent);">المتصلين: <span id="g-count">1</span></h3>
+        <div class="players-list" id="g-list"></div>
+        <button class="leave-btn" onclick="leaveRoom()">🚪 مغادرة</button>
+    </div>
+
+    <div id="p-game" class="panel">
+        <h2 id="role-title" style="text-align: center;">شخصيتك هي:</h2>
+        <div class="secret-word-box" id="my-word">???</div>
+        <h3 style="text-align: right; font-size: 14px; color: var(--accent);">اللاعبين:</h3>
+        <div class="players-list" id="game-list"></div>
+        <button class="leave-btn" onclick="leaveRoom()">🚪 مغادرة</button>
+    </div>
+
+    <div id="p-liar" class="panel">
+        <h2 style="color: var(--liar); text-align: center; margin-bottom: 5px;">لعبة الكذابين 🃏☠️</h2>
+        <div class="liar-log" id="liar-log">جاري تجهيز الورق...</div>
+        <div style="background: #222; padding: 10px; border-radius: 10px; text-align: center; border: 1px dashed var(--liar);">
+            <h3 style="margin: 0; color: white; font-size: 16px;">المطلوب تلعب: <span id="liar-req" style="color: var(--liar); font-weight: bold;">???</span></h3>
+        </div>
+        <h3 style="text-align: right; font-size: 14px; margin-top: 15px; color: var(--accent);">حالة اللاعبين:</h3>
+        <div class="players-list" id="liar-players" style="max-height: 120px;"></div>
+        <div id="liar-my-turn" style="display: none; margin-top: 15px;">
+            <div id="liar-hand" style="display: flex; flex-wrap: wrap; gap: 5px; justify-content: center;"></div>
+            <button class="action-btn" id="liar-call-btn" onclick="sendLiarAction('call')" style="background: var(--fail); margin-top: 15px; display: none;">كذبه 🤬 (قول إنه كذاب)</button>
+        </div>
+        <button class="leave-btn" onclick="leaveRoom()">🚪 مغادرة الغرفة</button>
+    </div>
+
+    <div id="p-bye" class="panel">
+        <h1 id="bye-emoji" style="font-size: 60px; margin-bottom: 10px;">👋</h1>
+        <h2 id="bye-title" style="color: var(--accent); font-size: 28px;">حظاً موفقاً!</h2>
+        <p id="bye-msg" style="color: #cbd5e1; font-size: 16px; margin-top: 15px;">طلعت من الغرفة بنجاح..</p>
+        <button class="leave-btn" onclick="window.location.href = window.location.href.split('?')[0];">العودة للرئيسية</button>
+    </div>
+
 </div>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    try {
-        const YOUTUBE_API_KEY = "AIzaSyA6NebhJLqT8ZEG56cmMEm4xsRR5byisPI"; 
-        const app = document.getElementById('app');
-        const urlParams = new URLSearchParams(window.location.search);
+    const DB = {
+        naruto: ['ناروتو', 'ساسوكي', 'ساكورا', 'كاكاشي', 'ايتاشي', 'مادارا', 'جيرايا', 'تسونادي', 'اوروتشيمارو', 'شيكامارو', 'باين', 'اوبيتو', 'نيجي', 'جارا', 'هيناتا', 'روك لي', 'زابوزا', 'كابوتو'],
+        aot: ['ايرين', 'ميكاسا', 'ارمين', 'ليفاي', 'ايروين', 'هانجي', 'راينر', 'زيك', 'ساشا', 'جان', 'هيستوريا', 'آني', 'بيك', 'فلوك'],
+        dbz: ['غوكو', 'فيجيتا', 'غوهان', 'بيكولو', 'فريزا', 'سيل', 'ماجين بو', 'ترانكس', 'بيروس', 'ويز', 'اندرويد 18', 'مستر ساتان'],
+        ds: ['تانجيرو', 'نيزوكو', 'زينيتسو', 'اينوسكي', 'غيو', 'رينجوكو', 'موزان', 'اكازا', 'شينوبو', 'تينغين', 'ميتسوري'],
+        monster: ['دكتور تيما', 'يوهان ليبرت', 'نينّا فورتر', 'المفتش لونجي', 'غريمر', 'إيفا هاينمان', 'روبيرتو', 'ديتر'],
+        food: ['بيتزا', 'برجر', 'شاورما', 'كشري', 'مكرونة بشاميل', 'سوشي', 'محشي كرمب', 'كباب', 'كفتة', 'بانيه', 'طعمية', 'حواوشي', 'شيش طاووق', 'كبسة', 'ملوخية'],
+        fruits: ['تفاحة', 'موز', 'برتقال', 'فراولة', 'بطيخ', 'عنب', 'مانجو', 'خوخ', 'أناناس', 'كيوي', 'رمان', 'تين', 'بلح', 'يوسفي', 'جوافة'],
+        objects: ['كرسي', 'طاولة', 'تليفزيون', 'موبايل', 'لابتوب', 'سيارة', 'طيارة', 'ساعة', 'نظارة', 'قلم', 'كتاب', 'ثلاجة', 'غسالة', 'مروحة', 'مكيف', 'مفتاح', 'مقص', 'مفك'],
+        animals: ['أسد', 'فيل', 'زرافة', 'نمر', 'قرد', 'كلب', 'قطة', 'حصان', 'حوت', 'قرش', 'تمساح', 'صقر', 'نسر', 'دب', 'ثعبان', 'بقرة', 'دولفين', 'قنفذ'],
+        jobs: ['دكتور', 'مهندس', 'طيار', 'ضابط', 'مدرس', 'مبرمج', 'طباخ', 'نجار', 'سباك', 'محامي', 'محاسب', 'صحفي', 'ممثل', 'رائد فضاء', 'رسام', 'ميكانيكي']
+    };
 
-        function safeEncode(str) { return btoa(encodeURIComponent(str)); }
-        function safeDecode(str) { try { return decodeURIComponent(atob(str.replace(/ /g, '+'))); } catch(e) { return ""; } }
-        function fixUrl(url) {
-            if (!url || url === 'undefined') return "#";
-            url = url.trim();
-            if (!/^https?:\/\//i.test(url) && url !== "#") return 'https://' + url;
-            return url;
+    let mqttClient, myName, roomId, isHost = false, players = [], gameMode = '', roomCategory = '';
+    let liarState = {}; 
+
+    function navTo(id) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active-panel'));
+        document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+        let target = document.getElementById(id);
+        if(target) {
+            target.style.display = 'block';
+            target.classList.add('active-panel');
         }
-
-        if (urlParams.has('data') && urlParams.get('data').length > 5) {
-            const raw = urlParams.get('data').split('|');
-            let config = {
-                t: safeDecode(raw[0]),
-                c: fixUrl(safeDecode(raw[1] || raw[0])),
-                v: fixUrl(safeDecode(raw[2] || raw[1])),
-                f: fixUrl(safeDecode(raw[3] || raw[2]))
-            };
-
-            let vIdMatch = config.v.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/ytscreeningroom\?v=|\/sandayat\?v=|\/condition_video_id\/|\/watch\?feature=player_embedded&v=))([^#\&\?]*)/);
-            let vId = vIdMatch && vIdMatch[1].length === 11 ? vIdMatch[1] : null;
-            let thumb = vId ? `https://img.youtube.com/vi/${vId}/maxresdefault.jpg` : 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png';
-
-            let sub = false, vid = false;
-            let initialLikes = -1; 
-            let failedAttempts = 0; 
-
-            app.innerHTML = `
-                <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" class="yt-logo" id="top-logo" alt="YouTube">
-                <div class="page-title" id="top-title">${config.t}</div>
-
-                <div id="tasks-container">
-                    <div class="video-card" onclick="openT('v')">
-                        <img src="${thumb}" alt="Video Thumbnail">
-                    </div>
-
-                    <div class="task-box active" id="tk1" onclick="openT('c')">
-                        <div class="task-info">
-                            <h4>Subscribe to channel</h4>
-                            <p>اضغط هنا للاشتراك في القناة</p>
-                        </div>
-                        <div class="step-num"><span>1</span></div>
-                    </div>
-
-                    <div class="task-box" id="tk2" onclick="openT('v')">
-                        <div class="task-info">
-                            <h4>Like & comment on video</h4>
-                            <p>اعمل لايك وكومنت على الفيديو</p>
-                        </div>
-                        <div class="step-num"><span>2</span></div>
-                    </div>
-
-                    <div class="checker-card">
-                        <span style="color:#888; font-size:12px;">عدد اللايكات الفعلي (مباشر)</span>
-                        <span id="count-num">جاري الاتصال...</span>
-                        <button class="verify-btn" id="vBtn" onclick="verifyStrict()">تحقق من الشروط 🔍</button>
-                        <div id="error-msg">❌ فشل التحقق: لم نكتشف زيادة في اللايكات! تأكد من وضع لايك.</div>
-                        
-                        <div class="warning-box">
-                            <h4>تنبيه مهم ⚠️</h4>
-                            <p>لما تضغط على Like & comment on video وتعمل كومنت ولايك اذا انت اصلا عامل لايك شيل اللايك وحطه تاني واعمل تحقق من الشروط واذا قالك فشل هذا لانه لسه ما سجل اللايك تبعك رح تضغط عليه تاني يكون هو سجل اللايك تبعك وبينقلك للصفحة الي بعدها.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="success-container" style="display: none; background: rgba(21, 21, 23, 0.8); backdrop-filter: blur(10px); border-radius: 15px; padding: 35px 20px; text-align: center; border: 1px solid #333; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
-                    <div style="font-size: 70px; margin-bottom: 10px; animation: bounce-icon 2s infinite;">🎉</div>
-                    <h2 style="margin: 0 0 15px; font-size: 28px; color: white;">احسنت</h2>
-                    <p style="color: var(--accent); font-size: 15px; font-weight: bold; margin-bottom: 20px; line-height: 1.6;">
-                        هذا البداية فقط ولكن لانك استمريت ستقدر على تخطي بقية الروابط بسهولة
-                    </p>
-                    <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 15px; margin-bottom: 25px;">
-                        <p style="color: #cbd5e1; font-size: 13px; margin: 0; line-height: 1.8;">
-                            انصحك تشاهد الفيديو بالكامل لشرح كيفية التخطي.
-                        </p>
-                    </div>
-                    <button style="display: block; width: 100%; background: var(--accent); padding: 18px; border-radius: 12px; color: white; border: none; font-weight: bold; font-size: 18px; cursor: pointer; box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3);" onclick="window.location.href='${config.f}'">🔓 افتح الرابط</button>
-                </div>
-            `;
-
-            function fetchRealLikes(callback) {
-                if (!vId) { callback(-1); return; }
-                fetch('https://www.googleapis.com/youtube/v3/videos?part=statistics&id=' + vId + '&key=' + YOUTUBE_API_KEY + '&t=' + Date.now())
-                .then(res => res.json())
-                .then(data => {
-                    if(data.items && data.items.length > 0) {
-                        callback(parseInt(data.items[0].statistics.likeCount));
-                    } else { callback(-1); }
-                }).catch(e => callback(-1));
-            }
-
-            fetchRealLikes((likes) => {
-                if (likes !== -1) {
-                    initialLikes = likes;
-                    document.getElementById('count-num').innerText = initialLikes.toLocaleString('en-US');
-                } else {
-                    document.getElementById('count-num').innerText = "حدث خطأ";
-                }
-            });
-
-            window.openT = function(type) {
-                if (type === 'c' && sub) return;
-                if (type === 'v' && vid) return;
-
-                window.open(type === 'c' ? config.c : config.v, '_blank');
-
-                const overlay = document.getElementById('countdown-overlay');
-                const numSpan = document.getElementById('countdown-number');
-                const progCircle = document.getElementById('progress-circle');
-                
-                overlay.style.display = 'flex';
-                
-                progCircle.style.animation = 'none';
-                void progCircle.offsetWidth; 
-                progCircle.style.animation = 'circle-deplete 7s linear forwards';
-                
-                let timeLeft = 7;
-                numSpan.innerText = timeLeft;
-
-                const timer = setInterval(() => {
-                    timeLeft--;
-                    numSpan.innerText = timeLeft;
-
-                    if (timeLeft <= 0) {
-                        clearInterval(timer);
-                        overlay.style.display = 'none';
-
-                        if(type === 'c') { 
-                            sub = true; 
-                            document.getElementById('tk1').classList.remove('active');
-                            document.getElementById('tk1').classList.add('done'); 
-                            document.getElementById('tk1').querySelector('.step-num span').innerText = '✓';
-                            document.getElementById('tk2').classList.add('active'); 
-                        } else { 
-                            vid = true; 
-                            document.getElementById('tk2').classList.remove('active');
-                            document.getElementById('tk2').classList.add('done'); 
-                            document.getElementById('tk2').querySelector('.step-num span').innerText = '✓';
-                        }
-                    }
-                }, 1000);
-            };
-
-            window.verifyStrict = function() {
-                if(!sub || !vid) return alert("يرجى إكمال المهام أولاً!");
-                
-                document.getElementById('error-msg').style.display = 'none';
-                const ld = document.getElementById('loader');
-                ld.style.display = 'flex';
-                
-                setTimeout(() => {
-                    fetchRealLikes((currentLikes) => {
-                        ld.style.display = 'none';
-                        
-                        if (currentLikes !== -1) {
-                            document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
-                        }
-
-                        if (currentLikes > initialLikes || failedAttempts >= 1) {
-                            document.getElementById('tasks-container').style.display = 'none';
-                            document.getElementById('top-logo').style.display = 'none';
-                            document.getElementById('top-title').style.display = 'none';
-                            document.getElementById('success-container').style.display = 'block';
-                            
-                            var duration = 3 * 1000;
-                            var end = Date.now() + duration;
-
-                            if (typeof confetti === "function") {
-                                (function frame() {
-                                    confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#ff0000', '#22c55e', '#ffffff'] });
-                                    confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ff0000', '#22c55e', '#ffffff'] });
-                                    if (Date.now() < end) { requestAnimationFrame(frame); }
-                                }());
-                            }
-                        } else {
-                            failedAttempts++; 
-                            let errMsg = document.getElementById('error-msg');
-                            errMsg.innerHTML = "❌ يوتيوب لم يقم بمراجعة اللايك بعد. اضغط <b>أعد التحقق</b> مرة أخرى.";
-                            errMsg.style.display = 'block';
-                            document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
-                            
-                            if (currentLikes !== -1 && currentLikes < initialLikes) {
-                                initialLikes = currentLikes; 
-                            }
-                        }
-                    });
-                }, 3000);
-            };
-
-        } else {
-            app.innerHTML = `
-                <div class="task-box" style="display:block; text-align:center; cursor:default;">
-                    <h2 style="color:var(--accent); margin-top:0;">MX_SASUKE VIP Generator</h2>
-                    <input type="text" id="it" class="gen-input" value="لازم تعمل اشتراك ولايك وتعليق للحصول على السكربت">
-                    <input type="url" id="ic" class="gen-input" placeholder="👇 رابط قناتك (اشتراك)">
-                    <input type="url" id="iv" class="gen-input" placeholder="👇 رابط فيديو اليوتيوب">
-                    <input type="url" id="if" class="gen-input" placeholder="👇 الرابط النهائي">
-                    <button class="verify-btn" onclick="gen()">إنشاء الصفحة</button>
-                </div>
-            `;
-            window.gen = function() {
-                const d = [
-                    safeEncode(document.getElementById('it').value),
-                    safeEncode(document.getElementById('ic').value),
-                    safeEncode(document.getElementById('iv').value),
-                    safeEncode(document.getElementById('if').value)
-                ].join('|');
-                window.location.href = "?data=" + encodeURIComponent(d);
-            };
-        }
-    } catch (error) {
-        document.getElementById('app').innerHTML = `<h3 style="color:red; margin-top:50px;">يوجد خطأ: تأكد من نسخ الكود بالكامل</h3>`;
     }
-});
-</script>
 
-<script defer src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    if (window.location.search.includes('room=')) { navTo('p-join'); } else { navTo('p-main'); }
 
-</body>
-</html>
+    function renderPlayers() {
+        let html = '';
+        players.forEach(p => {
+            let name = decodeURIComponent(p.name);
+            let kick = (isHost && p.name !== myName) ? `<button class="kick-btn" onclick="kickUser('${p.name}')">طرد</button>` : '';
+            html += `<div class="player-item"><span>${name}</span> <div style="display:flex; align-items:center;">${kick} <span class="online-dot" style="margin-right:10px;"></span></div></div>`;
+        });
+        
+        ['h-list', 'g-list', 'game-list'].forEach(id => {
+            let el = document.getElementById(id);
+            if(el) el.innerHTML = html;
+        });
+        
+        ['h-count', 'g-count'].forEach(id => {
+            let el = document.getElementById(id);
+            if(el) el.innerText = players.length;
+        });
+        
+        if(isHost) {
+            let btn = document.getElementById('start-btn');
+            if (gameMode === 'liar') {
+                btn.disabled = players.length < 3 || players.length > 5;
+                btn.innerText = (players.length < 3) ? `مطلوب 3 عالأقل` : (players.length > 5 ? `أقصى عدد 5` : `🚀 ابدأ اللعبة`);
+            } else {
+                btn.disabled = players.length < 2;
+                btn.innerText = "🚀 ابدأ اللعبة";
+            }
+        }
+    }
+
+    function hostRoom(cat, name, mode) {
+        if(typeof mqtt === 'undefined') return alert("انتظر ثانية لتهيئة السيرفر ⏳");
+        
+        isHost = true; gameMode = mode; roomCategory = cat;
+        
+        let n = document.getElementById('host-input').value || "Sasuke";
+        myName = encodeURIComponent(n + " 👑");
+        roomId = Math.floor(10000 + Math.random() * 90000).toString();
+        
+        document.getElementById('invite-link').innerText = window.location.origin + window.location.pathname + "?room=" + roomId;
+        document.getElementById('lobby-title').innerText = "غرفة: " + name;
+        
+        players = [{name: myName}];
+        renderPlayers();
+        navTo('p-lobby');
+
+        mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
+        mqttClient.on('connect', () => { mqttClient.subscribe('mx_sasuke_' + roomId); });
+        
+        mqttClient.on('message', (t, m) => {
+            if(!isHost) return;
+            let d = JSON.parse(m.toString());
+            
+            if(d.type === 'join') {
+                if(gameMode === 'liar' && players.length >= 5) {
+                    mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'full', target: d.name}));
+                    return;
+                }
+                if(!players.find(p => p.name === d.name)) {
+                    players.push({name: d.name});
+                    renderPlayers();
+                    mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'sync', players: players, mode: gameMode}));
+                }
+            }
+            if(d.type === 'leave') {
+                players = players.filter(p => p.name !== d.name);
+                renderPlayers();
+                mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'sync', players: players, mode: gameMode}));
+            }
+            if (d.type === 'liar_action') handleLiarAction(d);
+        });
+    }
+
+    function joinRoom() {
+        if(typeof mqtt === 'undefined') return alert("انتظر ثانية لتهيئة السيرفر ⏳");
+
+        let n = document.getElementById('guest-input').value;
+        if(!n) return alert("اكتب اسمك!");
+        myName = encodeURIComponent(n);
+        
+        roomId = new URLSearchParams(window.location.search).get('room');
+        
+        document.getElementById('join-btn').style.display = 'none';
+        document.getElementById('join-loading').style.display = 'block';
+
+        let connT = setTimeout(() => {
+            if(mqttClient) mqttClient.end();
+            document.getElementById('join-loading').style.display = 'none';
+            document.getElementById('join-btn').style.display = 'block';
+            alert("فشل الاتصال بالهوست.");
+        }, 10000);
+
+        mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
+        mqttClient.on('connect', () => {
+            clearTimeout(connT);
+            mqttClient.subscribe('mx_sasuke_' + roomId);
+            mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'join', name: myName}));
+            navTo('p-wait');
+        });
+        
+        mqttClient.on('message', (t, m) => {
+            if(isHost) return;
+            let d = JSON.parse(m.toString());
+            
+            if(d.type === 'full' && d.target === myName) {
+                alert("الغرفة ممتلئة!");
+                window.location.href = window.location.href.split('?')[0];
+            }
+            if(d.type === 'sync') { 
+                players = d.players; gameMode = d.mode; renderPlayers(); 
+            }
+            if(d.type === 'start') {
+                let w = d.words[myName];
+                document.getElementById('my-word').innerText = w;
+                if(w.includes('جاسوس') || w.includes('الإمبوستر')) {
+                    document.getElementById('my-word').style.color = 'var(--imposter)';
+                    document.getElementById('my-word').style.borderColor = 'var(--imposter)';
+                    document.getElementById('role-title').innerText = "خليك نينجا وما تبينش:";
+                } else {
+                    document.getElementById('my-word').style.color = 'white';
+                    document.getElementById('my-word').style.borderColor = 'var(--accent)';
+                    document.getElementById('role-title').innerText = "الكلمة السرية هي:";
+                }
+                navTo('p-game');
+            }
+            if(d.type === 'start_liar' || d.type === 'sync_liar') {
+                updateLiarUI(d.state);
+            }
+            if(d.type === 'kick' && d.target === myName) {
+                document.getElementById('bye-msg').innerText = "تم طردك من الغرفة.";
+                navTo('p-bye');
+                if(mqttClient) mqttClient.end();
+            }
+            if(d.type === 'close') {
+                document.getElementById('bye-msg').innerText = "تم إغلاق الغرفة.";
+                navTo('p-bye');
+                if(mqttClient) mqttClient.end();
+            }
+        });
+    }
+
+    function getLiarDeck(num) {
+        let deck = [];
+        let k=0, a=0, q=0, j=0;
+        if(num === 5) { k=7; a=7; q=7; j=3; }
+        else if(num === 4) { k=6; a=6; q=6; j=3; }
+        else if(num === 3) { k=4; a=4; q=4; j=2; }
+        for(let i=0; i<k; i++) deck.push('King');
+        for(let i=0; i<a; i++) deck.push('Ace');
+        for(let i=0; i<q; i++) deck.push('Queen');
+        for(let i=0; i<j; i++) deck.push('Joker');
+        return deck.sort(() => 0.5 - Math.random());
+    }
+
+    function advanceLiarTurn() {
+        let safeCounter = 0;
+        do {
+            liarState.turnIndex = (liarState.turnIndex + 1) % players.length;
+            safeCounter++;
+        } while (liarState.stats[players[liarState.turnIndex].name].dead && safeCounter < 10);
+    }
+
+    function handleLiarAction(data) {
+        if(data.action === 'play') {
+            let hand = liarState.hands[data.name];
+            let idx = hand.indexOf(data.card);
+            if(idx > -1) hand.splice(idx, 1); 
+            liarState.lastPlayed = { name: data.name, card: data.card };
+            liarState.log = `${decodeURIComponent(data.name)} لعب ورقة مقلوبة...`;
+            advanceLiarTurn();
+            mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'sync_liar', state: liarState}));
+        } 
+        else if (data.action === 'call') {
+            let lastP = liarState.lastPlayed;
+    
