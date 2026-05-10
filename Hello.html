@@ -42,44 +42,22 @@
             z-index: 10; 
         }
         
-        h1 { 
-            color: white; 
-            margin-bottom: 25px; 
-            font-size: 24px; 
-            text-align: center; 
-            text-shadow: 0 0 10px rgba(255,255,255,0.2);
-        }
+        h1 { color: white; margin-bottom: 25px; font-size: 24px; text-align: center; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
         
-        .input-field { 
-            width: 100%; 
-            padding: 15px; 
-            border-radius: 12px; 
-            border: 1px solid rgba(255, 255, 255, 0.15); 
-            background: rgba(0, 0, 0, 0.6); 
-            color: #fff; 
-            font-size: 16px; 
-            text-align: center; 
-            margin-bottom: 20px; 
-            font-weight: bold; 
-            font-family: 'Cairo';
+        /* أيقونات ريمبو متحركة */
+        .anim-icon {
+            display: inline-block;
+            animation: rainbowHue 2.5s infinite linear;
         }
-        .input-field:focus { outline: none; border-color: #ff512f; box-shadow: 0 0 10px rgba(255, 81, 47, 0.3); }
+        @keyframes rainbowHue {
+            0% { filter: hue-rotate(0deg) drop-shadow(0 0 5px rgba(255,255,255,0.4)); transform: scale(1); }
+            50% { filter: hue-rotate(180deg) drop-shadow(0 0 8px rgba(255,255,255,0.8)); transform: scale(1.1); }
+            100% { filter: hue-rotate(360deg) drop-shadow(0 0 5px rgba(255,255,255,0.4)); transform: scale(1); }
+        }
 
-        /* الأزرار المضيئة (Neon Gradients) */
-        .action-btn { 
-            color: white; 
-            border: none; 
-            padding: 16px; 
-            border-radius: 12px; 
-            width: 100%; 
-            font-size: 16px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            margin-bottom: 12px; 
-            display: block; 
-            text-align: center; 
-            transition: all 0.3s ease;
-        }
+        .input-field { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(0, 0, 0, 0.6); color: #fff; font-size: 16px; text-align: center; margin-bottom: 20px; font-weight: bold; font-family: 'Cairo'; }
+
+        .action-btn { color: white; border: none; padding: 16px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 12px; display: block; text-align: center; transition: all 0.3s ease; }
         
         .btn-orange { background: linear-gradient(135deg, #ff512f 0%, #dd2476 100%); box-shadow: 0 5px 15px rgba(255, 81, 47, 0.4); }
         .btn-red { background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%); box-shadow: 0 5px 15px rgba(255, 8, 68, 0.4); }
@@ -97,41 +75,15 @@
         .panel.active { display: block !important; animation: fadeIn 0.4s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .players-list { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 10px; margin-bottom: 20px; max-height: 160px; overflow-y: auto; }
+        .players-list { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 10px; margin-bottom: 20px; max-height: 140px; overflow-y: auto; }
         .player-item { padding: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
-        .player-item:last-child { border-bottom: none; }
         
-        /* تصميم أوراق لعبة الكذابين مع نظام التحديد */
-        .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; margin-bottom: 15px; }
-        .liar-card-btn { 
-            background: rgba(255,255,255,0.05); 
-            border: 1px solid rgba(255,255,255,0.1); 
-            color: white; 
-            padding: 15px 5px; 
-            border-radius: 10px; 
-            font-size: 13px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-        }
-        .liar-card-btn.selected { 
-            background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); 
-            color: #000; 
-            border-color: #fff; 
-            transform: translateY(-6px) scale(1.05); 
-            box-shadow: 0 8px 15px rgba(246, 211, 101, 0.5); 
-        }
+        .liar-card-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 12px 5px; border-radius: 10px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .liar-card-btn.selected { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); color: #000; border-color: #fff; transform: translateY(-6px); box-shadow: 0 8px 15px rgba(246, 211, 101, 0.5); }
         
-        .choice-container { display: flex; gap: 10px; margin-top: 20px; }
-        .stat-badge { background: rgba(255,255,255,0.15); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; }
-
-        /* الأنيميشن */
         #anim-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 5, 8, 0.95); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        .loader-ring { width: 70px; height: 70px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid var(--liar); border-radius: 50%; animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite; margin-bottom: 20px; }
+        .loader-ring { width: 60px; height: 60px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #f59e0b; border-radius: 50%; animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite; margin-bottom: 20px; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-        .fire-flash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ff0000; opacity: 0; z-index: 1001; pointer-events: none; }
-        .shake { animation: shake 0.4s; }
-        @keyframes shake { 0% {transform:translate(0,0)} 20% {transform:translate(10px,0)} 40% {transform:translate(-10px,0)} 60% {transform:translate(10px,0)} 100% {transform:translate(0,0)} }
     </style>
 </head>
 <body id="main-body">
@@ -140,78 +92,107 @@
     <div id="p-main" class="panel active">
         <h1>🎮 الألعاب</h1>
         <input type="text" id="host-input" class="input-field" placeholder="اكتب اسمك..." value="Sasuke">
-        <button class="action-btn btn-gold" onclick="startHost('liar', 'لعبة الكذابين', 'liar')">🃏 لعبة الكذابين ☠️</button>
-        <button class="action-btn btn-purple" onclick="changeUI('p-imposter')">🕵️‍♂️ لعبة الجاسوس ➡️</button>
-        <button class="action-btn btn-blue" onclick="startHost('naruto', 'ناروتو', 'guess')">🍥 من أنا؟ (ناروتو)</button>
+        <button class="action-btn btn-gold" onclick="startHost('liar', 'لعبة الكذابين', 'liar')"><span class="anim-icon">🃏</span> لعبة الكذابين ☠️</button>
+        <button class="action-btn btn-purple" onclick="changeUI('p-imposter')"><span class="anim-icon">🕵️‍♂️</span> لعبة الجاسوس ➡️</button>
     </div>
 
     <div id="p-imposter" class="panel">
-        <h1>🕵️‍♂️ الجاسوس</h1>
-        <button class="action-btn btn-orange" onclick="startHost('food', 'أكلات', 'imposter')">🍕 أكلات</button>
-        <button class="action-btn btn-green" onclick="startHost('animals', 'حيوانات', 'imposter')">🦁 حيوانات</button>
-        <button class="action-btn btn-ghost" onclick="changeUI('p-main')">رجوع 🔙</button>
+        <h1>🕵️‍♂️ تصنيفات الجاسوس</h1>
+        <div style="max-height: 350px; overflow-y: auto; padding-right: 5px;">
+            <button class="action-btn btn-orange" onclick="startHost('food', 'أكلات', 'imposter')"><span class="anim-icon">🍕</span> أكلات</button>
+            <button class="action-btn btn-green" onclick="startHost('animals', 'حيوانات', 'imposter')"><span class="anim-icon">🦁</span> حيوانات</button>
+            <button class="action-btn btn-blue" onclick="startHost('countries', 'دول وأماكن', 'imposter')"><span class="anim-icon">🌍</span> دول وأماكن</button>
+            <button class="action-btn btn-purple" onclick="startHost('jobs', 'مهن ووظائف', 'imposter')"><span class="anim-icon">👨‍⚕️</span> مهن ووظائف</button>
+            <button class="action-btn btn-orange" onclick="startHost('tech', 'أجهزة وتكنولوجيا', 'imposter')"><span class="anim-icon">💻</span> أجهزة وتكنولوجيا</button>
+            <button class="action-btn btn-green" onclick="startHost('fruits', 'فواكه وخضروات', 'imposter')"><span class="anim-icon">🍎</span> فواكه وخضروات</button>
+            <button class="action-btn btn-blue" onclick="startHost('objects', 'أغراض وملابس', 'imposter')"><span class="anim-icon">👕</span> أغراض وملابس</button>
+        </div>
+        <button class="action-btn btn-ghost" onclick="changeUI('p-main')" style="margin-top: 10px;">رجوع 🔙</button>
     </div>
 
     <div id="p-lobby" class="panel">
-        <h1>غرفة الانتظار</h1>
-        <div id="invite-link" style="display:none"></div>
-        <button class="action-btn btn-ghost" onclick="copyLink()" style="margin-bottom: 15px;">📋 نسخ رابط الغرفة</button>
+        <h1>🛰️ غرفة الانتظار</h1>
+        <button class="action-btn btn-ghost" onclick="copyLink()">📋 نسخ الرابط</button>
         <div class="players-list" id="h-list"></div>
         <button class="action-btn btn-red" id="start-btn" onclick="gameLaunch()" disabled>🚀 إطلاق اللعبة</button>
         <button class="action-btn btn-ghost" onclick="location.reload()">إلغاء ❌</button>
     </div>
 
     <div id="p-join" class="panel">
-        <h1>👋 أهلاً بك</h1>
-        <input type="text" id="guest-input" class="input-field" placeholder="اكتب اسمك للمتابعة...">
-        <button class="action-btn btn-orange" onclick="joinRoomAction()">دخول الغرفة 🚪</button>
+        <h1>🛸 دخول السفينة</h1>
+        <input type="text" id="guest-input" class="input-field" placeholder="اكتب اسمك...">
+        <button class="action-btn btn-orange" onclick="joinRoomAction()">انضمام 🚪</button>
     </div>
 
     <div id="p-wait" class="panel">
-        <h1>⏳ انتظار الهوست...</h1>
+        <h1>⏳ جاري الانتظار...</h1>
         <div class="players-list" id="g-list"></div>
     </div>
 
-    <div id="p-game" class="panel">
-        <h2 id="game-res-title" style="text-align: center; font-size: 18px;">سرّك هو:</h2>
-        <div id="my-word" style="background: rgba(0,0,0,0.6); border: 2px dashed #00c6ff; border-radius: 15px; padding: 30px; margin: 20px 0; font-size: 28px; font-weight: bold; text-align: center; text-shadow: 0 0 10px rgba(0,198,255,0.5);"></div>
-        <div class="players-list" id="game-list"></div>
-        <button class="action-btn btn-ghost" onclick="location.reload()">🚪 مغادرة</button>
+    <div id="p-imp-game" class="panel">
+        <h2 id="imp-role-title" style="text-align: center; font-size: 18px;">الكلمة السرية:</h2>
+        <div id="imp-my-word" style="background: rgba(0,0,0,0.6); border: 2px dashed #b224ef; border-radius: 15px; padding: 20px; margin: 15px 0; font-size: 24px; font-weight: bold; text-align: center;"></div>
+        
+        <div id="imp-timer-sec" style="text-align: center; margin: 20px 0;">
+            <h1 id="imp-countdown" style="font-size: 50px; margin: 0; color: #0ba360;">60</h1>
+            <p style="color: #aaa;">ناقشوا بعض!</p>
+        </div>
+
+        <div id="imp-vote-sec" style="display: none;">
+            <p style="text-align: center;">صوّت على الجاسوس:</p>
+            <div id="imp-vote-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
+            <p id="imp-wait-vote-msg" style="display: none; text-align: center; color: #aaa;">في انتظار الباقين...</p>
+        </div>
+
+        <div id="imp-guess-sec" style="display: none; text-align: center;">
+            <h3 id="imp-status-msg" style="color: #fda085;"></h3>
+            <div id="imp-input-area" style="display: none;">
+                <p>خمن الكلمة السرية:</p>
+                <input type="text" id="imp-word-guess" class="input-field" placeholder="الكلمة هي...">
+                <button class="action-btn btn-purple" onclick="submitImpGuess()">تأكيد التخمين</button>
+            </div>
+            <p id="imp-wait-guess-msg" style="display: none;">الجاسوس يخمن الآن...</p>
+        </div>
+
+        <div id="imp-end-sec" style="display: none; text-align: center;">
+            <h2 id="imp-final-title"></h2>
+            <div style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px;">
+                <p>الكلمة: <span id="imp-real-word" style="color: #00c6ff;"></span></p>
+                <p>تخمين الجاسوس: <span id="imp-guessed-word" style="color: #ff512f;"></span></p>
+            </div>
+            <button class="action-btn btn-ghost" style="margin-top: 15px;" onclick="location.reload()">خروج</button>
+        </div>
     </div>
 
     <div id="p-liar" class="panel">
         <h2 id="turn-display" style="color: #fda085; text-align: center; font-size: 18px;">دور: ...</h2>
-        <div style="background: rgba(0,0,0,0.5); padding: 12px; border-radius: 12px; text-align: center; margin-bottom: 15px; border: 1px solid rgba(253, 160, 133, 0.3);"> 
-            الورقة المطلوبة: <span id="liar-req" style="color: #fda085; font-weight: bold; font-size:20px; text-shadow: 0 0 8px rgba(253,160,133,0.5);">...</span> 
+        <div style="background: rgba(0,0,0,0.5); padding: 10px; border-radius: 12px; text-align: center; margin-bottom: 15px; border: 1px solid rgba(253, 160, 133, 0.3);"> 
+            المطلوب: <span id="liar-req" style="color: white; font-weight: bold; font-size:18px;">...</span> 
         </div>
         <div class="players-list" id="liar-list"></div>
-        
         <div id="my-turn-controls" style="display: none;">
-            <p style="text-align: center; font-size: 14px; margin-bottom: 5px; color:#ccc;">حدد ورقة أو أكثر (بحد أقصى 3):</p>
             <div id="my-hand-container"></div>
         </div>
-
         <div id="decision-controls" style="display: none;">
-            <p style="text-align: center; font-size: 14px;">اللاعب لعب أوراق مقلوبة.. هل تثق به؟</p>
             <div class="choice-container">
                 <button class="action-btn btn-red" onclick="liarMove('call')">كاذب! 🤬</button>
                 <button class="action-btn btn-green" onclick="liarMove('continue')">أكمل! ✅</button>
             </div>
         </div>
-        <button class="action-btn btn-ghost" style="margin-top: 15px;" onclick="location.reload()">🚪 مغادرة</button>
+        <button class="action-btn btn-ghost" style="margin-top: 10px;" onclick="location.reload()">انسحاب</button>
     </div>
 </div>
 
 <div id="anim-overlay">
     <div id="loader-part">
         <div class="loader-ring"></div>
-        <h2 id="anim-msg" style="font-size: 18px; font-weight: normal;">جاري التحقق...</h2>
-        <h1 id="anim-timer" style="font-size: 48px; color: #fda085; margin: 10px 0; text-shadow: 0 0 15px rgba(253,160,133,0.6);">3</h1>
+        <h2 id="anim-msg">جاري التحقق...</h2>
+        <h1 id="anim-timer">3</h1>
     </div>
     <div id="gun-part" style="display: none;">
-        <div style="font-size: 80px; margin-bottom: 20px; filter: drop-shadow(0 0 10px red);">🔫</div>
-        <h2 id="gun-msg" style="color: #ff0844; font-size: 24px; text-shadow: 0 0 10px rgba(255,8,68,0.5);">تم كشف الهوية!</h2>
-        <h1 id="gun-timer" style="font-size: 60px;">3</h1>
+        <div style="font-size: 60px;">🔫</div>
+        <h2 id="gun-msg" style="color: #ff0844;">تم الكشف!</h2>
+        <h1 id="gun-timer">3</h1>
     </div>
 </div>
 <div class="fire-flash" id="flash"></div>
@@ -219,7 +200,17 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
 <script>
     let client, myName, roomId, isHost = false, players = [], mode = '', cat = '', currentLiarState = {};
-    let selectedCards = []; // مصفوفة لتخزين الأوراق المحددة
+    let selectedCards = [], impState = {}, timerInterval;
+
+    const DB = {
+        food: ['بيتزا', 'برجر', 'شاورما', 'كشري', 'سوشي', 'ملوخية'],
+        animals: ['أسد', 'نمر', 'فيل', 'زرافة', 'قطة', 'بطريق'],
+        countries: ['مصر', 'اليابان', 'فرنسا', 'البرازيل', 'السعودية', 'أمريكا'],
+        jobs: ['طيار', 'دكتور', 'مهندس', 'مبرمج', 'طباخ', 'رائد فضاء'],
+        tech: ['موبايل', 'لابتوب', 'بلايستيشن', 'ساعة ذكية', 'كاميرا', 'شاشة'],
+        fruits: ['تفاح', 'موز', 'فراولة', 'بطيخ', 'برتقال', 'عنب'],
+        objects: ['نظارة', 'قميص', 'حذاء', 'ساعة', 'حقيبة', 'جاكيت']
+    };
 
     function changeUI(id) {
         document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
@@ -231,19 +222,15 @@
 
     function updateLists() {
         let html = "";
-        players.forEach(p => html += `<div class="player-item"><span>${decodeURIComponent(p.name)}</span><span style="color:#0ba360; font-size:10px; text-shadow: 0 0 5px #0ba360;">● متصل</span></div>`);
-        ["h-list", "g-list", "game-list"].forEach(id => { if(document.getElementById(id)) document.getElementById(id).innerHTML = html; });
-        if(isHost) {
-            let btn = document.getElementById('start-btn');
-            btn.disabled = (mode === 'liar') ? (players.length < 3) : (players.length < 2);
-        }
+        players.forEach(p => html += `<div class="player-item"><span>${decodeURIComponent(p.name)}</span><span style="color:#0ba360;">●</span></div>`);
+        ["h-list", "g-list"].forEach(id => { if(document.getElementById(id)) document.getElementById(id).innerHTML = html; });
+        if(isHost) document.getElementById('start-btn').disabled = (players.length < 3);
     }
 
     function startHost(c, name, m) {
         isHost = true; mode = m; cat = c;
         myName = encodeURIComponent((document.getElementById('host-input').value || "Sasuke") + " 👑");
         roomId = Math.floor(10000 + Math.random() * 90000).toString();
-        document.getElementById('invite-link').innerText = window.location.origin + window.location.pathname + "?room=" + roomId;
         players = [{name: myName}]; updateLists(); changeUI('p-lobby');
         client = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
         client.on('connect', () => client.subscribe('sasuke_' + roomId));
@@ -256,6 +243,7 @@
                 }
             }
             if(d.type === 'liar_act') handleLiarLogic(d);
+            if(d.type === 'imp_act') handleImpLogic(d);
         });
     }
 
@@ -272,16 +260,12 @@
             let d = JSON.parse(msg.toString());
             if(d.type === 'sync') { players = d.players; mode = d.mode; updateLists(); }
             if(d.type === 'liar_start' || d.type === 'liar_sync') { updateLiarUI(d.state); }
-            if(d.type === 'start') { showGame(d.words[myName]); }
+            if(d.type === 'imp_start') { handleImpStart(d); }
+            if(d.type === 'imp_sync') { updateImpUI(d.state); }
             if(d.type === 'anim') { startAnim(d.msg, d.sec); }
             if(d.type === 'gun') { startGunAnim(d.target, d.hits); }
         });
     }
-
-    const DB = {
-        naruto: ['ناروتو', 'ساسوكي', 'كاكاشي', 'ايتاشي', 'مادارا'],
-        food: ['بيتزا', 'برجر', 'شاورما', 'كشري']
-    };
 
     function gameLaunch() {
         if(!isHost) return;
@@ -291,98 +275,120 @@
             ['King','Ace','Queen'].forEach((v, i) => { for(let j=0; j<counts[i]; j++) deck.push(v); });
             for(let j=0; j<counts[3]; j++) deck.push('Joker');
             deck.sort(() => 0.5 - Math.random());
-
             let s = { turn: 0, req: ['King','Ace','Queen'][Math.floor(Math.random()*3)], last: null, phase: 'play', hands: {}, stats: {} };
             players.forEach(p => { s.hands[p.name] = []; s.stats[p.name] = {h:0, d:false}; });
             let i = 0; while(deck.length) { s.hands[players[i%players.length].name].push(deck.pop()); i++; }
-            
-            currentLiarState = s;
             client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_start', state: s}));
             updateLiarUI(s); 
-        } else {
-            let words = DB[cat] || DB.food;
+        } else if (mode === 'imposter') {
+            let words = DB[cat];
+            let w = words[Math.floor(Math.random()*words.length)];
+            let imp = players[Math.floor(Math.random()*players.length)].name;
             let assigned = {};
-            if(mode === 'imposter') {
-                let w = words[Math.floor(Math.random()*words.length)];
-                let imp = players[Math.floor(Math.random()*players.length)].name;
-                players.forEach(p => assigned[p.name] = (p.name === imp ? "أنت الجاسوس 🕵️‍♂️" : w));
-            } else {
-                let shuf = [...words].sort(() => 0.5 - Math.random());
-                players.forEach((p, i) => assigned[p.name] = shuf[i%shuf.length]);
-            }
-            client.publish('sasuke_' + roomId, JSON.stringify({type: 'start', words: assigned}));
-            showGame(assigned[myName]);
+            players.forEach(p => assigned[p.name] = (p.name === imp ? "أنت الجاسوس 🕵️‍♂️" : w));
+            impState = { phase: 'timer', word: w, imp: imp, votes: {} };
+            client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_start', words: assigned, state: impState}));
+            handleImpStart({words: assigned, state: impState});
         }
     }
 
-    function showGame(w) {
-        changeUI('p-game');
-        let el = document.getElementById('my-word');
-        el.innerText = w;
-        if(w.includes('جاسوس')) {
-            el.style.color = '#c084fc'; el.style.borderColor = '#b224ef'; el.style.textShadow = '0 0 15px rgba(178,36,239,0.5)';
-            document.getElementById('game-res-title').innerText = "خليك نينجا وما تبينش:";
-        } else {
-            el.style.color = 'white'; el.style.borderColor = '#00c6ff'; el.style.textShadow = '0 0 15px rgba(0,198,255,0.5)';
-            document.getElementById('game-res-title').innerText = "الكلمة السرية:";
+    function handleImpStart(d) {
+        impState = d.state; changeUI('p-imp-game');
+        let w = d.words[myName];
+        document.getElementById('imp-my-word').innerText = w;
+        document.getElementById('imp-role-title').innerText = w.includes('الجاسوس') ? "مهمتك:" : "الكلمة السرية:";
+        document.getElementById('imp-timer-sec').style.display = 'block';
+        let count = 60; timerInterval = setInterval(() => {
+            count--; document.getElementById('imp-countdown').innerText = count;
+            if(count <= 0) { clearInterval(timerInterval); document.getElementById('imp-timer-sec').style.display = 'none'; showImpVoting(); }
+        }, 1000);
+    }
+
+    function showImpVoting() {
+        document.getElementById('imp-vote-sec').style.display = 'block';
+        let vHtml = ""; players.forEach(p => { if(p.name !== myName) vHtml += `<button class="action-btn btn-ghost" onclick="castVote('${p.name}')">تصويت لـ ${decodeURIComponent(p.name)}</button>`; });
+        document.getElementById('imp-vote-list').innerHTML = vHtml;
+    }
+
+    window.castVote = function(target) {
+        document.getElementById('imp-vote-list').style.display = 'none';
+        document.getElementById('imp-wait-vote-msg').style.display = 'block';
+        client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_act', act: 'vote', n: myName, target: target}));
+    }
+
+    function handleImpLogic(d) {
+        if(!isHost) return;
+        if(d.act === 'vote') {
+            impState.votes[d.n] = d.target;
+            if(Object.keys(impState.votes).length === players.length) {
+                let counts = {}; Object.values(impState.votes).forEach(v => counts[v] = (counts[v]||0)+1);
+                let highest = Object.keys(counts).reduce((a, b) => counts[a] > counts[b] ? a : b);
+                impState.phase = 'guess'; impState.caught = (highest === impState.imp);
+                client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_sync', state: impState}));
+                updateImpUI(impState);
+            }
+        } else if (d.act === 'guess') {
+            impState.phase = 'end'; impState.guessWord = d.word;
+            client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_sync', state: impState}));
+            updateImpUI(impState);
         }
+    }
+
+    function updateImpUI(s) {
+        if(s.phase === 'guess') {
+            document.getElementById('imp-vote-sec').style.display = 'none';
+            document.getElementById('imp-guess-sec').style.display = 'block';
+            document.getElementById('imp-status-msg').innerText = s.caught ? "تم كشف الجاسوس! 😂" : "الجاسوس هرب! 😱";
+            document.getElementById(myName === s.imp ? 'imp-input-area' : 'imp-wait-guess-msg').style.display = 'block';
+        } else if (s.phase === 'end') {
+            document.getElementById('imp-guess-sec').style.display = 'none';
+            document.getElementById('imp-end-sec').style.display = 'block';
+            let won = (s.guessWord.trim() === s.word.trim());
+            document.getElementById('imp-final-title').innerText = won ? "الجاسوس فاز! 😈" : "الجاسوس خسر! 🎉";
+            document.getElementById('imp-real-word').innerText = s.word;
+            document.getElementById('imp-guessed-word').innerText = s.guessWord;
+        }
+    }
+
+    window.submitImpGuess = function() {
+        let gw = document.getElementById('imp-word-guess').value; if(!gw) return;
+        client.publish('sasuke_' + roomId, JSON.stringify({type: 'imp_act', act: 'guess', word: gw}));
     }
 
     function renderHand() {
         let h = currentLiarState.hands[myName] || [];
-        let html = "";
-        if(h.length === 0) {
-            html = `<p style="color:#aaa;">المخزون فارغ!</p>`;
-            if(!currentLiarState.last) {
-                html += `<button class="action-btn btn-ghost" onclick="liarMove('play', [])">تخطي الدور</button>`;
-            }
-        } else {
-            html += `<div class="card-grid">`;
-            h.forEach((c, idx) => {
-                let isSel = selectedCards.includes(idx);
-                html += `<button class="liar-card-btn ${isSel ? 'selected' : ''}" onclick="toggleCard(${idx})">${c}</button>`;
-            });
-            html += `</div>`;
-            html += `<button class="action-btn btn-orange" onclick="playSelectedCards()">العب الأوراق المحددة (${selectedCards.length})</button>`;
-        }
+        let html = '<div class="card-grid">';
+        h.forEach((c, idx) => html += `<button class="liar-card-btn ${selectedCards.includes(idx) ? 'selected' : ''}" onclick="toggleCard(${idx})">${c}</button>`);
+        html += `</div><button class="action-btn btn-orange" onclick="playSelectedCards()">العب الأوراق (${selectedCards.length})</button>`;
         document.getElementById('my-hand-container').innerHTML = html;
     }
 
     window.toggleCard = function(idx) {
-        let pos = selectedCards.indexOf(idx);
-        if(pos > -1) selectedCards.splice(pos, 1);
-        else {
-            if(selectedCards.length >= 3) return alert("الحد الأقصى للتحديد 3 أوراق!");
-            selectedCards.push(idx);
-        }
+        let p = selectedCards.indexOf(idx);
+        if(p > -1) selectedCards.splice(p, 1);
+        else if(selectedCards.length < 3) selectedCards.push(idx);
         renderHand();
     }
 
     window.playSelectedCards = function() {
-        if(selectedCards.length === 0) return alert("يجب تحديد ورقة واحدة على الأقل!");
-        let hand = currentLiarState.hands[myName];
-        let cardsToPlay = selectedCards.map(idx => hand[idx]);
-        client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_act', act: 'play', c: cardsToPlay, n: myName}));
-        selectedCards = []; 
-        document.getElementById('my-turn-controls').style.display = 'none';
+        if(selectedCards.length === 0) return;
+        let c = selectedCards.map(i => currentLiarState.hands[myName][i]);
+        client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_act', act: 'play', c: c, n: myName}));
+        selectedCards = [];
     }
 
     function updateLiarUI(s) {
         currentLiarState = s; changeUI('p-liar');
-        selectedCards = []; // تصفير التحديد عند بدء دور جديد
-        document.getElementById('turn-display').innerText = "اللاعب الحالي: " + decodeURIComponent(players[s.turn].name);
+        document.getElementById('turn-display').innerText = "دور: " + decodeURIComponent(players[s.turn].name);
         document.getElementById('liar-req').innerText = s.req;
-        
         let h = ""; players.forEach((p, i) => {
             let st = s.stats[p.name];
-            h += `<div class="player-item ${st.d?'dead':''}"><span><span class="stat-badge">${st.h}/6</span> ${decodeURIComponent(p.name)}</span><span style="color:#fda085">${i===s.turn?'🎲 بيلعب':''}</span></div>`;
+            h += `<div class="player-item ${st.d?'dead':''}"><span>${st.h}/6 ${decodeURIComponent(p.name)}</span><span>${i===s.turn?'🎲':''}</span></div>`;
         });
         document.getElementById('liar-list').innerHTML = h;
-        
         let isMyTurn = (players[s.turn].name === myName && !s.stats[myName].d);
         document.getElementById('my-turn-controls').style.display = (isMyTurn && s.phase === 'play') ? 'block' : 'none';
         document.getElementById('decision-controls').style.display = (isMyTurn && s.phase === 'decision') ? 'block' : 'none';
-        
         if(isMyTurn && s.phase === 'play') renderHand();
     }
 
@@ -390,51 +396,30 @@
         if(!isHost) return;
         let s = currentLiarState;
         if(d.act === 'play') {
-            let h = s.hands[d.n];
-            if(d.c && d.c.length > 0) {
-                d.c.forEach(playedCard => { let idx = h.indexOf(playedCard); if(idx > -1) h.splice(idx, 1); });
-                s.last = {n: d.n, c: d.c}; 
-                s.phase = 'wait';
-                client.publish('sasuke_' + roomId, JSON.stringify({type: 'anim', msg: "جاري تحليل الأوراق المقلوبة...", sec: 3}));
-                setTimeout(() => {
-                    s.phase = 'decision';
-                    s.turn = (s.turn + 1) % players.length;
-                    while(s.stats[players[s.turn].name].d) s.turn = (s.turn + 1) % players.length;
-                    client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_sync', state: s}));
-                    updateLiarUI(s);
-                }, 3000);
-            } else {
-                // في حالة تخطي الدور (لا يملك ورق)
-                s.turn = (s.turn + 1) % players.length;
+            d.c.forEach(c => { let i = s.hands[d.n].indexOf(c); if(i > -1) s.hands[d.n].splice(i, 1); });
+            s.last = {n: d.n, c: d.c}; s.phase = 'wait';
+            client.publish('sasuke_' + roomId, JSON.stringify({type: 'anim', msg: "جاري التحليل...", sec: 3}));
+            setTimeout(() => {
+                s.phase = 'decision'; s.turn = (s.turn + 1) % players.length;
                 while(s.stats[players[s.turn].name].d) s.turn = (s.turn + 1) % players.length;
                 client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_sync', state: s}));
                 updateLiarUI(s);
-            }
-        } else if(d.act === 'continue') {
-            s.phase = 'play';
-            client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_sync', state: s}));
-            updateLiarUI(s);
-        } else if(d.act === 'call') {
-            client.publish('sasuke_' + roomId, JSON.stringify({type: 'anim', msg: "جاري كشف الأوراق...", sec: 4}));
-            setTimeout(() => {
-                // يكفي أن تكون ورقة واحدة خاطئة ليعتبر كاذباً
-                let wasLying = s.last.c.some(card => card !== s.req && card !== 'Joker');
-                let victim = wasLying ? s.last.n : d.n;
-                let m = wasLying ? "تم كشف الكذبة! 😂" : "المعلومات صحيحة للأسف 😱";
-                
-                client.publish('sasuke_' + roomId, JSON.stringify({type: 'anim', msg: m, sec: 4}));
+            }, 3000);
+        } else if(d.act === 'call' || d.act === 'continue') {
+            if(d.act === 'continue') { s.phase = 'play'; client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_sync', state: s})); updateLiarUI(s); }
+            else {
+                client.publish('sasuke_' + roomId, JSON.stringify({type: 'anim', msg: "كشف الأوراق...", sec: 4}));
                 setTimeout(() => {
-                    s.stats[victim].h++;
-                    if (s.stats[victim].h >= 6 || Math.random() < 0.1) s.stats[victim].d = true;
-                    client.publish('sasuke_' + roomId, JSON.stringify({type: 'gun', target: victim, hits: s.stats[victim].h}));
+                    let wasLying = s.last.c.some(c => c !== s.req && c !== 'Joker');
+                    let victim = wasLying ? s.last.n : d.n;
+                    client.publish('sasuke_' + roomId, JSON.stringify({type: 'anim', msg: wasLying ? "كاذب! 😂" : "صادق للأسف 😱", sec: 4}));
                     setTimeout(() => {
-                        s.phase = 'play'; s.last = null;
-                        s.req = ['King','Ace','Queen'][Math.floor(Math.random()*3)];
-                        client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_sync', state: s}));
-                        updateLiarUI(s);
-                    }, 8000);
+                        s.stats[victim].h++; if(s.stats[victim].h >= 6 || Math.random() < 0.1) s.stats[victim].d = true;
+                        client.publish('sasuke_' + roomId, JSON.stringify({type: 'gun', target: victim, hits: s.stats[victim].h}));
+                        setTimeout(() => { s.phase = 'play'; s.last = null; s.req = ['King','Ace','Queen'][Math.floor(Math.random()*3)]; client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_sync', state: s})); updateLiarUI(s); }, 8000);
+                    }, 4000);
                 }, 4000);
-            }, 4000);
+            }
         }
     }
 
@@ -458,13 +443,12 @@
         let int = setInterval(() => {
             count--; document.getElementById('gun-timer').innerText = count;
             if(count <= 0) {
-                clearInterval(int);
-                document.getElementById('main-body').classList.add('shake');
+                clearInterval(int); document.getElementById('main-body').classList.add('shake');
                 document.getElementById('flash').style.opacity = '1';
                 setTimeout(() => {
                     document.getElementById('flash').style.opacity = '0';
                     document.getElementById('main-body').classList.remove('shake');
-                    document.getElementById('gun-part').innerHTML = `<h2 style='font-size:18px; color:#3cba92;'>نجوت من الاصطدام!<br>الدروع المتبقية: ${6-hits}</h2>`;
+                    document.getElementById('gun-part').innerHTML = `<h2>نجوت!<br>الدروع: ${6-hits}</h2>`;
                     setTimeout(() => overlay.style.display = 'none', 3000);
                 }, 150);
             }
@@ -472,7 +456,7 @@
     }
 
     function liarMove(a) { client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_act', act: a, n: myName})); }
-    function copyLink() { navigator.clipboard.writeText(document.getElementById('invite-link').innerText); alert("تم نسخ الإحداثيات! 🚀"); }
+    function copyLink() { navigator.clipboard.writeText(window.location.origin + window.location.pathname + "?room=" + roomId); alert("تم النسخ! 🚀"); }
 </script>
 </body>
 </html>
