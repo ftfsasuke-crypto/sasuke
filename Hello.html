@@ -3,344 +3,252 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MX_SASUKE | Multiplayer Hub</title>
+    <title>MX_SASUKE Hub</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; --imposter: #a855f7; --liar: #f59e0b; }
+        :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; --liar: #f59e0b; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow-x: hidden; touch-action: manipulation; }
-        .box-container { width: 92%; max-width: 400px; background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #333; position: relative; z-index: 10; }
+        body { background: var(--bg); color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; touch-action: manipulation; }
+        
+        .box-container { width: 92%; max-width: 400px; background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid #333; position: relative; }
         h1 { color: white; margin-bottom: 20px; font-size: 22px; text-align: center; }
         
-        .game-btn { background: #111; border: 2px solid #333; color: white; padding: 16px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 12px; transition: 0.2s; display: block; position: relative; z-index: 20; }
-        .game-btn:active { transform: scale(0.98); background: #222; }
-        
-        .input-field { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #444; background: #000; color: var(--accent); font-size: 16px; text-align: center; margin-bottom: 20px; font-weight: bold; display: block; }
-        .action-btn { background: var(--main); color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; font-size: 18px; font-weight: bold; cursor: pointer; margin-bottom: 10px; display: block; }
-        .action-btn:disabled { background: #444; cursor: not-allowed; }
-        .leave-btn { background: #333; border: 1px solid #555; color: white; padding: 12px; border-radius: 10px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; display: block; }
-        
-        .panel { display: none; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .game-btn { background: #111; border: 2px solid #333; color: white; padding: 16px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 12px; display: block; text-align: center; text-decoration: none; }
+        .game-btn:active { background: #222; transform: scale(0.98); }
 
-        .players-list { background: #000; border: 1px solid #333; border-radius: 10px; padding: 15px; margin-bottom: 20px; max-height: 200px; overflow-y: auto; }
-        .player-item { padding: 10px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; font-size: 14px;}
-        .player-item:last-child { border-bottom: none; }
-        .online-dot { width: 10px; height: 10px; background: var(--accent); border-radius: 50%; display: inline-block; box-shadow: 0 0 8px var(--accent); margin-right: 10px;}
+        .input-field { width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #444; background: #000; color: var(--accent); font-size: 16px; text-align: center; margin-bottom: 20px; font-weight: bold; }
+        .action-btn { background: var(--main); color: white; border: none; padding: 15px; border-radius: 10px; width: 100%; font-size: 18px; font-weight: bold; cursor: pointer; margin-bottom: 10px; }
+        .action-btn:disabled { background: #444; cursor: not-allowed; }
         
-        .kick-btn { background: var(--fail); color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 12px; cursor: pointer; }
-        .secret-word-box { background: #111; border: 2px dashed var(--accent); border-radius: 15px; padding: 30px 15px; margin: 20px 0; font-size: 30px; font-weight: bold; text-align: center; }
+        .leave-btn { background: #333; border: 1px solid #555; color: white; padding: 12px; border-radius: 10px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; }
+
+        /* نظام الشاشات: مخفي افتراضياً ويظهر بالكلاس active */
+        .panel { display: none; }
+        .panel.active { display: block !important; }
+
+        .players-list { background: #000; border: 1px solid #333; border-radius: 10px; padding: 10px; margin-bottom: 20px; max-height: 150px; overflow-y: auto; }
+        .player-item { padding: 8px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
         
-        .liar-log { background: #1a1a1c; border: 1px solid #333; padding: 12px; border-radius: 10px; font-size: 13px; margin-bottom: 15px; color: #cbd5e1; text-align: center; line-height: 1.6; min-height: 50px; }
-        .liar-card-btn { background: #222; border: 1px solid #444; color: white; padding: 10px; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; flex: 1 1 calc(33% - 10px); text-align: center; margin: 2px;}
-        .liar-card-btn:hover { background: #333; border-color: var(--liar); }
-        .dead-text { color: var(--fail); text-decoration: line-through; }
-        .health-badge { background: #333; padding: 2px 6px; border-radius: 4px; font-size: 12px; margin-right: 10px; color: var(--liar); font-weight: bold;}
+        .liar-log { background: #1a1a1c; border: 1px solid #333; padding: 10px; border-radius: 10px; font-size: 13px; margin-bottom: 15px; text-align: center; color: #ccc; }
+        .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 15px; }
+        .liar-card-btn { background: #222; border: 1px solid #444; color: white; padding: 10px 5px; border-radius: 8px; font-size: 12px; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="box-container">
-    
-    <div id="p-main" class="panel">
-        <h1>🎮 اختار الغرفة يا هوست</h1>
-        <input type="text" id="host-input" class="input-field" placeholder="اسمك كصاحب الغرفة..." value="Sasuke">
-        
-        <button class="game-btn" onclick="hostRoom('naruto', 'أنمي ناروتو', 'guess')">🍥 من أنا؟ (ناروتو)</button>
-        <button class="game-btn" onclick="hostRoom('aot', 'هجوم العمالقة', 'guess')">⚔️ من أنا؟ (العمالقة)</button>
-        <button class="game-btn" onclick="navTo('p-global')">🌍 من أنا؟ (عالمي) ➡️</button>
-        <button class="game-btn" onclick="navTo('p-imposter')" style="border-color: var(--imposter); margin-top: 15px;">🕵️‍♂️ لعبة الجاسوس ➡️</button>
-        <button class="game-btn" onclick="hostRoom('liar', 'لعبة الكذابين', 'liar')" style="border-color: var(--liar); margin-top: 15px;">🃏 لعبة الكذابين ☠️ (3-5 لاعبين)</button>
-    </div>
-
-    <div id="p-global" class="panel">
-        <h1>🌍 تصنيفات التخمين</h1>
-        <button class="game-btn" onclick="hostRoom('food', 'أكلات مشهورة', 'guess')">🍕 أكلات مشهورة</button>
-        <button class="game-btn" onclick="hostRoom('fruits', 'فواكه', 'guess')">🍎 فواكه</button>
-        <button class="game-btn" onclick="hostRoom('objects', 'جماد وأشياء', 'guess')">📱 جماد وأشياء</button>
-        <button class="leave-btn" onclick="navTo('p-main')">رجوع للقائمة الرئيسية 🔙</button>
+    <div id="p-main" class="panel active">
+        <h1>🎮 اختار الغرفة</h1>
+        <input type="text" id="host-input" class="input-field" placeholder="اسمك..." value="Sasuke">
+        <button class="game-btn" onclick="startHost('naruto', 'ناروتو', 'guess')">🍥 من أنا؟ (ناروتو)</button>
+        <button class="game-btn" onclick="startHost('liar', 'الكذابين', 'liar')" style="border-color: var(--liar)">🃏 لعبة الكذابين ☠️</button>
+        <button class="game-btn" onclick="changeUI('p-imposter')" style="border-color: #a855f7">🕵️‍♂️ لعبة الجاسوس ➡️</button>
     </div>
 
     <div id="p-imposter" class="panel">
-        <h1>🕵️‍♂️ تصنيفات الإمبوستر</h1>
-        <button class="game-btn" onclick="hostRoom('food', 'جاسوس الأكلات', 'imposter')">🍕 أكلات</button>
-        <button class="game-btn" onclick="hostRoom('animals', 'جاسوس الحيوانات', 'imposter')">🦁 حيوانات</button>
-        <button class="game-btn" onclick="hostRoom('jobs', 'جاسوس المهن', 'imposter')">👨‍⚕️ مهن ووظائف</button>
-        <button class="leave-btn" onclick="navTo('p-main')">رجوع للقائمة الرئيسية 🔙</button>
+        <h1>🕵️‍♂️ تصنيفات الجاسوس</h1>
+        <button class="game-btn" onclick="startHost('food', 'أكلات', 'imposter')">🍕 أكلات</button>
+        <button class="game-btn" onclick="startHost('animals', 'حيوانات', 'imposter')">🦁 حيوانات</button>
+        <button class="leave-btn" onclick="changeUI('p-main')">رجوع 🔙</button>
     </div>
 
     <div id="p-lobby" class="panel">
-        <h1 id="lobby-title">غرفة الانتظار ⏳</h1>
-        <div id="invite-link" style="font-size: 10px; color: #888; margin-bottom: 10px; word-break: break-all;"></div>
-        <button class="action-btn" onclick="copyUrl()" style="background: #333; font-size: 14px; margin-bottom: 20px;">📋 نسخ الرابط</button>
-        <h3 style="text-align: right; font-size: 14px; color: var(--accent);">المتصلين: <span id="h-count">1</span></h3>
+        <h1 id="lobby-title">غرفة الانتظار</h1>
+        <div id="invite-link" style="font-size: 9px; color: #666; margin-bottom: 10px; word-break: break-all; text-align: center;"></div>
+        <button class="action-btn" onclick="copyLink()" style="background: #222; font-size: 14px;">📋 نسخ الرابط</button>
         <div class="players-list" id="h-list"></div>
-        <button class="action-btn" id="start-btn" onclick="launchGame()" disabled>🚀 ابدأ اللعبة</button>
-        <button class="leave-btn" onclick="leaveRoom()">🚪 إغلاق</button>
+        <button class="action-btn" id="start-btn" onclick="gameLaunch()" disabled>🚀 ابدأ اللعبة</button>
+        <button class="leave-btn" onclick="location.reload()">🚪 إغلاق</button>
     </div>
 
     <div id="p-join" class="panel">
-        <h1>👋 أهلاً بيك</h1>
+        <h1>👋 أهلاً بك</h1>
         <input type="text" id="guest-input" class="input-field" placeholder="اكتب اسمك...">
-        <button class="action-btn" id="join-btn" onclick="joinRoom()">دخول الغرفة 🚪</button>
-        <p id="join-loading" style="color: var(--accent); margin-top: 10px; display: none; font-weight: bold;">جاري الاتصال... ⏳</p>
+        <button class="action-btn" onclick="joinRoomAction()">دخول الغرفة 🚪</button>
     </div>
 
     <div id="p-wait" class="panel">
-        <h1>⏳ مستنيين الهوست...</h1>
-        <h3 style="text-align: right; font-size: 14px; color: var(--accent);">المتصلين: <span id="g-count">1</span></h3>
+        <h1>⏳ انتظار الهوست...</h1>
         <div class="players-list" id="g-list"></div>
-        <button class="leave-btn" onclick="leaveRoom()">🚪 مغادرة</button>
+        <button class="leave-btn" onclick="location.reload()">🚪 مغادرة</button>
     </div>
 
     <div id="p-game" class="panel">
-        <h2 id="role-title" style="text-align: center;">شخصيتك هي:</h2>
-        <div class="secret-word-box" id="my-word">???</div>
-        <h3 style="text-align: right; font-size: 14px; color: var(--accent);">اللاعبين:</h3>
+        <h2 style="text-align: center; font-size: 18px;">سرّك هو:</h2>
+        <div id="my-word" style="background: #111; border: 2px dashed var(--accent); border-radius: 15px; padding: 30px; margin: 20px 0; font-size: 28px; font-weight: bold; text-align: center;"></div>
         <div class="players-list" id="game-list"></div>
-        <button class="leave-btn" onclick="leaveRoom()">🚪 مغادرة</button>
+        <button class="leave-btn" onclick="location.reload()">🚪 مغادرة</button>
     </div>
 
     <div id="p-liar" class="panel">
-        <h2 style="color: var(--liar); text-align: center; margin-bottom: 5px;">لعبة الكذابين 🃏☠️</h2>
-        <div class="liar-log" id="liar-log">جاري تجهيز الورق...</div>
-        <div style="background: #222; padding: 10px; border-radius: 10px; text-align: center; border: 1px dashed var(--liar);">
-            <h3 style="margin: 0; color: white; font-size: 16px;">المطلوب تلعب: <span id="liar-req" style="color: var(--liar); font-weight: bold;">???</span></h3>
+        <h2 style="color: var(--liar); text-align: center; font-size: 18px;">لعبة الكذابين ☠️</h2>
+        <div class="liar-log" id="liar-log"></div>
+        <div style="background: #222; padding: 10px; border-radius: 8px; text-align: center;">
+            الورقة المطلوبة: <span id="liar-req" style="color: var(--liar); font-weight: bold;">...</span>
         </div>
-        <h3 style="text-align: right; font-size: 14px; margin-top: 15px; color: var(--accent);">حالة اللاعبين:</h3>
-        <div class="players-list" id="liar-players" style="max-height: 120px;"></div>
-        <div id="liar-my-turn" style="display: none; margin-top: 15px;">
-            <div id="liar-hand" style="display: flex; flex-wrap: wrap; gap: 5px; justify-content: center;"></div>
-            <button class="action-btn" id="liar-call-btn" onclick="sendLiarAction('call')" style="background: var(--fail); margin-top: 15px; display: none;">كذبه 🤬</button>
+        <div class="players-list" id="liar-list" style="margin-top:10px;"></div>
+        <div id="my-turn-controls" style="display: none;">
+            <div class="card-grid" id="my-hand"></div>
+            <button class="action-btn" id="call-liar-btn" onclick="liarMove('call')" style="background: var(--fail); margin-top: 10px; display: none;">كذبه! 🤬</button>
         </div>
-        <button class="leave-btn" onclick="leaveRoom()">🚪 مغادرة الغرفة</button>
+        <button class="leave-btn" onclick="location.reload()">🚪 مغادرة</button>
     </div>
-
-    <div id="p-bye" class="panel">
-        <h1 id="bye-emoji" style="font-size: 60px; margin-bottom: 10px;">👋</h1>
-        <h2 id="bye-title" style="color: var(--accent); font-size: 28px;">حظاً موفقاً!</h2>
-        <p id="bye-msg" style="color: #cbd5e1; font-size: 16px; margin-top: 15px;">طلعت من الغرفة بنجاح..</p>
-        <button class="leave-btn" onclick="window.location.href = window.location.href.split('?')[0];">العودة للرئيسية</button>
-    </div>
-
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
+
 <script>
-    const DB = {
-        naruto: ['ناروتو', 'ساسوكي', 'ساكورا', 'كاكاشي', 'ايتاشي', 'مادارا', 'جيرايا', 'تسونادي', 'اوروتشيمارو', 'شيكامارو', 'باين', 'اوبيتو', 'نيجي', 'جارا', 'هيناتا', 'روك لي', 'زابوزا', 'كابوتو'],
-        aot: ['ايرين', 'ميكاسا', 'ارمين', 'ليفاي', 'ايروين', 'هانجي', 'راينر', 'زيك', 'ساشا', 'جان', 'هيستوريا', 'آني', 'بيك', 'فلوك'],
-        dbz: ['غوكو', 'فيجيتا', 'غوهان', 'بيكولو', 'فريزا', 'سيل', 'ماجين بو', 'ترانكس', 'بيروس', 'ويز', 'اندرويد 18', 'مستر ساتان'],
-        ds: ['تانجيرو', 'نيزوكو', 'زينيتسو', 'اينوسكي', 'غيو', 'رينجوكو', 'موزان', 'اكازا', 'شينوبو', 'تينغين', 'ميتسوري'],
-        monster: ['دكتور تيما', 'يوهان ليبرت', 'نينّا فورتر', 'المفتش لونجي', 'غريمر', 'إيفا هاينمان', 'روبيرتو', 'ديتر'],
-        food: ['بيتزا', 'برجر', 'شاورما', 'كشري', 'مكرونة بشاميل', 'سوشي', 'محشي كرمب', 'كباب', 'كفتة', 'بانيه', 'طعمية', 'حواوشي', 'شيش طاووق', 'كبسة', 'ملوخية'],
-        fruits: ['تفاحة', 'موز', 'برتقال', 'فراولة', 'بطيخ', 'عنب', 'مانجو', 'خوخ', 'أناناس', 'كيوي', 'رمان', 'تين', 'بلح', 'يوسفي', 'جوافة'],
-        objects: ['كرسي', 'طاولة', 'تليفزيون', 'موبايل', 'لابتوب', 'سيارة', 'طيارة', 'ساعة', 'نظارة', 'قلم', 'كتاب', 'ثلاجة', 'غسالة', 'مروحة', 'مكيف', 'مفتاح', 'مقص', 'مفك'],
-        animals: ['أسد', 'فيل', 'زرافة', 'نمر', 'قرد', 'كلب', 'قطة', 'حصان', 'حوت', 'قرش', 'تمساح', 'صقر', 'نسر', 'دب', 'ثعبان', 'بقرة', 'دولفين', 'قنفذ'],
-        jobs: ['دكتور', 'مهندس', 'طيار', 'ضابط', 'مدرس', 'مبرمج', 'طباخ', 'نجار', 'سباك', 'محامي', 'محاسب', 'صحفي', 'ممثل', 'رائد فضاء', 'رسام', 'ميكانيكي']
-    };
+    let client, myName, roomId, isHost = false, players = [], mode = '', cat = '';
+    let liarData = {};
 
-    let mqttClient, myName, roomId, isHost = false, players = [], gameMode = '', roomCategory = '';
-    let liarState = {}; 
-
-    function safeEncode(str) { return encodeURIComponent(str); }
-    function safeDecode(str) { try { return decodeURIComponent(str); } catch(e) { return str; } }
-
-    function navTo(id) {
-        document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
-        let target = document.getElementById(id);
-        if(target) target.style.display = 'block';
+    function changeUI(id) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
     }
 
-    document.addEventListener("DOMContentLoaded", function() {
-        if (window.location.search.includes('room=')) {
-            navTo('p-join');
-        } else {
-            navTo('p-main');
-        }
-    });
+    // التحقق من الرابط فوراً
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('room')) {
+        roomId = urlParams.get('room');
+        changeUI('p-join');
+    }
 
-    function renderPlayers() {
-        let html = '';
+    function updateLists() {
+        let html = "";
         players.forEach(p => {
-            let name = safeDecode(p.name);
-            let kick = (isHost && p.name !== myName) ? `<button class="kick-btn" onclick="kickUser('${p.name}')">طرد</button>` : '';
-            html += `<div class="player-item"><span>${name}</span> <div style="display:flex; align-items:center;">${kick} <span class="online-dot" style="margin-right:10px;"></span></div></div>`;
+            let n = decodeURIComponent(p.name);
+            html += `<div class="player-item"><span>${n}</span><span style="color:var(--accent)">●</span></div>`;
         });
-        
-        ['h-list', 'g-list', 'game-list'].forEach(id => {
-            let el = document.getElementById(id);
-            if(el) el.innerHTML = html;
-        });
-        
-        ['h-count', 'g-count'].forEach(id => {
-            let el = document.getElementById(id);
-            if(el) el.innerText = players.length;
-        });
+        ["h-list", "g-list", "game-list"].forEach(id => { if(document.getElementById(id)) document.getElementById(id).innerHTML = html; });
         
         if(isHost) {
             let btn = document.getElementById('start-btn');
-            if (gameMode === 'liar') {
-                btn.disabled = players.length < 3 || players.length > 5;
-                btn.innerText = (players.length < 3) ? `مطلوب 3 عالأقل` : (players.length > 5 ? `أقصى عدد 5` : `🚀 ابدأ اللعبة`);
-            } else {
-                btn.disabled = players.length < 2;
-                btn.innerText = "🚀 ابدأ اللعبة";
-            }
+            btn.disabled = (mode === 'liar') ? (players.length < 3 || players.length > 5) : (players.length < 2);
         }
     }
 
-    function hostRoom(cat, name, mode) {
-        if(typeof mqtt === 'undefined') return alert("جاري تحميل مزود الخدمة، يرجى المحاولة مرة أخرى.");
-        
-        isHost = true; gameMode = mode; roomCategory = cat;
-        
-        let n = document.getElementById('host-input').value.trim();
-        if(!n) n = "Sasuke";
-        myName = safeEncode(n + " 👑");
+    function startHost(c, n, m) {
+        if(typeof mqtt === 'undefined') return alert("السيرفر يحمل، حاول ثانية");
+        isHost = true; mode = m; cat = c;
+        myName = encodeURIComponent((document.getElementById('host-input').value || "Sasuke") + " 👑");
         roomId = Math.floor(10000 + Math.random() * 90000).toString();
         
         document.getElementById('invite-link').innerText = window.location.origin + window.location.pathname + "?room=" + roomId;
-        document.getElementById('lobby-title').innerText = "غرفة: " + name;
-        
         players = [{name: myName}];
-        renderPlayers();
-        navTo('p-lobby');
+        updateLists();
+        changeUI('p-lobby');
 
-        mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
-        mqttClient.on('connect', () => { mqttClient.subscribe('mx_sasuke_' + roomId); });
-        
-        mqttClient.on('message', (t, m) => {
-            if(!isHost) return;
-            let d = JSON.parse(m.toString());
-            
-            if(d.type === 'join') {
-                if(gameMode === 'liar' && players.length >= 5) {
-                    mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'full', target: d.name}));
-                    return;
-                }
+        client = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
+        client.on('connect', () => client.subscribe('sasuke_' + roomId));
+        client.on('message', (t, msg) => {
+            let d = JSON.parse(msg.toString());
+            if(d.type === 'join' && players.length < 5) {
                 if(!players.find(p => p.name === d.name)) {
                     players.push({name: d.name});
-                    renderPlayers();
-                    mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'sync', players: players, mode: gameMode}));
+                    updateLists();
+                    client.publish('sasuke_' + roomId, JSON.stringify({type: 'sync', players: players, mode: mode}));
                 }
             }
-            if(d.type === 'leave') {
-                players = players.filter(p => p.name !== d.name);
-                renderPlayers();
-                mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'sync', players: players, mode: gameMode}));
-            }
-            if (d.type === 'liar_action') handleLiarAction(d);
+            if(d.type === 'liar_act') handleLiarLogic(d);
         });
     }
 
-    function joinRoom() {
-        if(typeof mqtt === 'undefined') return alert("جاري تحميل مزود الخدمة، يرجى المحاولة مرة أخرى.");
-
-        let n = document.getElementById('guest-input').value.trim();
-        if(!n) return alert("الرجاء كتابة اسمك.");
-        myName = safeEncode(n);
-        
-        roomId = new URLSearchParams(window.location.search).get('room');
-        
-        document.getElementById('join-btn').style.display = 'none';
-        document.getElementById('join-loading').style.display = 'block';
-
-        let connT = setTimeout(() => {
-            if(mqttClient) mqttClient.end();
-            document.getElementById('join-loading').style.display = 'none';
-            document.getElementById('join-btn').style.display = 'block';
-            alert("فشل الاتصال بالهوست.");
-        }, 10000);
-
-        mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
-        mqttClient.on('connect', () => {
-            clearTimeout(connT);
-            mqttClient.subscribe('mx_sasuke_' + roomId);
-            mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'join', name: myName}));
-            navTo('p-wait');
+    function joinRoomAction() {
+        let n = document.getElementById('guest-input').value;
+        if(!n) return alert("اكتب اسمك");
+        myName = encodeURIComponent(n);
+        client = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
+        client.on('connect', () => {
+            client.subscribe('sasuke_' + roomId);
+            client.publish('sasuke_' + roomId, JSON.stringify({type: 'join', name: myName}));
+            changeUI('p-wait');
         });
-        
-        mqttClient.on('message', (t, m) => {
-            if(isHost) return;
-            let d = JSON.parse(m.toString());
-            
-            if(d.type === 'full' && d.target === myName) {
-                alert("الغرفة ممتلئة!");
-                window.location.href = window.location.href.split('?')[0];
-            }
-            if(d.type === 'sync') { 
-                players = d.players; gameMode = d.mode; renderPlayers(); 
-            }
-            if(d.type === 'start') {
-                let w = d.words[myName];
-                document.getElementById('my-word').innerText = w;
-                if(w.includes('جاسوس') || w.includes('الإمبوستر')) {
-                    document.getElementById('my-word').style.color = 'var(--imposter)';
-                    document.getElementById('my-word').style.borderColor = 'var(--imposter)';
-                    document.getElementById('role-title').innerText = "أخفِ هويتك:";
-                } else {
-                    document.getElementById('my-word').style.color = 'white';
-                    document.getElementById('my-word').style.borderColor = 'var(--accent)';
-                    document.getElementById('role-title').innerText = "الكلمة السرية:";
-                }
-                navTo('p-game');
-            }
-            if(d.type === 'start_liar' || d.type === 'sync_liar') {
-                updateLiarUI(d.state);
-            }
-            if(d.type === 'kick' && d.target === myName) {
-                document.getElementById('bye-msg').innerText = "تم طردك من الغرفة.";
-                navTo('p-bye');
-                if(mqttClient) mqttClient.end();
-            }
-            if(d.type === 'close') {
-                document.getElementById('bye-msg').innerText = "تم إغلاق الغرفة.";
-                navTo('p-bye');
-                if(mqttClient) mqttClient.end();
-            }
+        client.on('message', (t, msg) => {
+            let d = JSON.parse(msg.toString());
+            if(d.type === 'sync') { players = d.players; mode = d.mode; updateLists(); }
+            if(d.type === 'start') { showGame(d.words[myName]); }
+            if(d.type === 'liar_start' || d.type === 'liar_sync') { updateLiarUI(d.state); }
         });
     }
 
-    function getLiarDeck(num) {
-        let deck = [];
-        let k=0, a=0, q=0, j=0;
-        if(num === 5) { k=7; a=7; q=7; j=3; }
-        else if(num === 4) { k=6; a=6; q=6; j=3; }
-        else if(num === 3) { k=4; a=4; q=4; j=2; }
-        for(let i=0; i<k; i++) deck.push('King');
-        for(let i=0; i<a; i++) deck.push('Ace');
-        for(let i=0; i<q; i++) deck.push('Queen');
-        for(let i=0; i<j; i++) deck.push('Joker');
-        return deck.sort(() => 0.5 - Math.random());
+    const DB = {
+        naruto: ['ناروتو', 'ساسوكي', 'كاكاشي', 'ايتاشي', 'مادارا'],
+        food: ['بيتزا', 'برجر', 'شاورما', 'كشري'],
+        animals: ['أسد', 'نمر', 'قرد', 'قطة']
+    };
+
+    function gameLaunch() {
+        if(mode === 'liar') {
+            let deck = [];
+            let counts = players.length === 5 ? [7,7,7,3] : (players.length === 4 ? [6,6,6,3] : [4,4,4,2]);
+            ['King','Ace','Queen'].forEach((v, i) => { for(let j=0; j<counts[i]; j++) deck.push(v); });
+            for(let j=0; j<counts[3]; j++) deck.push('Joker');
+            deck.sort(() => 0.5 - Math.random());
+
+            liarData = { turn: 0, req: ['King','Ace','Queen'][Math.floor(Math.random()*3)], last: null, logs: "بدأت اللعبة!", hands: {}, stats: {} };
+            players.forEach(p => { liarData.hands[p.name] = []; liarData.stats[p.name] = {h:0, d:false}; });
+            let i = 0; while(deck.length) { liarData.hands[players[i%players.length].name].push(deck.pop()); i++; }
+            
+            client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_start', state: liarData}));
+        } else {
+            let words = DB[cat] || DB.food;
+            let assigned = {};
+            if(mode === 'imposter') {
+                let w = words[Math.floor(Math.random()*words.length)];
+                let imp = players[Math.floor(Math.random()*players.length)].name;
+                players.forEach(p => assigned[p.name] = (p.name === imp ? "أنت الجاسوس 🕵️‍♂️" : w));
+            } else {
+                players.forEach(p => assigned[p.name] = words[Math.floor(Math.random()*words.length)]);
+            }
+            client.publish('sasuke_' + roomId, JSON.stringify({type: 'start', words: assigned}));
+        }
     }
 
-    function advanceLiarTurn() {
-        let safeCounter = 0;
-        do {
-            liarState.turnIndex = (liarState.turnIndex + 1) % players.length;
-            safeCounter++;
-        } while (liarState.stats[players[liarState.turnIndex].name].dead && safeCounter < 10);
+    function showGame(w) {
+        changeUI('p-game');
+        let el = document.getElementById('my-word');
+        el.innerText = w;
+        el.style.color = (w.includes('جاسوس')) ? 'var(--liar)' : 'white';
     }
 
-    function handleLiarAction(data) {
-        if(data.action === 'play') {
-            let hand = liarState.hands[data.name];
-            let idx = hand.indexOf(data.card);
-            if(idx > -1) hand.splice(idx, 1); 
-            liarState.lastPlayed = { name: data.name, card: data.card };
-            liarState.log = `${safeDecode(data.name)} لعب ورقة مقلوبة.`;
-            advanceLiarTurn();
-            mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({type: 'sync_liar', state: liarState}));
-        } 
-        else if (data.action === 'call') {
-            let lastP = liarState.lastPlayed;
-            let caller = data.name;
-            let wasLying = (lastP.card !== liarState.requiredCard && lastP.card !== 'Joker');
-            let victim = wasLying ? lastP.name : caller;
-            let pStat = liarState.stats[victim];
-            
-            pStat.hits++;
-            let died = (pStat.hits >= 6) || (Math.random() < 0.10);
-            if(died) pStat.dead = true;
-            
-            liarState.log = `قام ${safeDecode(caller)} بتكذيب ${safeDecode(lastP.name)}!<br>الورقة كانت: [${lastP.card}]<br>${wasLying ? 'طلع كذاب!' : 'طلع صادق!'}<br>${safeDecode(victim)} 
+    function updateLiarUI(s) {
+        liarData = s; changeUI('p-liar');
+        document.getElementById('liar-req').innerText = s.req;
+        document.getElementById('liar-log').innerText = s.logs;
+        
+        let h = ""; players.forEach((p, i) => {
+            let st = s.stats[p.name];
+            h += `<div class="player-item ${st.d ? 'dead' : ''}"><span>${st.h}/6 ${decodeURIComponent(p.name)}</span><span>${i===s.turn?'👈':''}</span></div>`;
+        });
+        document.getElementById('liar-list').innerHTML = h;
+
+        let myTurn = (players[s.turn].name === myName && !s.stats[myName].d);
+        document.getElementById('my-turn-controls').style.display = myTurn ? 'block' : 'none';
+        document.getElementById('call-liar-btn').style.display = (myTurn && s.last && s.last.n !== myName) ? 'block' : 'none';
+        
+        let cards = ""; s.hands[myName].forEach(c => { cards += `<button class="liar-card-btn" onclick="liarMove('play','${c}')">${c}</button>`; });
+        document.getElementById('my-hand').innerHTML = cards || "ورقك انتهى!";
+    }
+
+    function handleLiarLogic(d) {
+        if(d.act === 'play') {
+            let h = liarData.hands[d.n]; h.splice(h.indexOf(d.c), 1);
+            liarData.last = {n: d.n, c: d.c};
+            liarData.logs = decodeURIComponent(d.n) + " لعب ورقة..";
+            do { liarData.turn = (liarData.turn + 1) % players.length; } while(liarData.stats[players[liarData.turn].name].d);
+        } else {
+            let wasLying = (liarData.last.c !== liarData.req && liarData.last.c !== 'Joker');
+            let victim = wasLying ? liarData.last.n : d.n;
+            liarData.stats[victim].h++;
+            if(liarData.stats[victim].h >= 6 || Math.random() < 0.1) liarData.stats[victim].d = true;
+            liarData.logs = decodeURIComponent(d.n) + " كذب " + decodeURIComponent(liarData.last.n) + (wasLying ? " وطلع كذاب!" : " وطلع صادق!");
+            liarData.last = null; liarData.req = ['King','Ace','Queen'][Math.floor(Math.random()*3)];
+        }
+        client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_sync', state: liarData}));
+    }
+
+    function liarMove(a, c) { client.publish('sasuke_' + roomId, JSON.stringify({type: 'liar_act', act: a, c: c, n: myName})); }
+    function copyLink() { navigator.clipboard.writeText(document.getElementById('invite-link').innerText); alert("تم النسخ!"); }
+</script>
+</body>
+</html>
