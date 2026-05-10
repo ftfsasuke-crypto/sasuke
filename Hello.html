@@ -26,50 +26,24 @@
         #host-menu-btn { display: none; position: fixed; top: 20px; inset-inline-start: 20px; background: rgba(0,0,0,0.6); border: 1px solid #ff512f; color: white; padding: 8px 15px; border-radius: 20px; cursor: pointer; z-index: 1000; font-weight: bold; font-family: 'Cairo'; box-shadow: 0 0 10px rgba(255,81,47,0.4); }
         #host-sidebar { position: fixed; top: 0; inset-inline-start: -300px; width: 260px; height: 100vh; background: rgba(10, 10, 15, 0.98); backdrop-filter: blur(10px); border-inline-end: 1px solid rgba(255,255,255,0.1); z-index: 1001; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); padding: 20px; box-shadow: 5px 0 20px rgba(0,0,0,0.8); }
         #host-sidebar.open { inset-inline-start: 0; }
-        .kick-btn-side { background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.2s; }
-        .kick-btn-side:active { transform: scale(0.9); }
 
         .box-container { width: 92%; max-width: 400px; background: var(--card); padding: 25px; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(15px); box-shadow: 0 20px 50px rgba(0,0,0,0.7); position: relative; z-index: 10; }
         
-        h1 { color: white; margin-bottom: 25px; font-size: 24px; text-align: center; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
-        
-        .anim-icon { display: inline-block; animation: rainbowHue 2.5s infinite linear; }
-        @keyframes rainbowHue { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
+        h1 { color: white; margin-bottom: 25px; font-size: 24px; text-align: center; }
+        .input-field { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(0, 0, 0, 0.6); color: #fff; font-size: 16px; text-align: center; margin-bottom: 20px; font-family: 'Cairo'; }
 
-        .input-field { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.15); background: rgba(0, 0, 0, 0.6); color: #fff; font-size: 16px; text-align: center; margin-bottom: 20px; font-weight: bold; font-family: 'Cairo'; }
-        .input-field:focus { outline: none; border-color: #ff512f; box-shadow: 0 0 10px rgba(255, 81, 47, 0.3); }
-
-        .action-btn { color: white; border: none; padding: 16px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 12px; display: block; text-align: center; transition: all 0.3s ease; }
-        .btn-orange { background: linear-gradient(135deg, #ff512f 0%, #dd2476 100%); box-shadow: 0 5px 15px rgba(255, 81, 47, 0.4); }
-        .btn-red { background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%); box-shadow: 0 5px 15px rgba(255, 8, 68, 0.4); }
-        .btn-green { background: linear-gradient(135deg, #0ba360 0%, #3cba92 100%); box-shadow: 0 5px 15px rgba(11, 163, 96, 0.4); }
-        .btn-blue { background: linear-gradient(135deg, #00c6ff 0%, #0072ff 100%); box-shadow: 0 5px 15px rgba(0, 114, 255, 0.4); }
-        .btn-purple { background: linear-gradient(135deg, #b224ef 0%, #7579ff 100%); box-shadow: 0 5px 15px rgba(178, 36, 239, 0.4); }
-        .btn-gold { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); color: #000; box-shadow: 0 5px 15px rgba(246, 211, 101, 0.4); }
-        .btn-ghost { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #ccc; box-shadow: none; }
-        .action-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
-        .action-btn:active { transform: scale(0.96); }
-        .action-btn:disabled { background: #333; cursor: not-allowed; opacity: 0.5; box-shadow: none; transform: none; }
+        .action-btn { color: white; border: none; padding: 16px; border-radius: 12px; width: 100%; font-size: 16px; font-weight: bold; cursor: pointer; margin-bottom: 12px; transition: 0.3s; }
+        .btn-orange { background: linear-gradient(135deg, #ff512f 0%, #dd2476 100%); }
+        .btn-purple { background: linear-gradient(135deg, #b224ef 0%, #7579ff 100%); }
+        .btn-gold { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); color: #000; }
+        .btn-ghost { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
+        .btn-red { background: #ef4444; }
 
         .panel { display: none; }
         .panel.active { display: block !important; animation: fadeIn 0.4s; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .players-list { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 12px; padding: 10px; margin-bottom: 20px; max-height: 180px; overflow-y: auto; }
-        .player-item { padding: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
-        
-        .card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; margin-bottom: 15px; }
-        .liar-card-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 15px 5px; border-radius: 10px; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
-        .liar-card-btn.selected { background: linear-gradient(135deg, #f6d365 0%, #fda085 100%); color: #000; border-color: #fff; transform: translateY(-6px) scale(1.05); box-shadow: 0 8px 15px rgba(246, 211, 101, 0.5); }
-        .choice-container { display: flex; gap: 10px; margin-top: 20px; }
-        .stat-badge { background: rgba(255,255,255,0.15); padding: 3px 8px; border-radius: 6px; font-size: 11px; font-weight: bold; }
-
-        #anim-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(5, 5, 8, 0.95); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        .loader-ring { width: 60px; height: 60px; border: 4px solid rgba(255,255,255,0.1); border-top: 4px solid #f59e0b; border-radius: 50%; animation: spin 1s cubic-bezier(0.4, 0, 0.2, 1) infinite; margin-bottom: 20px; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        .fire-flash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #ff0000; opacity: 0; z-index: 1001; pointer-events: none; }
-        .shake { animation: shake 0.4s; }
-        @keyframes shake { 0% {transform:translate(0,0)} 20% {transform:translate(10px,0)} 40% {transform:translate(-10px,0)} 60% {transform:translate(10px,0)} 100% {transform:translate(0,0)} }
+        .players-list { background: rgba(0, 0, 0, 0.4); border-radius: 12px; padding: 10px; margin-bottom: 20px; max-height: 180px; overflow-y: auto; }
     </style>
 </head>
 <body id="main-body">
@@ -77,147 +51,39 @@
 <div class="stars-container" id="stars"></div>
 
 <div class="lang-switch">
-    <div class="lang-btn active" id="btn-ar" onclick="window.setLang('ar')">AR</div>
-    <div class="lang-btn" id="btn-en" onclick="window.setLang('en')">EN</div>
-</div>
-
-<button id="host-menu-btn" onclick="window.toggleHostMenu()" data-tr="hostMenu">⚙️ الإدارة</button>
-
-<div id="host-sidebar">
-    <h3 style="color: white; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; margin-top: 30px;" data-tr="managePlayers">إدارة اللاعبين</h3>
-    <div id="sidebar-players-list" style="margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;"></div>
-    <button class="action-btn btn-ghost" onclick="window.toggleHostMenu()" data-tr="closeMenu">إغلاق</button>
+    <div class="lang-btn active" id="btn-ar" onclick="setLang('ar')">AR</div>
+    <div class="lang-btn" id="btn-en" onclick="setLang('en')">EN</div>
 </div>
 
 <div class="box-container">
     <div id="p-main" class="panel">
         <h1 data-tr="gamesTitle">🎮 الألعاب</h1>
         <input type="text" id="host-input" class="input-field" data-tr-ph="namePh" placeholder="اكتب اسمك..." value="Sasuke">
-        <button class="action-btn btn-gold" onclick="window.startHost('liar', 'liarTitle', 'liar')"><span class="anim-icon">🃏</span> <span data-tr="liarBtn">لعبة الكذابين ☠️</span></button>
-        <button class="action-btn btn-purple" onclick="window.changeUI('p-imposter')"><span class="anim-icon">🕵️‍♂️</span> <span data-tr="impBtn">لعبة الجاسوس ➡️</span></button>
+        <button class="action-btn btn-gold" onclick="changeUI('p-liar')">🃏 <span data-tr="liarBtn">لعبة الكذابين ☠️</span></button>
+        <button class="action-btn btn-purple" onclick="changeUI('p-imposter')">🕵️‍♂️ <span data-tr="impBtn">لعبة الجاسوس ➡️</span></button>
     </div>
 
     <div id="p-imposter" class="panel">
         <h1 data-tr="impCatsTitle">🕵️‍♂️ تصنيفات الجاسوس</h1>
-        <div style="max-height: 350px; overflow-y: auto; padding-right: 5px;">
-            <button class="action-btn btn-orange" onclick="window.startHost('food', 'catFood', 'imposter')"><span class="anim-icon">🍕</span> <span data-tr="catFood">أكلات</span></button>
-            <button class="action-btn btn-green" onclick="window.startHost('animals', 'catAnimals', 'imposter')"><span class="anim-icon">🦁</span> <span data-tr="catAnimals">حيوانات</span></button>
-            <button class="action-btn btn-blue" onclick="window.startHost('countries', 'catCountries', 'imposter')"><span class="anim-icon">🌍</span> <span data-tr="catCountries">دول وأماكن</span></button>
-            <button class="action-btn btn-purple" onclick="window.startHost('jobs', 'catJobs', 'imposter')"><span class="anim-icon">👨‍⚕️</span> <span data-tr="catJobs">مهن ووظائف</span></button>
-            <button class="action-btn btn-orange" onclick="window.startHost('tech', 'catTech', 'imposter')"><span class="anim-icon">💻</span> <span data-tr="catTech">أجهزة وتكنولوجيا</span></button>
-            <button class="action-btn btn-green" onclick="window.startHost('fruits', 'catFruits', 'imposter')"><span class="anim-icon">🍎</span> <span data-tr="catFruits">فواكه وخضروات</span></button>
-            <button class="action-btn btn-blue" onclick="window.startHost('objects', 'catObjects', 'imposter')"><span class="anim-icon">👕</span> <span data-tr="catObjects">أغراض وملابس</span></button>
-        </div>
-        <button class="action-btn btn-ghost" onclick="window.changeUI('p-main')" style="margin-top: 10px;" data-tr="backBtn">رجوع 🔙</button>
+        <button class="action-btn btn-orange" onclick="alert('قريباً...')">🍕 <span data-tr="catFood">أكلات</span></button>
+        <button class="action-btn btn-ghost" onclick="changeUI('p-main')" data-tr="backBtn">رجوع 🔙</button>
     </div>
 
     <div id="p-lobby" class="panel">
         <h1 data-tr="lobbyTitle">🛰️ غرفة الانتظار</h1>
-        <button class="action-btn btn-ghost" onclick="window.copyLink()" data-tr="copyLinkBtn">📋 نسخ الرابط</button>
         <div class="players-list" id="h-list"></div>
-        <button class="action-btn btn-red" id="start-btn" onclick="window.gameLaunch()" disabled data-tr="startBtn">🚀 إطلاق اللعبة</button>
-        <button class="action-btn btn-ghost" onclick="window.exitGameHost()" data-tr="cancelBtn">إلغاء ❌</button>
+        <button class="action-btn btn-red" onclick="changeUI('p-main')" data-tr="cancelBtn">إلغاء ❌</button>
     </div>
 
     <div id="p-join" class="panel">
         <h1 data-tr="joinTitle">🛸 بدء اللعبة</h1>
         <input type="text" id="guest-input" class="input-field" data-tr-ph="guestPh" placeholder="اكتب اسمك...">
-        <button class="action-btn btn-orange" onclick="window.joinRoomAction()" data-tr="joinBtn">انضمام 🚪</button>
-    </div>
-
-    <div id="p-wait" class="panel">
-        <h1 data-tr="waitTitle">⏳ جاري الانتظار...</h1>
-        <div class="players-list" id="g-list"></div>
-    </div>
-
-    <div id="p-expired" class="panel" style="text-align: center;">
-        <h1 style="font-size: 80px; margin-bottom: 10px;">⏳</h1>
-        <h2 style="color: var(--fail);" data-tr="expiredTitle">انتهت صلاحية الرابط!</h2>
-        <p style="color: #ccc; margin-bottom: 25px;" data-tr="expiredMsg">هذه الغرفة لم تعد متاحة أو تم إنهاء اللعبة.</p>
-        <button class="action-btn btn-ghost" onclick="location.reload()" data-tr="refreshBtn">تحديث الصفحة 🔄</button>
-    </div>
-
-    <div id="p-kicked" class="panel" style="text-align: center;">
-        <h1 style="font-size: 80px; margin-bottom: 10px;">🥾</h1>
-        <h2 style="color: var(--fail);" data-tr="kickedTitle">تم طردك!</h2>
-        <p style="color: #ccc; margin-bottom: 25px;" data-tr="kickedMsg">لقد تم طردك من الغرفة بواسطة الهوست.</p>
-        <button class="action-btn btn-ghost" onclick="location.reload()" data-tr="refreshBtn">تحديث الصفحة 🔄</button>
-    </div>
-
-    <div id="p-imp-game" class="panel">
-        <h2 id="imp-role-title" style="text-align: center; font-size: 18px;" data-tr="secretWordTitle">الكلمة السرية:</h2>
-        <div id="imp-my-word" style="background: rgba(0,0,0,0.6); border: 2px dashed #b224ef; border-radius: 15px; padding: 20px; margin: 15px 0; font-size: 24px; font-weight: bold; text-align: center;"></div>
-        
-        <div id="imp-timer-sec" style="text-align: center; margin: 20px 0;">
-            <h1 id="imp-countdown" style="font-size: 50px; margin: 0; color: #0ba360; letter-spacing: 2px;">10:00</h1>
-            <p style="color: #aaa;" data-tr="discussMsg">ناقشوا بعض!</p>
-            <button id="host-skip-btn" class="action-btn btn-red" style="display: none; width: 60%; margin: 15px auto 0; padding: 8px;" onclick="window.skipTimer()" data-tr="skipTimerBtn">تخطي الوقت ⏩</button>
-        </div>
-
-        <div id="imp-vote-sec" style="display: none;">
-            <p id="live-vote-counter" style="text-align: center; color: #0ba360; font-size: 16px; font-weight: bold; margin-bottom: 5px;"></p>
-            <p style="text-align: center;" data-tr="voteMsg">صوّت على الجاسوس:</p>
-            <div id="imp-vote-list" style="display: flex; flex-direction: column; gap: 8px; max-height:200px; overflow-y:auto; padding:5px;"></div>
-            <p id="imp-wait-vote-msg" style="display: none; text-align: center; color: #aaa; font-weight: bold;" data-tr="waitingVote">في انتظار الباقين...</p>
-            <button id="host-force-vote-btn" class="action-btn btn-red" style="display: none; width: 60%; margin: 15px auto 0; padding: 8px;" onclick="window.forceEndVote()" data-tr="forceVoteBtn">إنهاء التصويت 🏁</button>
-        </div>
-
-        <div id="imp-guess-sec" style="display: none; text-align: center;">
-            <h3 id="imp-status-msg" style="color: #fda085;"></h3>
-            <div id="imp-input-area" style="display: none;">
-                <p data-tr="guessMsg">خمن الكلمة السرية:</p>
-                <input type="text" id="imp-word-guess" class="input-field" data-tr-ph="guessPh" placeholder="الكلمة هي...">
-                <button class="action-btn btn-purple" onclick="window.submitImpGuess()" data-tr="confirmBtn">تأكيد التخمين</button>
-            </div>
-            <p id="imp-wait-guess-msg" style="display: none;" data-tr="impGuessing">الجاسوس يخمن الآن...</p>
-        </div>
-
-        <div id="imp-end-sec" style="display: none; text-align: center;">
-            <h2 id="imp-final-title"></h2>
-            <div style="background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px;">
-                <p><span data-tr="realWordLbl">الكلمة:</span> <span id="imp-real-word" style="color: #00c6ff;"></span></p>
-                <p><span data-tr="impWordLbl">تخمين الجاسوس:</span> <span id="imp-guessed-word" style="color: #ff512f;"></span></p>
-            </div>
-            <button class="action-btn btn-ghost" style="margin-top: 15px;" id="imp-exit-btn" onclick="window.exitGameGuest()" data-tr="refreshBtn">تحديث الصفحة 🔄</button>
-        </div>
-    </div>
-
-    <div id="p-liar" class="panel">
-        <h2 id="turn-display" style="color: #fda085; text-align: center; font-size: 18px;">دور: ...</h2>
-        <div style="background: rgba(0,0,0,0.5); padding: 10px; border-radius: 12px; text-align: center; margin-bottom: 15px; border: 1px solid rgba(253, 160, 133, 0.3);"> 
-            <span data-tr="reqCardLbl">المطلوب:</span> <span id="liar-req" style="color: white; font-weight: bold; font-size:18px;">...</span> 
-        </div>
-        <div class="players-list" id="liar-list"></div>
-        <div id="my-turn-controls" style="display: none;">
-            <div id="my-hand-container"></div>
-        </div>
-        <div id="decision-controls" style="display: none;">
-            <div class="choice-container">
-                <button class="action-btn btn-red" onclick="window.liarMove('call')" data-tr="liarCallBtn">كاذب! 🤬</button>
-                <button class="action-btn btn-green" onclick="window.liarMove('continue')" data-tr="liarContBtn">أكمل! ✅</button>
-            </div>
-        </div>
-        <button class="action-btn btn-ghost" style="margin-top: 20px; border-color: rgba(239, 68, 68, 0.4); color: #ef4444;" id="liar-exit-btn" onclick="window.exitGameGuest()" data-tr="refreshBtn">تحديث الصفحة 🔄</button>
+        <button class="action-btn btn-orange" onclick="alert('جاري الانضمام...')">انضمام 🚪</button>
     </div>
 </div>
 
-<div id="anim-overlay">
-    <div id="loader-part">
-        <div class="loader-ring"></div>
-        <h2 id="anim-msg">...</h2>
-        <h1 id="anim-timer">3</h1>
-    </div>
-    <div id="gun-part" style="display: none;">
-        <div style="font-size: 60px;">🔫</div>
-        <h2 id="gun-msg" style="color: #ff0844;">...</h2>
-        <h1 id="gun-timer">3</h1>
-    </div>
-</div>
-<div class="fire-flash" id="flash"></div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
 <script>
-    // إنشاء النجوم بشكل سليم
+    // 1. نظام النجوم الخلفية
     function createStars() {
         const container = document.getElementById('stars');
         for (let i = 0; i < 80; i++) {
@@ -227,27 +93,59 @@
             star.style.width = size; star.style.height = size;
             star.style.left = Math.random() * 100 + '%';
             star.style.animationDuration = (Math.random() * 3 + 2) + 's';
-            star.style.animationDelay = (Math.random() * 5) + 's';
-            star.style.opacity = Math.random();
+            star.appendChild(star);
             container.appendChild(star);
         }
     }
     createStars();
 
-    // القاموس والمتغيرات الأساسية (محمية بالكامل)
+    // 2. نظام الترجمة وتغيير اللغة
     window.lang = 'ar';
-    window.tr = {
+    const tr = {
         ar: {
             gamesTitle: "🎮 الألعاب", namePh: "اكتب اسمك...", liarBtn: "لعبة الكذابين ☠️", impBtn: "لعبة الجاسوس ➡️",
-            impCatsTitle: "🕵️‍♂️ تصنيفات الجاسوس", catFood: "أكلات", catAnimals: "حيوانات", catCountries: "دول وأماكن", catJobs: "مهن ووظائف", catTech: "أجهزة وتكنولوجيا", catFruits: "فواكه وخضروات", catObjects: "أغراض وملابس", backBtn: "رجوع 🔙",
-            lobbyTitle: "🛰️ غرفة الانتظار", copyLinkBtn: "📋 نسخ الرابط", startBtn: "🚀 إطلاق اللعبة", cancelBtn: "إلغاء ❌",
-            joinTitle: "🛸 بدء اللعبة", guestPh: "اكتب اسمك...", joinBtn: "انضمام 🚪", waitTitle: "⏳ جاري الانتظار...",
-            secretWordTitle: "الكلمة السرية:", discussMsg: "ناقشوا بعض!", voteMsg: "صوّت على الجاسوس:", waitingVote: "في انتظار الباقين...",
-            guessMsg: "خمن الكلمة السرية:", guessPh: "الكلمة هي...", confirmBtn: "تأكيد التخمين", impGuessing: "الجاسوس يخمن الآن...",
-            realWordLbl: "الكلمة:", impWordLbl: "تخمين الجاسوس:", exitBtn: "انسحاب 🚪",
-            reqCardLbl: "المطلوب:", liarCallBtn: "كاذب! 🤬", liarContBtn: "أكمل! ✅",
-            online: "● متصل", impMission: "مهمتك:", youAreImp: "أنت الجاسوس 🕵️‍♂️", voteFor: "تصويت لـ",
-            impCaught: "تم كشف الجاسوس! 😂", impEscaped: "الجاسوس هرب! 😱", impWon: "الجاسوس فاز! 😈", impLost: "الجاسوس خسر! 🎉",
-            turn: "دور:", playing: "🎲 بيلعب", emptyDeck: "المخزون فارغ!", skipTurn: "تخطي الدور", playSelected: "العب المحددة",
-            animVerify: "جاري التحقق...", animReveal: "كشف الأوراق...", animLiar: "كاذب! 😂", animTruth: "صادق للأسف 😱", survived: "نجوت!<br>الدروع:",
-            maxSelect: "الحد الأقصى 3 أوراق!", selectOne: "حدد ورقة واحدة على الأق
+            impCatsTitle: "🕵️‍♂️ تصنيفات الجاسوس", catFood: "أكلات", backBtn: "رجوع 🔙",
+            lobbyTitle: "🛰️ غرفة الانتظار", cancelBtn: "إلغاء ❌", joinTitle: "🛸 بدء اللعبة", guestPh: "اكتب اسمك..."
+        },
+        en: {
+            gamesTitle: "🎮 Games", namePh: "Your Name...", liarBtn: "Liar Game ☠️", impBtn: "Spy Game ➡️",
+            impCatsTitle: "🕵️‍♂️ Spy Categories", catFood: "Food", backBtn: "Back 🔙",
+            lobbyTitle: "🛰️ Waiting Lobby", cancelBtn: "Cancel ❌", joinTitle: "🛸 Join Game", guestPh: "Your Name..."
+        }
+    };
+
+    window.setLang = function(l) {
+        window.lang = l;
+        document.querySelectorAll('[data-tr]').forEach(el => {
+            const key = el.getAttribute('data-tr');
+            el.innerText = tr[l][key] || el.innerText;
+        });
+        document.querySelectorAll('[data-tr-ph]').forEach(el => {
+            const key = el.getAttribute('data-tr-ph');
+            el.placeholder = tr[l][key] || el.placeholder;
+        });
+        document.getElementById('btn-ar').classList.toggle('active', l === 'ar');
+        document.getElementById('btn-en').classList.toggle('active', l === 'en');
+        document.body.dir = (l === 'ar') ? 'rtl' : 'ltr';
+    };
+
+    // 3. وظيفة التنقل بين الصفحات (إصلاح الشاشة السوداء)
+    window.changeUI = function(panelId) {
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        const target = document.getElementById(panelId);
+        if (target) target.classList.add('active');
+    };
+
+    // 4. التشغيل عند فتح الصفحة
+    window.onload = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('room')) {
+            changeUI('p-join'); // لو داخل من رابط دعوة
+        } else {
+            changeUI('p-main'); // لو فاتح الموقع عادي
+        }
+    };
+</script>
+
+</body>
+</html>
