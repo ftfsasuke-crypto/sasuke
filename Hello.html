@@ -2,514 +2,706 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>MX_SASUKE | Multiplayer Hub</title>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/4.3.7/mqtt.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لعبة الكذابين</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root {
---main:#ff0000;
---bg:#0a0a0b;
---card:#151517;
---accent:#22c55e;
---fail:#ef4444;
---imposter:#a855f7;
---warn:#f59e0b;
-}
+  :root {
+    --bg: #0a0a0f;
+    --card-bg: #13131a;
+    --border: #2a2a3a;
+    --red: #e63946;
+    --gold: #ffd700;
+    --green: #2ecc71;
+    --text: #f0f0f0;
+    --muted: #888;
+    --joker: #9b59b6;
+  }
 
-* {
-box-sizing:border-box;
--webkit-tap-highlight-color:transparent;
-}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-body {
-background:var(--bg);
-color:white;
-font-family:'Cairo',sans-serif;
-margin:0;
-display:flex;
-justify-content:center;
-align-items:center;
-min-height:100vh;
-overflow-x:hidden;
-touch-action:manipulation;
-}
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Tajawal', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background-image: radial-gradient(ellipse at 20% 50%, #1a0a2e 0%, transparent 60%),
+                      radial-gradient(ellipse at 80% 20%, #0a1a2e 0%, transparent 60%);
+  }
 
-.box-container {
-width:92%;
-max-width:400px;
-background:var(--card);
-padding:25px;
-border-radius:20px;
-border:1px solid #333;
-}
+  .screen { display: none; width: 100%; max-width: 480px; }
+  .screen.active { display: block; }
 
-h1 {
-text-align:center;
-font-size:22px;
-}
+  /* LOBBY */
+  .logo {
+    text-align: center;
+    margin-bottom: 32px;
+  }
+  .logo h1 {
+    font-size: 2.4rem;
+    font-weight: 900;
+    color: var(--gold);
+    text-shadow: 0 0 30px rgba(255,215,0,0.4);
+    letter-spacing: 2px;
+  }
+  .logo p {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-top: 4px;
+  }
 
-.game-btn,
-.action-btn,
-.leave-btn {
-width:100%;
-border:none;
-padding:15px;
-border-radius:12px;
-font-size:16px;
-font-weight:bold;
-margin-bottom:12px;
-cursor:pointer;
-}
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
 
-.game-btn {
-background:#111;
-border:2px solid #333;
-color:white;
-}
+  .card h2 {
+    font-size: 1.1rem;
+    color: var(--gold);
+    margin-bottom: 16px;
+    font-weight: 700;
+  }
 
-.action-btn {
-background:var(--main);
-color:white;
-}
+  input[type="text"] {
+    width: 100%;
+    background: #1e1e2e;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Tajawal', sans-serif;
+    font-size: 1rem;
+    padding: 12px 16px;
+    outline: none;
+    transition: border-color 0.2s;
+    text-align: right;
+  }
+  input[type="text"]:focus { border-color: var(--gold); }
 
-.leave-btn {
-background:#333;
-color:white;
-}
+  .btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 10px;
+    border: none;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 12px;
+  }
+  .btn-gold {
+    background: linear-gradient(135deg, #ffd700, #ffaa00);
+    color: #000;
+  }
+  .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(255,215,0,0.3); }
+  .btn-red {
+    background: linear-gradient(135deg, #e63946, #c1121f);
+    color: #fff;
+  }
+  .btn-green {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: #fff;
+  }
+  .btn-outline {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+  }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
 
-.input-field {
-width:100%;
-padding:15px;
-border-radius:10px;
-border:1px solid #444;
-background:black;
-color:var(--accent);
-font-size:16px;
-text-align:center;
-margin-bottom:20px;
-}
+  /* WAITING ROOM */
+  .room-code {
+    background: #1e1e2e;
+    border: 1px dashed var(--gold);
+    border-radius: 10px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .room-code span { font-size: 1.4rem; font-weight: 900; color: var(--gold); letter-spacing: 4px; }
+  .copy-btn {
+    background: rgba(255,215,0,0.1);
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    border-radius: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 0.85rem;
+  }
 
-.panel {
-display:none;
-}
+  .players-list { display: flex; flex-direction: column; gap: 10px; }
+  .player-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #1e1e2e;
+    border-radius: 10px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+  }
+  .player-avatar {
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold), #ff6b6b);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; color: #000; font-size: 0.9rem;
+  }
+  .player-name { font-weight: 700; flex: 1; }
+  .host-badge {
+    background: rgba(255,215,0,0.15);
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 0.75rem;
+  }
+  .leave-btn {
+    background: rgba(230,57,70,0.1);
+    border: 1px solid var(--red);
+    color: var(--red);
+    border-radius: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 0.85rem;
+  }
 
-.active-panel {
-display:block;
-}
+  /* GAME SCREEN */
+  .game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .round-info { color: var(--muted); font-size: 0.85rem; }
+  .current-card-label {
+    background: rgba(255,215,0,0.1);
+    border: 1px solid var(--gold);
+    border-radius: 8px;
+    padding: 6px 14px;
+    color: var(--gold);
+    font-weight: 700;
+    font-size: 0.9rem;
+  }
 
-.players-list {
-background:black;
-border:1px solid #333;
-border-radius:10px;
-padding:15px;
-margin-bottom:20px;
-}
+  .players-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+  .player-game-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s;
+  }
+  .player-game-card.active-turn {
+    border-color: var(--gold);
+    box-shadow: 0 0 20px rgba(255,215,0,0.15);
+  }
+  .player-game-card.dead {
+    opacity: 0.4;
+    filter: grayscale(1);
+  }
+  .player-game-card.me {
+    border-color: #3498db;
+  }
 
-.player-item {
-padding:10px;
-border-bottom:1px solid #222;
-display:flex;
-justify-content:space-between;
-align-items:center;
-}
+  .health-display {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+  .bullet {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    border: 1.5px solid var(--muted);
+    background: transparent;
+    transition: all 0.3s;
+  }
+  .bullet.hit { background: var(--red); border-color: var(--red); }
 
-.secret-word-box {
-background:#111;
-border:2px dashed var(--accent);
-border-radius:15px;
-padding:30px 15px;
-margin:20px 0;
-font-size:28px;
-font-weight:bold;
-text-align:center;
-}
+  .my-cards {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .playing-card {
+    background: #fff;
+    color: #000;
+    border-radius: 10px;
+    width: 56px; height: 80px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem;
+    font-weight: 900;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  }
+  .playing-card.joker { background: linear-gradient(135deg, var(--joker), #6c3483); color: #fff; }
+  .playing-card.selected { border-color: var(--gold); transform: translateY(-8px); }
+  .playing-card:hover { transform: translateY(-4px); }
+
+  .action-area {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .action-btn {
+    padding: 14px;
+    border-radius: 10px;
+    border: none;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .status-msg {
+    text-align: center;
+    color: var(--muted);
+    padding: 16px;
+    font-size: 0.95rem;
+    background: #1e1e2e;
+    border-radius: 10px;
+    margin-bottom: 12px;
+  }
+  .status-msg.highlight { color: var(--gold); }
+
+  /* RESULT POPUP */
+  .popup-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .popup-overlay.show { display: flex; }
+  .popup {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    text-align: center;
+    max-width: 340px;
+    width: 100%;
+    animation: popIn 0.3s ease;
+  }
+  @keyframes popIn {
+    from { transform: scale(0.8); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .popup h2 { font-size: 1.6rem; margin-bottom: 8px; }
+  .popup p { color: var(--muted); margin-bottom: 20px; }
+  .popup .result-icon { font-size: 3rem; margin-bottom: 12px; }
+
+  /* WIN/LOSE */
+  .game-over-screen {
+    text-align: center;
+    padding: 20px 0;
+  }
+  .game-over-screen h1 { font-size: 2rem; font-weight: 900; margin-bottom: 8px; }
+
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1e1e2e;
+    border: 1px solid var(--gold);
+    color: var(--text);
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    z-index: 200;
+    opacity: 0;
+    transition: opacity 0.3s;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; }
+
+  .divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+  .spectator-badge {
+    background: rgba(155,89,182,0.2);
+    border: 1px solid var(--joker);
+    color: var(--joker);
+    border-radius: 8px;
+    padding: 8px 16px;
+    text-align: center;
+    margin-bottom: 12px;
+    font-size: 0.9rem;
+  }
 </style>
 </head>
 <body>
 
-<div class="box-container">
+<!-- SCREEN 1: LOBBY -->
+<div id="screen-lobby" class="screen active">
+  <div class="logo">
+    <h1>🃏 لعبة الكذابين</h1>
+    <p>هل تستطيع الكذب بدون أن يكتشفك أحد؟</p>
+  </div>
 
-<div id="p-main" class="panel active-panel">
-<h1>🎮 اختر اللعبة</h1>
+  <div class="card">
+    <h2>اكتب اسمك</h2>
+    <input type="text" id="player-name-input" placeholder="اسمك هنا..." maxlength="20">
+  </div>
 
-<input type="text" id="host-input" class="input-field" placeholder="اسمك">
+  <div class="card">
+    <h2>إنشاء غرفة جديدة</h2>
+    <p style="color:var(--muted);font-size:0.9rem;margin-bottom:12px;">أنت ستكون الهوست وتبدأ اللعبة</p>
+    <button class="btn btn-gold" onclick="createRoom()">إنشاء غرفة 🎮</button>
+  </div>
 
-<button class="game-btn" onclick="hostRoom('food','جاسوس','imposter')">
-🕵️ لعبة الجاسوس
-</button>
-
-<button class="game-btn" onclick="hostRoom('liars','الكذابين','liars')" style="border-color:#f59e0b;">
-🎭 لعبة الكذابين
-</button>
+  <div class="card">
+    <h2>انضم لغرفة</h2>
+    <input type="text" id="room-code-input" placeholder="كود الغرفة (4 أرقام)..." maxlength="6" style="margin-bottom:0">
+    <button class="btn btn-outline" onclick="joinRoom()">انضم 🚀</button>
+  </div>
 </div>
 
-<div id="p-lobby" class="panel">
-<h1>غرفة الانتظار</h1>
+<!-- SCREEN 2: WAITING ROOM -->
+<div id="screen-waiting" class="screen">
+  <div class="logo">
+    <h1>🃏 لعبة الكذابين</h1>
+  </div>
 
-<div id="invite-link"></div>
+  <div class="card">
+    <h2>كود الغرفة</h2>
+    <div class="room-code">
+      <span id="display-room-code">----</span>
+      <button class="copy-btn" onclick="copyRoomCode()">نسخ 📋</button>
+    </div>
+    <p style="color:var(--muted);font-size:0.85rem;text-align:center;">شارك الكود مع أصحابك عشان ينضموا</p>
+  </div>
 
-<div class="players-list" id="h-list"></div>
+  <div class="card">
+    <h2>اللاعبون (<span id="player-count">0</span>/5)</h2>
+    <div id="players-list" class="players-list"></div>
+  </div>
 
-<button class="action-btn" onclick="launchGame()">
-🚀 ابدأ اللعبة
-</button>
+  <div id="host-controls" style="display:none">
+    <button class="btn btn-gold" id="start-btn" onclick="startGame()" disabled>ابدأ اللعبة ▶️</button>
+    <p style="color:var(--muted);font-size:0.8rem;text-align:center;margin-top:8px;">يجب أن يكون على الأقل 3 لاعبين للبدء</p>
+  </div>
 
-<button class="leave-btn" onclick="leaveRoom()">
-🚪 خروج
-</button>
+  <button class="leave-btn" style="width:100%;margin-top:12px;padding:12px;border-radius:10px;" onclick="leaveRoom()">مغادرة 🚪</button>
 </div>
 
-<div id="p-join" class="panel">
-<h1>دخول الغرفة</h1>
+<!-- SCREEN 3: GAME -->
+<div id="screen-game" class="screen">
+  <div class="game-header">
+    <div class="round-info">الجولة <span id="round-num">1</span></div>
+    <div class="current-card-label">الورقة المطلوبة: <span id="required-card">-</span></div>
+  </div>
 
-<input type="text" id="guest-input" class="input-field" placeholder="اسمك">
+  <div id="spectator-badge" class="spectator-badge" style="display:none">
+    👁️ أنت متفرج فقط — لقد خرجت من اللعبة
+  </div>
 
-<button class="action-btn" onclick="joinRoom()">
-دخول
-</button>
+  <div id="status-msg" class="status-msg">جاري تحميل اللعبة...</div>
+
+  <div id="players-game-list" class="players-grid"></div>
+
+  <div class="card">
+    <h2>أوراقك</h2>
+    <div id="my-cards" class="my-cards"></div>
+  </div>
+
+  <div id="action-area" class="action-area"></div>
 </div>
 
-<div id="p-liars" class="panel">
-
-<h1>🎭 لعبة الكذابين</h1>
-
-<div class="secret-word-box" id="liar-card">???</div>
-
-<h3 id="required-card" style="text-align:center;color:var(--warn);">
-المطلوب: ؟؟؟
-</h3>
-
-<div class="players-list" id="liars-players"></div>
-
-<div id="liars-actions"></div>
-
-<button class="leave-btn" onclick="leaveRoom()">
-🚪 مغادرة
-</button>
-
+<!-- POPUP -->
+<div id="popup-overlay" class="popup-overlay">
+  <div class="popup">
+    <div id="popup-icon" class="result-icon">🎭</div>
+    <h2 id="popup-title"></h2>
+    <p id="popup-desc"></p>
+    <button class="btn btn-gold" onclick="closePopup()">حسناً</button>
+  </div>
 </div>
 
-</div>
+<div id="toast" class="toast"></div>
 
 <script>
+// ===== SUPABASE SETUP =====
+const SUPABASE_URL = 'https://duaybqxussmnqpwecnck.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR1YXlicXh1c3NtbnFwd2VjbmNrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzNjEzMDcsImV4cCI6MjA5MzkzNzMwN30.z3dIdeHrSTpGWCllpp-aaY1qmBSZxVa2v1KyVse_Q0A';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-let mqttClient;
-let myName;
-let roomId;
-let isHost=false;
-let players=[];
-let gameMode='';
+// ===== STATE =====
+let myPlayerId = null;
+let myPlayerName = '';
+let currentRoomId = null;
+let isHost = false;
+let isSpectator = false;
+let selectedCardIndex = null;
+let roomSub = null;
+let playersSub = null;
+let gameState = null;
+let playersState = [];
 
-let myCards=[];
-let myHits=0;
-let currentTurn='';
-let requiredType='';
-let alivePlayers=[];
-
-function navTo(id){
-document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active-panel'));
-document.getElementById(id).classList.add('active-panel');
+// ===== UTILS =====
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
 }
 
-if(window.location.search.includes('room=')){
-navTo('p-join');
+function showToast(msg, duration = 2500) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), duration);
 }
 
-function renderPlayers(){
-let html='';
-
-players.forEach(p=>{
-html += `<div class="player-item">${decodeURIComponent(p.name)}</div>`;
-});
-
-document.getElementById('h-list').innerHTML = html;
+function showPopup(icon, title, desc) {
+  document.getElementById('popup-icon').textContent = icon;
+  document.getElementById('popup-title').textContent = title;
+  document.getElementById('popup-desc').textContent = desc;
+  document.getElementById('popup-overlay').classList.add('show');
 }
 
-function hostRoom(cat,name,mode){
-
-isHost=true;
-gameMode=mode;
-
-myName = encodeURIComponent(document.getElementById('host-input').value || 'Host');
-
-roomId = Math.floor(10000 + Math.random()*90000).toString();
-
-players=[{name:myName}];
-
-renderPlayers();
-
-navTo('p-lobby');
-
-let link = location.origin + location.pathname + '?room=' + roomId;
-
-document.getElementById('invite-link').innerText = link;
-
-mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
-
-mqttClient.on('connect',()=>{
-mqttClient.subscribe('mx_sasuke_' + roomId);
-});
-
-setupMessageHandler();
+function closePopup() {
+  document.getElementById('popup-overlay').classList.remove('show');
 }
 
-function joinRoom(){
-
-myName = encodeURIComponent(document.getElementById('guest-input').value);
-roomId = new URLSearchParams(location.search).get('room');
-
-mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt');
-
-mqttClient.on('connect',()=>{
-
-mqttClient.subscribe('mx_sasuke_' + roomId);
-
-mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({
-type:'join',
-name:myName
-}));
-
-});
-
-setupMessageHandler();
+function generateRoomCode() {
+  return Math.floor(1000 + Math.random() * 9000).toString();
 }
 
-function setupMessageHandler(){
-
-mqttClient.on('message',(t,m)=>{
-
-let d = JSON.parse(m.toString());
-
-if(d.type==='join' && isHost){
-
-if(!players.find(p=>p.name===d.name)){
-players.push({name:d.name});
-renderPlayers();
-
-mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({
-type:'sync',
-players:players
-}));
-}
+function getCardEmoji(card) {
+  const map = { 'King': '👑', 'Ace': '🅰️', 'Queen': '👸', 'Joker': '🃏' };
+  return (map[card] || '') + ' ' + card;
 }
 
-if(d.type==='sync'){
-players=d.players;
-renderPlayers();
+// ===== DECK SETUP =====
+function buildDeck(playerCount) {
+  let counts = {};
+  if (playerCount === 5) { counts = { King: 7, Ace: 7, Queen: 7, Joker: 3 }; }
+  else if (playerCount === 4) { counts = { King: 6, Ace: 6, Queen: 6, Joker: 3 }; }
+  else { counts = { King: 4, Ace: 4, Queen: 4, Joker: 2 }; }
+
+  let deck = [];
+  for (let [card, count] of Object.entries(counts)) {
+    for (let i = 0; i < count; i++) deck.push(card);
+  }
+  // Shuffle
+  for (let i = deck.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [deck[i], deck[j]] = [deck[j], deck[i]];
+  }
+  return deck;
 }
 
-if(d.type==='liars_start'){
-
-myCards = d.cards[myName] || [];
-currentTurn = d.turn;
-requiredType = d.required;
-alivePlayers = d.alive;
-
-navTo('p-liars');
-renderLiarsGame();
+function dealCards(deck, playerCount) {
+  const hands = [];
+  const perPlayer = Math.floor(deck.length / playerCount);
+  for (let i = 0; i < playerCount; i++) {
+    hands.push(deck.slice(i * perPlayer, (i + 1) * perPlayer));
+  }
+  return hands;
 }
 
-if(d.type==='liars_update'){
-
-currentTurn = d.turn;
-requiredType = d.required;
-alivePlayers = d.alive;
-
-if(d.cards && d.cards[myName]){
-myCards = d.cards[myName];
+function pickRequiredCard() {
+  const cards = ['King', 'Ace', 'Queen'];
+  return cards[Math.floor(Math.random() * cards.length)];
 }
 
-if(d.hits && d.hits[myName] !== undefined){
-myHits = d.hits[myName];
+// ===== CREATE ROOM =====
+async function createRoom() {
+  const name = document.getElementById('player-name-input').value.trim();
+  if (!name) { showToast('اكتب اسمك أولاً!'); return; }
+  myPlayerName = name;
+
+  const roomId = generateRoomCode();
+  currentRoomId = roomId;
+  isHost = true;
+
+  const { error: roomErr } = await sb.from('rooms').insert({
+    id: roomId,
+    host_name: name,
+    status: 'waiting',
+    current_card: null,
+    current_player: 0,
+    card_counts: {}
+  });
+
+  if (roomErr) { showToast('خطأ في إنشاء الغرفة!'); console.error(roomErr); return; }
+
+  const { data: playerData, error: playerErr } = await sb.from('players').insert({
+    room_id: roomId,
+    name: name,
+    is_host: true,
+    health: 0,
+    max_health: 6,
+    is_dead: false,
+    cards: []
+  }).select().single();
+
+  if (playerErr) { showToast('خطأ!'); console.error(playerErr); return; }
+  myPlayerId = playerData.id;
+
+  showScreen('screen-waiting');
+  document.getElementById('display-room-code').textContent = roomId;
+  document.getElementById('host-controls').style.display = 'block';
+
+  subscribeToRoom(roomId);
 }
 
-renderLiarsGame();
+// ===== JOIN ROOM =====
+async function joinRoom() {
+  const name = document.getElementById('player-name-input').value.trim();
+  const code = document.getElementById('room-code-input').value.trim();
+  if (!name) { showToast('اكتب اسمك أولاً!'); return; }
+  if (!code) { showToast('اكتب كود الغرفة!'); return; }
+  myPlayerName = name;
+
+  const { data: room, error: roomErr } = await sb.from('rooms').select('*').eq('id', code).single();
+  if (roomErr || !room) { showToast('الغرفة مش موجودة!'); return; }
+  if (room.status !== 'waiting') { showToast('اللعبة بدأت بالفعل!'); return; }
+
+  const { data: existingPlayers } = await sb.from('players').select('*').eq('room_id', code);
+  if (existingPlayers && existingPlayers.length >= 5) { showToast('الغرفة ممتلئة!'); return; }
+
+  currentRoomId = code;
+  isHost = false;
+
+  const { data: playerData, error: playerErr } = await sb.from('players').insert({
+    room_id: code,
+    name: name,
+    is_host: false,
+    health: 0,
+    max_health: 6,
+    is_dead: false,
+    cards: []
+  }).select().single();
+
+  if (playerErr) { showToast('خطأ في الانضمام!'); console.error(playerErr); return; }
+  myPlayerId = playerData.id;
+
+  showScreen('screen-waiting');
+  document.getElementById('display-room-code').textContent = code;
+
+  subscribeToRoom(code);
 }
 
-if(d.type==='liars_dead'){
-
-if(d.player===myName){
-alert('💀 خسرت! أصبحت متفرج');
-}
+// ===== COPY ROOM CODE =====
+function copyRoomCode() {
+  navigator.clipboard.writeText(currentRoomId).then(() => showToast('تم نسخ الكود! 📋'));
 }
 
-});
+// ===== LEAVE ROOM =====
+async function leaveRoom() {
+  if (myPlayerId) await sb.from('players').delete().eq('id', myPlayerId);
+  if (roomSub) sb.removeChannel(roomSub);
+  if (playersSub) sb.removeChannel(playersSub);
+  myPlayerId = null; currentRoomId = null; isHost = false;
+  showScreen('screen-lobby');
 }
 
-function launchGame(){
+// ===== SUBSCRIBE =====
+function subscribeToRoom(roomId) {
+  // Subscribe to players changes
+  playersSub = sb.channel('players-' + roomId)
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'players', filter: `room_id=eq.${roomId}` },
+      () => loadWaitingRoom(roomId))
+    .subscribe();
 
-if(gameMode !== 'liars') return;
+  // Subscribe to room changes
+  roomSub = sb.channel('room-' + roomId)
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'rooms', filter: `id=eq.${roomId}` },
+      (payload) => {
+        gameState = payload.new;
+        if (gameState.status === 'playing') {
+          showScreen('screen-game');
+          renderGame();
+        }
+      })
+    .subscribe();
 
-if(players.length < 3){
-return alert('❌ أقل عدد 3 لاعبين');
+  loadWaitingRoom(roomId);
 }
 
-if(players.length > 5){
-return alert('❌ الحد الأقصى 5 لاعبين');
+async function loadWaitingRoom(roomId) {
+  const { data: players } = await sb.from('players').select('*').eq('room_id', roomId).order('joined_at');
+  if (!players) return;
+  playersState = players;
+
+  const list = document.getElementById('players-list');
+  list.innerHTML = '';
+  players.forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'player-item';
+    div.innerHTML = `
+      <div class="player-avatar">${p.name[0]}</div>
+      <div class="player-name">${p.name}</div>
+      ${p.is_host ? '<span class="host-badge">هوست</span>' : ''}
+      ${p.id === myPlayerId && !p.is_host ? `<button class="leave-btn" onclick="leaveRoom()">مغادرة</button>` : ''}
+    `;
+    list.appendChild(div);
+  });
+
+  document.getElementById('player-count').textContent = players.length;
+
+  if (isHost) {
+    const startBtn = document.getElementById('start-btn');
+    startBtn.disabled = players.length < 3;
+  }
 }
 
-let counts = {
-3:{king:4,ace:4,queen:4,joker:2},
-4:{king:6,ace:6,queen:6,joker:3},
-5:{king:7,ace:7,queen:7,joker:3}
-};
+// ===== START GAME =====
+async function startGame() {
+  const { data: players } = await sb.from('players').select('*').eq('room_id', currentRoomId).order('joined_at');
+  if (!players || players.length < 3) { showToast('يجب 3 لاعبين على الأقل!'); return; }
 
-let cfg = counts[players.length];
+  const deck = buildDeck(players.length);
+  const hands = dealCards(deck, players.length);
+  const requiredCard = pickRequiredCard();
 
-let deck=[];
+  for (let i = 0; i < players.length; i++) {
+    await sb.from('players').update({ cards: hands[i] }).eq('id', players[i].id);
+  }
 
-for(let i=0;i<cfg.king;i++) deck.push('King');
-for(let i=0;i<cfg.ace;i++) deck.push('Ace');
-for(let i=0;i<cfg.queen;i++) deck.push('Queen');
-for(let i=0;i<cfg.joker;i++) deck.push('Joker');
-
-for(let i=deck.length-1;i>0;i--){
-const j=Math.floor(Math.random()*(i+1));
-[deck[i],deck[j]]=[deck[j],deck[i]];
+  await sb.from('rooms').update({
+    status: 'playing',
+    current_card: requiredCard,
+    current_player: 0,
+  }).eq('id', currentRoomId);
 }
 
-let distributed={};
+// ===== RENDER GAME =====
+async function renderGame() {
+  const { data: room } = await sb.from('rooms').select('*').eq('id', currentRoomId).single();
+  const { data: players } = await sb.from('players').select('*').eq('room_id', currentRoomId).order('joined_at');
+  if (!room || !players) return;
 
-players.forEach(p=>distributed[p.name]=[]);
+  gameState = room;
+  playersState = players;
 
-let turnIndex=0;
+  const myPlayer = players.find(p => p.id === myPlayerId);
+  if (!myPlayer) return;
+  isSpectator = myPlayer.is_dead;
 
-while(deck.length>0){
-
-distributed[players[turnIndex].name].push(deck.pop());
-
-turnIndex++;
-
-if(turnIndex>=players.length){
-turnIndex=0;
-}
-}
-
-let reqs=['King','Ace','Queen'];
-
-mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({
-
-type:'liars_start',
-cards:distributed,
-turn:players[0].name,
-required:reqs[Math.floor(Math.random()*reqs.length)],
-alive:players.map(p=>p.name)
-
-}));
-}
-
-function renderLiarsGame(){
-
-let cardHTML = myCards.map(c=>`🃏 ${c}`).join('<br>');
-
-if(cardHTML===''){
-cardHTML='لا يوجد أوراق';
-}
-
-document.getElementById('liar-card').innerHTML = cardHTML;
-
-document.getElementById('required-card').innerText = 'المطلوب الآن: ' + requiredType;
-
-let html='';
-
-alivePlayers.forEach(p=>{
-html += `
-<div class="player-item">
-<span>${decodeURIComponent(p)}</span>
-<span>${p===currentTurn?'🎯 دوره':''}</span>
-</div>`;
-});
-
-document.getElementById('liars-players').innerHTML = html;
-
-let actions='';
-
-if(currentTurn===myName && myHits < 6){
-
-actions += `
-<button class="action-btn" onclick="playLiarCard()">
-🎴 لعب ورقة
-</button>
-
-<button class="action-btn" style="background:#f59e0b;" onclick="callLiar()">
-🤨 كذاب!
-</button>
-`;
-}
-
-actions += `<h3 style="text-align:center;">الضربات: ${myHits}/6</h3>`;
-
-if(myHits >= 6){
-actions += `<h3 style="text-align:center;color:red;">💀 أنت متفرج الآن</h3>`;
-}
-
-document.getElementById('liars-actions').innerHTML = actions;
-}
-
-function playLiarCard(){
-
-if(myCards.length <= 0){
-return alert('❌ لا يوجد أوراق');
-}
-
-myCards.splice(0,1);
-
-let nextIndex = (alivePlayers.indexOf(myName)+1)%alivePlayers.length;
-
-mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({
-
-type:'liars_update',
-turn:alivePlayers[nextIndex],
-required:['King','Ace','Queen'][Math.floor(Math.random()*3)],
-alive:alivePlayers,
-cards:{
-[myName]:myCards
-}
-
-}));
-}
-
-function callLiar(){
-
-let failChance = myHits >=5 ? 100 : 10;
-
-let died = Math.random()*100 < failChance;
-
-if(died){
-myHits = 6;
-alivePlayers = alivePlayers.filter(p=>p!==myName);
-
-mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({
-
-type:'liars_dead',
-player:myName
-
-}));
-}
-else{
-myHits++;
-}
-
-mqttClient.publish('mx_sasuke_' + roomId, JSON.stringify({
-
-type:'liars_update',
-turn:currentTurn,
-required:requiredType,
-alive:alivePlayers,
-hits:{
-[myName]:myHits
-}
-
-}));
-}
-
-function leaveRoom(){
-location.href = location.pathname;
-}
-
-</script>
-</body>
-</html>
+  // Header
+  document.getElementById('requi
