@@ -130,6 +130,9 @@ try {
 
         var sub = false, vidLike = false, vidComment = false;
         var initialLikes = -1; 
+        
+        // المتغير الجديد: عدد محاولات التحقق
+        var verifyAttempts = 0;
 
         var tutSection = "";
         if(config.tut && config.tut !== "#") {
@@ -215,7 +218,6 @@ try {
             xhr.send();
         }
 
-        // جلب اللايكات أول مرة زي السكربت المصغر
         fetchRealLikes(function(likes) {
             if (likes !== -1) {
                 initialLikes = likes;
@@ -274,7 +276,7 @@ try {
             }, 1000);
         };
 
-        // دالة التحقق المنسوخة بالمللي من السكربت المصغر
+        // دالة التحقق بنظام "الفرصة التانية"
         window.verifyStrict = function() {
             if(!sub || !vidLike || !vidComment) return alert("يرجى إكمال جميع المهام الثلاثة أولاً!");
             
@@ -284,7 +286,9 @@ try {
             var ld = document.getElementById('loader');
             ld.style.display = 'flex';
             
-            // تأخير 2.5 ثانية زي السكربت المصغر بالظبط
+            // زيادة العداد كل ما يدوس تحقق
+            verifyAttempts++;
+            
             setTimeout(function() {
                 fetchRealLikes(function(currentLikes) {
                     ld.style.display = 'none';
@@ -293,8 +297,8 @@ try {
                         document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
                     }
 
-                    // التحقق الصارم: لازم الرقم يكون أكبر من الرقم الابتدائي
-                    if (currentLikes > initialLikes) {
+                    // لو يوتيوب حدث الرقم ولقيناه زاد.. أو لو المتابع داس "أعد التحقق" للمرة التانية هيعديه عشان ميظلموش.
+                    if (currentLikes > initialLikes || verifyAttempts >= 2) {
                         document.getElementById('tasks-container').style.display = 'none';
                         document.getElementById('top-logo').style.display = 'none';
                         document.getElementById('top-title').style.display = 'none';
@@ -307,18 +311,17 @@ try {
                             }
                         } catch(e){}
                     } else {
-                        // لو الرقم مزادش زي السكربت المصغر بالظبط
-                        errMsg.innerHTML = "❌ يوتيوب لسه مراجعش اللايك أو أنك لم تضغط لايك!<br>دوس <b>أعد التحقق</b> مرة كمان.";
+                        // دي في أول محاولة بس: لو الرقم لسه مزادش، يرفضه ويقوله حاول تاني.
+                        errMsg.innerHTML = "❌ فشل التحقق: يوتيوب لم يسجل اللايك الخاص بك بعد!<br>تأكد من وضع اللايك، ثم اضغط <b>أعد التحقق</b> مرة أخرى.";
                         errMsg.style.display = 'block';
                         document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
                         
-                        // تحديث العدد الابتدائي في حال سحب شخص آخر لايكه
                         if (currentLikes !== -1 && currentLikes < initialLikes) {
                             initialLikes = currentLikes; 
                         }
                     }
                 });
-            }, 2500); // 2500 مللي ثانية (2.5 ثانية)
+            }, 2500); // تحميل 2.5 ثانية
         };
 
     } else {
