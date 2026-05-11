@@ -129,6 +129,12 @@
             padding: 6px 14px;
             margin: 2px;
         }
+        .host-name-section {
+            background: #0f3460;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
     </style>
 </head>
 <body>
@@ -136,11 +142,17 @@
         <!-- شاشة البداية -->
         <div id="start-screen">
             <h1>🕵️ لعبة الجاسوس</h1>
+            
+            <!-- قسم الهوست -->
             <div id="create-section">
+                <p style="color:#aaa; margin-bottom:5px;">أنشئ غرفة وادعو أصحابك:</p>
+                <input type="text" id="host-name" placeholder="اكتب اسمك الأول">
+                <br>
                 <button onclick="createRoom()">🎮 إنشاء غرفة جديدة</button>
             </div>
+            
+            <!-- قسم اللاعب -->
             <div id="join-section" style="display:none;">
-                <br>
                 <p style="color:#aaa;">ادخل غرفة صديقك:</p>
                 <input type="text" id="player-name" placeholder="اكتب اسمك">
                 <br>
@@ -161,7 +173,6 @@
                 <span style="font-size:14px; color:#aaa;">أو كود الغرفة: <strong id="room-id-display"></strong></span>
             </div>
             
-            <!-- الكلمة السرية / رسالة الجاسوس -->
             <div id="word-display" style="display:none;"></div>
             
             <div id="timer-display">10:00</div>
@@ -197,7 +208,6 @@
         </div>
     </div>
 
-    <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getDatabase, ref, set, get, update, onValue, onDisconnect, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -225,30 +235,33 @@
         let timerInterval = null;
         let localTimer = 600;
 
-        // تحقق من الرابط: لو فيه room= يبقى لاعب مش هوست
         const params = new URLSearchParams(window.location.search);
         const ridFromUrl = params.get('room');
         
         if (ridFromUrl) {
-            // لاعب: أظهر خانة الاسم والانضمام فقط
             roomId = ridFromUrl;
             document.getElementById('create-section').style.display = 'none';
             document.getElementById('join-section').style.display = 'block';
         } else {
-            // هوست محتمل: أظهر إنشاء غرفة
             document.getElementById('create-section').style.display = 'block';
             document.getElementById('join-section').style.display = 'none';
         }
 
         window.createRoom = function() {
+            const hostNameInput = document.getElementById('host-name');
+            const name = hostNameInput.value.trim();
+            
+            if (!name) return showNotification('⚠️ اكتب اسمك الأول!');
+            
             roomId = 'room-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
             myPlayerId = 'host-' + Date.now().toString(36);
-            myPlayerName = 'الهوست';
+            myPlayerName = name;
             isHost = true;
             
             const roomRef = ref(db, 'rooms/' + roomId);
             const roomData = {
                 hostId: myPlayerId,
+                hostName: myPlayerName,
                 phase: 'waiting',
                 timer: 600,
                 timerRunning: false,
@@ -400,7 +413,6 @@
             
             switch(data.phase) {
                 case 'playing':
-                    // إظهار الكلمة أو رسالة الجاسوس
                     showWordOrSpy(data);
                     showNotification('🚀 اللعبة بدأت!');
                     break;
@@ -420,11 +432,9 @@
             wordDiv.style.display = 'block';
             
             if (myPlayerId === data.spyPlayerId) {
-                // ده الجاسوس
                 wordDiv.className = 'spy-box';
                 wordDiv.innerHTML = '🕵️ أنت الجاسوس!<br><small>حاول تكتشف الكلمة من الأسئلة</small>';
             } else {
-                // باقي اللاعبين يشوفوا الكلمة
                 wordDiv.className = 'word-box';
                 wordDiv.innerHTML = `🔑 الكلمة السرية:<br>${data.secretWord}`;
             }
@@ -445,7 +455,7 @@
                 const randomIndex = Math.floor(Math.random() * playerIds.length);
                 const spyId = playerIds[randomIndex];
                 
-                const words = ['تفاحة', 'سيارة', 'قمر', 'شمس', 'بحر', 'جبل', 'كتاب', 'قلم', 'نجمة', 'وردة', 'أسد', 'فيل', 'طائرة', 'سفينة', 'مفتاح'];
+                const words = ['تفاحة', 'سيارة', 'قمر', 'شمس', 'بحر', 'جبل', 'كتاب', 'قلم', 'نجمة', 'وردة', 'أسد', 'فيل', 'طائرة', 'سفينة', 'مفتاح', 'كاميرا', 'شجرة', 'نهر', 'ساعة', 'كرة'];
                 const secretW = words[Math.floor(Math.random() * words.length)];
                 
                 const roomRef = ref(db, 'rooms/' + roomId);
@@ -460,7 +470,6 @@
                     voteResults: {}
                 });
                 
-                // إخفاء زرار الطرد
                 document.getElementById('kick-section').style.display = 'none';
             });
         };
