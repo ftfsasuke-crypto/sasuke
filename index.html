@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MX_SASUKE | VIP Unlocker</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" async></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; }
         body { background: var(--bg); color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; min-height: 100vh; overflow-x: hidden; position: relative; }
@@ -57,8 +57,6 @@
         #progress-circle { stroke-dasharray: 264; stroke-dashoffset: 0; stroke-linecap: round; }
         @keyframes circle-deplete { 0% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 264; } }
         
-        @keyframes bounce-icon { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-15px); } 60% { transform: translateY(-7px); } }
-
         .gen-input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #333; background: #111; color: white; box-sizing: border-box; text-align: right; font-family: 'Cairo', sans-serif; }
     </style>
 </head>
@@ -80,7 +78,7 @@
 
 <div id="loader">
     <div class="circle-timer"></div>
-    <h2 id="timer-text" style="font-size: 24px; margin: 20px 0; text-align: center;">جاري التحقق...</h2>
+    <h2 id="timer-text" style="font-size: 26px; margin: 20px 0; text-align: center;">جاري التحقق...</h2>
 </div>
 
 <div id="app" class="container"></div>
@@ -102,15 +100,6 @@ function createStars() {
     }
 }
 createStars();
-
-function fireConfetti() {
-    try {
-        if (typeof confetti !== 'undefined') {
-            confetti({ particleCount: 50, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#ff0000', '#22c55e', '#ffffff'] });
-            confetti({ particleCount: 50, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ff0000', '#22c55e', '#ffffff'] });
-        }
-    } catch(e){}
-}
 
 try {
     var YOUTUBE_API_KEY = "AIzaSyA6NebhJLqT8ZEG56cmMEm4xsRR5byisPI"; 
@@ -187,7 +176,7 @@ try {
                     
                     <div class="warning-box">
                         <h4>تنبيه مهم ⚠️</h4>
-                        <p>تأكد من إتمام الشروط. إذا كنت قد وضعت لايك بالفعل وقال لك فشل، شيل اللايك وحطه تاني واضغط تحقق. يوتيوب يتأخر ثواني في التسجيل.</p>
+                        <p>تأكد من إتمام الشروط. إذا كنت قد وضعت لايك بالفعل وقال لك فشل، يرجى الانتظار ثواني واضغط تحقق، يوتيوب يتأخر أحياناً في التسجيل.</p>
                     </div>
                 </div>
             </div>
@@ -290,56 +279,51 @@ try {
         };
 
         // ==========================================
-        // نظام الرادار الصارم اللي بيلف يسأل يوتيوب
+        // التحقق السريع والطلقة (3 ثواني فقط)
         // ==========================================
         window.verifyStrict = function() {
             if(!sub || !vidLike || !vidComment) return alert("يرجى إكمال جميع المهام الثلاثة أولاً!");
             
             document.getElementById('error-msg').style.display = 'none';
             var ld = document.getElementById('loader');
-            var timerText = document.getElementById('timer-text');
             ld.style.display = 'flex';
             
-            var attempts = 0;
-            var maxAttempts = 6; 
-
-            function radarCheck() {
-                attempts++;
-                timerText.innerHTML = "جاري التحقق (" + attempts + "/6)<br><span style='font-size:14px; color:#aaa'>نبحث عن اللايك في سيرفرات يوتيوب...</span>";
-
+            // 3 ثواني تحميل بس عشان ميبقاش ممل
+            setTimeout(function() {
                 fetchRealLikes(function(currentLikes) {
+                    ld.style.display = 'none';
+                    
                     if (currentLikes !== -1) {
                         document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
                     }
 
-                    // لا يوجد استثناءات للوقت: الشرط الوحيد هو ارتفاع رقم اللايكات.
+                    // الشرط الوحيد للعبور: اللايك زاد
                     if (currentLikes > initialLikes) {
-                        ld.style.display = 'none';
                         document.getElementById('tasks-container').style.display = 'none';
                         document.getElementById('top-logo').style.display = 'none';
                         document.getElementById('top-title').style.display = 'none';
                         document.getElementById('success-container').style.display = 'block';
-                        fireConfetti();
-                    } else {
-                        // لو لسه مفيش لايك اتسجل، هيلف تاني لو المحاولات مخلصتش
-                        if (attempts < maxAttempts) {
-                            setTimeout(radarCheck, 4000); // يستنى 4 ثواني ويسأل يوتيوب تاني
-                        } else {
-                            ld.style.display = 'none';
-                            var errMsg = document.getElementById('error-msg');
-                            errMsg.innerHTML = "❌ فشل التحقق: لم نكتشف زيادة في اللايكات!<br>الرقم في سيرفرات يوتيوب لم يتغير. إذا كنت متأكداً، اضغط <b>أعد التحقق</b>.";
-                            errMsg.style.display = 'block';
-                            document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
-                            
-                            if (currentLikes !== -1 && currentLikes < initialLikes) {
-                                initialLikes = currentLikes; 
+                        
+                        try {
+                            if (typeof confetti !== 'undefined') {
+                                confetti({ particleCount: 50, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#ff0000', '#22c55e', '#ffffff'] });
+                                confetti({ particleCount: 50, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ff0000', '#22c55e', '#ffffff'] });
                             }
+                        } catch(e){}
+                    } else {
+                        // لو الرقم لسه مزادش (أو المتابع معملش لايك)، يقفل في وشه فوراً
+                        var errMsg = document.getElementById('error-msg');
+                        errMsg.innerHTML = "❌ فشل التحقق: لم يكتشف النظام اللايك الخاص بك بعد!<br>سيرفرات يوتيوب تتأخر بضع ثوانٍ في التحديث. إذا كنت قد وضعت لايك، فقط انتظر قليلاً واضغط <b>(أعد التحقق)</b>.";
+                        errMsg.style.display = 'block';
+                        document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
+                        
+                        // لو شال اللايك نحدث الرقم
+                        if (currentLikes !== -1 && currentLikes < initialLikes) {
+                            initialLikes = currentLikes; 
                         }
                     }
                 });
-            }
-
-            radarCheck(); // تشغيل الرادار
+            }, 3000); 
         };
 
     } else {
