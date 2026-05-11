@@ -247,8 +247,8 @@ try {
                         document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
                     }
 
-                    // هنا التعديل: لو داس المرة التانية علطول هيفتحله الرابط
-                    if (currentLikes > initialLikes || failedAttempts >= 1) {
+                    // التعديل هنا: الاعتماد فقط على زيادة اللايكات
+                    if (currentLikes > initialLikes) {
                         document.getElementById('tasks-container').style.display = 'none';
                         document.getElementById('top-logo').style.display = 'none';
                         document.getElementById('top-title').style.display = 'none';
@@ -265,7 +265,7 @@ try {
                     } else {
                         failedAttempts++; 
                         let errMsg = document.getElementById('error-msg');
-                        errMsg.innerHTML = "❌ يوتيوب لسه مراجعش اللايك! دوس <b>أعد التحقق</b> مرة كمان عشان نعديك.";
+                        errMsg.innerHTML = "❌ فشل التحقق: لم نكتشف زيادة في اللايكات! (قد يأخذ يوتيوب بعض الثواني، جرب مرة أخرى).";
                         errMsg.style.display = 'block';
                         document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
                         
