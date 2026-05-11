@@ -27,12 +27,23 @@
 </head>
 <body>
 <div id="app">
-    <div id="start-screen">
+    <!-- شاشة الهوست (تظهر فقط بدون ?room= في الرابط) -->
+    <div id="host-screen" style="display:none">
         <h1><span class="title-spy">🕵️ لعبة الجاسوس</span></h1>
         <div class="host-box"><p>👑 أنت الهوست</p><p>اسمك: <span class="host-name-display">⚔️ S A S U K E ⚔️</span></p></div>
         <button class="game-select-btn" id="btn-normal">🎮 لعبة الجاسوس ١ (عادية)</button>
         <button class="game-select-btn btn-gold" id="btn-multi">🎯 لعبة الجاسوس ٢ (اختباء)</button>
     </div>
+
+    <!-- شاشة اللاعب (تظهر لما يدخل بالرابط) -->
+    <div id="join-screen" style="display:none">
+        <h1><span class="title-spy">🕵️ لعبة الجاسوس</span></h1>
+        <p style="color:#aaa;margin:20px 0">ادخل غرفة صديقك:</p>
+        <input type="text" id="player-name" placeholder="اكتب اسمك"><br>
+        <button onclick="joinRoom()">🚪 انضمام للغرفة</button>
+    </div>
+
+    <!-- شاشة اللعبة -->
     <div id="game-screen" style="display:none">
         <h2>🕵️ لعبة الجاسوس <span id="mode-display"></span></h2>
         <div id="room-link" style="display:none;background:rgba(0,0,0,.3);padding:10px;border-radius:10px;margin:10px 0">
@@ -60,9 +71,24 @@ const app=initializeApp(fc),db=getDatabase(app);
 let mid,mname,rid,isHost,gmode='normal',spyId,sword,timer,localTimer=600,allPlayers={},finished=false,eliminated=false;
 const words=['تفاحة','سيارة','قمر','شمس','بحر','جبل','كتاب','قلم','نجمة','وردة','أسد','فيل','طائرة','سفينة','مفتاح','كاميرا','شجرة','نهر','ساعة','كرة','بيانو','تلفون','كنز','قناع','ملك','حصان','سيف','ذهب','فضة','ماء','نار','هاتف','كمبيوتر','تنس','ملاكمة','غناء','عزف','وردة','ياسمين','ليمون','برتقال','عنب','مانجو','فراولة','رمان','عسل','سكر','شوكولاتة','قصر','حديقة','قطار','طائرة','صاروخ','قمر','نجم','بحر','جبل','صحراء','غابة','كهف','بركان','مطر','ثلج','ربيع','شتاء','نهار','ليل','ذهب','ألماس','حرير','حديد','زجاج','صوت','ضوء','كبير','صغير','سريع','بطيء','قوي','خفيف','جديد','قديم'];
 
-// ربط الأزرار
-document.getElementById('btn-normal').addEventListener('click',()=>createRoom('normal'));
-document.getElementById('btn-multi').addEventListener('click',()=>createRoom('multi'));
+const params=new URLSearchParams(location.search),ridFromUrl=params.get('room');
+
+// ====== تحديد أي شاشة تظهر ======
+if(ridFromUrl){
+    // فيه room في الرابط → شاشة اللاعب
+    rid=ridFromUrl;
+    document.getElementById('join-screen').style.display='block';
+    document.getElementById('host-screen').style.display='none';
+    checkRoom();
+}else{
+    // مفيش room → شاشة الهوست
+    document.getElementById('host-screen').style.display='block';
+    document.getElementById('join-screen').style.display='none';
+    document.getElementById('btn-normal').addEventListener('click',()=>createRoom('normal'));
+    document.getElementById('btn-multi').addEventListener('click',()=>createRoom('multi'));
+}
+
+function checkRoom(){get(ref(db,'rooms/'+rid)).then(s=>{if(!s.exists()||!s.val().active){showExpired()}})}
 
 function createRoom(mode){
     gmode=mode;mname='⚔️ SASUKE ⚔️';rid='r'+Date.now().toString(36);mid='h'+Date.now().toString(36);isHost=true;finished=false;eliminated=false;
@@ -75,29 +101,34 @@ function createRoom(mode){
     });
 }
 
-function joinRoom(){
-    let n=document.getElementById('player-name')?.value.trim();
+window.joinRoom=function(){
+    let n=document.getElementById('player-name').value.trim();
     if(!n)return notify('⚠️ اكتب اسمك!');
     mname=n;mid='p'+Date.now().toString(36);isHost=false;
     get(ref(db,'rooms/'+rid)).then(s=>{if(s.exists()&&s.val().active){addMe();showGame();listenAll();notify('👋 '+n+'!')}else{showExpired()}});
-}
+};
 
 function addMe(){let r=ref(db,'rooms/'+rid+'/players/'+mid);set(r,{id:mid,name:mname,isHost,eliminated:false});onDisconnect(r).remove();}
 function setupHostDC(){onDisconnect(ref(db,'rooms/'+rid)).remove();}
 function listenAll(){listenPlayers();listenGame();listenOverlay();}
-function showGame(){document.getElementById('start-screen').style.display='none';document.getElementById('game-screen').style.display='block';}
+function showGame(){
+    document.getElementById('host-screen').style.display='none';
+    document.getElementById('join-screen').style.display='none';
+    document.getElementById('game-screen').style.display='block';
+}
 
-function listenPlayers(){onValue(ref(db,'rooms/'+rid+'/players'),s=>{let p=s.val()||{};allPlayers=p;let h='',sh='';Object.keys(p).forEach(i=>{let e=p[i].eliminated;h+=`<li class="${e?'eliminated':''}">${p[i].name}${p[i].isHost?' 👑':''}${e?' 👁️':''}</li>`;if(e)sh+=`<li>${p[i].name}</li>`});document.getElementById('player-list').innerHTML=h;document.getElementById('spec-list').innerHTML=sh;document.getElementById('spec-section').style.display=sh?'block':'none';if(isHost){let k='';Object.keys(p).forEach(i=>{if(i!==mid)k+=`<button onclick="kick('${i}')" style="background:#ff6b6b;font-size:12px">❌ ${p[i].name}</button>`});document.getElementById('vote-section').insertAdjacentHTML('afterend',k);}});}
+function listenPlayers(){onValue(ref(db,'rooms/'+rid+'/players'),s=>{let p=s.val()||{};allPlayers=p;let h='',sh='';Object.keys(p).forEach(i=>{let e=p[i].eliminated;h+=`<li class="${e?'eliminated':''}">${p[i].name}${p[i].isHost?' 👑':''}${e?' 👁️':''}</li>`;if(e)sh+=`<li>${p[i].name}</li>`});document.getElementById('player-list').innerHTML=h;document.getElementById('spec-list').innerHTML=sh;document.getElementById('spec-section').style.display=sh?'block':'none';if(isHost&&document.getElementById('btn-start').style.display!=='none'){let k='';Object.keys(p).forEach(i=>{if(i!==mid)k+=`<button onclick="kick('${i}')" style="background:#ff6b6b;font-size:12px">❌ ${p[i].name}</button>`});document.getElementById('vote-section').insertAdjacentHTML('afterend',k);}});}
 
 window.kick=function(id){remove(ref(db,'rooms/'+rid+'/players/'+id));};
 window.copyLink=function(){navigator.clipboard.writeText(document.getElementById('link-text').textContent);notify('📋 تم!');};
 
-function listenGame(){onValue(ref(db,'rooms/'+rid),s=>{if(!s.exists()){if(!isHost){showHostLeft()}return}let d=s.val();if(!d.active){showHostLeft();return}spyId=d.spyId;sword=d.sword;if(d.timerRunning&&d.timerEndAt)startTimer(d.timerEndAt);if(!d.timerRunning)stopTimer();if(d.phase!=d._lastPhase){d._lastPhase=d.phase;handlePhase(d)}});}
+function listenGame(){onValue(ref(db,'rooms/'+rid),s=>{if(!s.exists()){if(!isHost)showHostLeft();return}let d=s.val();if(!d.active){showHostLeft();return}spyId=d.spyId;sword=d.sword;if(d.timerRunning&&d.timerEndAt)startTimer(d.timerEndAt);if(!d.timerRunning)stopTimer();if(d.phase!=d._lastPhase){d._lastPhase=d.phase;handlePhase(d)}});}
 
 function listenOverlay(){onValue(ref(db,'rooms/'+rid+'/overlay'),s=>{let msg=s.val();if(!msg)return;if(msg.target==='all'||msg.target===mid)showOV(msg.html,msg.auto||false);});}
 
 function handlePhase(d){
     document.getElementById('vote-section').style.display='none';
+    document.getElementById('waiting-votes').style.display='none';
     if(d.phase==='playing'){showWord(d);if(isHost){document.getElementById('btn-start').style.display='none';document.getElementById('btn-skip').style.display='inline-block'}}
     if(d.phase==='voting'){showVoteUI();if(isHost){document.getElementById('btn-skip').style.display='none'}}
 }
@@ -121,8 +152,10 @@ function showVoteUI(){
     document.getElementById('vote-btns').innerHTML=h;
 }
 
-window.vote=function(id){set(ref(db,'rooms/'+rid+'/voteResults/'+mid),id);document.getElementById('vote-section').style.display='none';document.getElementById('waiting-votes').style.display='block';
-    // check votes
+window.vote=function(id){
+    set(ref(db,'rooms/'+rid+'/voteResults/'+mid),id);
+    document.getElementById('vote-section').style.display='none';
+    document.getElementById('waiting-votes').style.display='block';
     get(ref(db,'rooms/'+rid+'/voteResults')).then(s=>{
         let v=s.val()||{},active=Object.values(allPlayers).filter(x=>!x.eliminated).length;
         if(Object.keys(v).length>=active){finalize(v)}
@@ -141,8 +174,7 @@ function finalize(v){
 }
 
 function showGuessInput(){
-    let html='<input id="guess-input" placeholder="اكتب الكلمة"><br><button onclick="submitGuess()">إرسال</button>';
-    showOV(html,false);
+    showOV('<h3>🤔 خمن الكلمة:</h3><input id="guess-input" placeholder="اكتب الكلمة"><br><button onclick="submitGuess()">📨 إرسال</button>',false);
 }
 
 window.submitGuess=function(){
@@ -156,7 +188,7 @@ function startTimer(end){stopTimer();timer=setInterval(()=>{let r=Math.max(0,Mat
 function stopTimer(){if(timer){clearInterval(timer);timer=null}}
 function showOV(html,auto){removeOV();let ov=document.createElement('div');ov.className='overlay';ov.id='overlay';let box=document.createElement('div');box.className='overlay-box';box.innerHTML=html;ov.appendChild(box);document.body.appendChild(ov);if(auto)setTimeout(removeOV,auto);}
 function removeOV(){let ov=document.getElementById('overlay');if(ov)ov.remove();}
-function showHostLeft(){showOV('<h2>👑 غادر الهوست</h2><p>تعطلت اللعبة</p>',4000);setTimeout(()=>{location.href=location.origin+location.pathname},4000);}
+function showHostLeft(){showOV('<h2>👑 غادر الهوست</h2><p>تعطلت اللعبة</p>',4000);stopTimer();setTimeout(()=>{location.href=location.origin+location.pathname},4000);}
 function showExpired(){showOV('⚠️ الرابط منتهي',4000);setTimeout(()=>{location.href=location.origin+location.pathname},4000);}
 function notify(msg){let n=document.createElement('div');n.className='notification';n.textContent=msg;document.body.appendChild(n);setTimeout(()=>n.remove(),3000);}
 window.leaveRoom=function(){if(mid&&rid){if(isHost)remove(ref(db,'rooms/'+rid));else remove(ref(db,'rooms/'+rid+'/players/'+mid))}stopTimer();location.href=location.origin+location.pathname};
