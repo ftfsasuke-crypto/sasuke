@@ -26,7 +26,7 @@
         .star { position: absolute; background: white; border-radius: 50%; opacity: 0.5; animation: fall linear infinite; }
         @keyframes fall { from { transform: translateY(-10vh); } to { transform: translateY(110vh); } }
 
-        /* لاحظ إني شلت display: none عشان ميعملش شاشة بيضاء أبداً */
+        /* لاحظ هنا مفيش display:none عشان الشاشة تظهر فوراً */
         .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; position: relative; z-index: 10; }
         
         .yt-logo { width: 50px; margin-bottom: 10px; transition: 0.3s; }
@@ -77,11 +77,9 @@
         .menu-btn svg { width: 28px; height: 28px; fill: currentColor; }
 
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
-        .modal-box { background: #151517; border: 2px solid #333; border-radius: 20px; padding: 30px 20px; width: 85%; max-width: 350px; text-align: center; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.8); animation: bounce-icon 0.5s ease; border-top: 3px solid var(--accent); }
+        .modal-box { background: #151517; border: 2px solid #333; border-radius: 20px; padding: 30px 20px; width: 85%; max-width: 350px; text-align: center; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.8); border-top: 3px solid var(--accent); }
         .close-btn { position: absolute; top: 10px; right: 15px; color: #888; font-size: 28px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .close-btn:hover { color: var(--fail); }
-        
-        @keyframes bounce-icon { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-15px); } 60% { transform: translateY(-7px); } }
     </style>
 </head>
 <body>
@@ -126,7 +124,7 @@
     <p>بنتأكد من اللايك في سيرفر يوتيوب... ⏳</p>
 </div>
 
-<div id="generator-view" class="container" style="display: none;">
+<div id="generator-view" class="container">
     <div class="task-box" style="display:block; text-align:center; cursor:default;">
         <h2 style="color:var(--accent); margin-top:0;">MX_SASUKE VIP Generator</h2>
         <input type="text" id="it" class="gen-input" value="لازم تعمل اشتراك ولايك وتعليق للحصول على السكربت">
@@ -192,7 +190,7 @@
     </div>
 
     <div id="success-container" style="display:none; background: rgba(21, 21, 23, 0.8); backdrop-filter: blur(10px); border-radius: 15px; padding: 35px 20px; text-align: center; border: 1px solid #333; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
-        <div style="font-size: 70px; margin-bottom: 10px; animation: bounce-icon 2s infinite;">🎉</div>
+        <div style="font-size: 70px; margin-bottom: 10px;">🎉</div>
         <h2 style="margin: 0 0 15px; font-size: 28px; color: white;">احسنت يا بطل 😎</h2>
         
         <p style="color: #fbbf24; font-family: 'Cairo', sans-serif; font-weight: 900; font-size: 17px; margin-bottom: 25px; line-height: 1.7; border: 2px dashed #fbbf24; padding: 12px; border-radius: 10px; background: rgba(251, 191, 36, 0.08);">
@@ -207,7 +205,7 @@
 </div>
 
 <script>
-// دوال فتح وإغلاق قائمة الإعدادات
+// أكواد جافاسكريبت نقية 100% عشان الموبايلات
 function openMenu() { document.getElementById('about-modal').style.display = 'flex'; }
 function closeMenu(event) { if(event) event.stopPropagation(); document.getElementById('about-modal').style.display = 'none'; }
 
@@ -241,8 +239,7 @@ function fixUrl(url) {
     return url;
 }
 
-// الكود ده بيحدد هيعرض صفحة المصنع ولا صفحة الشروط
-window.onload = function() {
+try {
     var urlParams = window.location.search;
     if (urlParams.indexOf('data=') !== -1) {
         document.getElementById('generator-view').style.display = 'none';
@@ -272,22 +269,26 @@ window.onload = function() {
                 document.getElementById('count-num').innerText = "حدث خطأ";
             }
         });
-    } else {
-        // لو مفيش روابط في الـ URL هيظهر المصنع
-        document.getElementById('generator-view').style.display = 'block';
-        document.getElementById('task-view').style.display = 'none';
     }
-};
+} catch (error) {}
 
 function fetchRealLikes(videoId, callback) {
     if (!videoId) { callback(-1); return; }
-    fetch('https://www.googleapis.com/youtube/v3/videos?part=statistics&id=' + videoId + '&key=' + YOUTUBE_API_KEY + '&t=' + Date.now())
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
-        if(data.items && data.items.length > 0) {
-            callback(parseInt(data.items[0].statistics.likeCount));
+    // استخدمت XMLHttpRequest لضمان التوافق مع كل المتصفحات
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", "https://www.googleapis.com/youtube/v3/videos?part=statistics&id=" + videoId + "&key=" + YOUTUBE_API_KEY + "&t=" + new Date().getTime(), true);
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                var data = JSON.parse(xhr.responseText);
+                if(data.items && data.items.length > 0) {
+                    callback(parseInt(data.items[0].statistics.likeCount));
+                } else { callback(-1); }
+            } catch(e) { callback(-1); }
         } else { callback(-1); }
-    }).catch(function(e) { callback(-1); });
+    };
+    xhr.onerror = function() { callback(-1); };
+    xhr.send();
 }
 
 window.openC = function() { processTask('c', cLink); };
@@ -325,4 +326,5 @@ function processTask(type, url) {
                 sub = true; 
                 document.getElementById('tk1').classList.remove('active');
                 document.getElementById('tk1').classList.add('done'); 
-             
+                document.getElementById('tk1').querySelector('.step-icon').innerHTML = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
+                document.
