@@ -15,306 +15,106 @@
             min-height: 100vh;
             direction: rtl;
         }
-        #app {
-            max-width: 600px;
-            margin: 0 auto;
-            background: rgba(0,0,0,0.3);
-            border-radius: 20px;
-            padding: 20px;
-        }
+        #app { max-width: 600px; margin: 0 auto; background: rgba(0,0,0,0.3); border-radius: 20px; padding: 20px; }
         h1 { margin-bottom: 15px; }
         h1 .title-spy {
             background: linear-gradient(135deg, #e94560, #ff6b6b);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-size: 42px;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; font-size: 42px;
         }
         h2 { color: #e94560; margin-bottom: 15px; }
         h3 { margin: 15px 0 10px; color: #ccc; }
         button {
-            background: #e94560;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            margin: 8px;
-            border-radius: 30px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: 0.3s;
-            font-family: inherit;
+            background: #e94560; color: white; border: none;
+            padding: 12px 24px; margin: 8px; border-radius: 30px;
+            font-size: 16px; cursor: pointer; transition: 0.3s; font-family: inherit;
         }
         button:hover { background: #c23152; transform: scale(1.05); }
-        button:disabled { background: #666; cursor: not-allowed; transform: none; }
         input {
-            padding: 12px;
-            border-radius: 20px;
-            border: none;
-            margin: 8px;
-            font-size: 16px;
-            width: 70%;
-            text-align: center;
-            font-family: inherit;
+            padding: 12px; border-radius: 20px; border: none;
+            margin: 8px; font-size: 16px; width: 70%; text-align: center; font-family: inherit;
         }
         #timer-display {
-            font-size: 48px;
-            font-weight: bold;
-            background: #0f3460;
-            padding: 20px;
-            border-radius: 15px;
-            margin: 15px 0;
-            direction: ltr;
-            color: #2ecc71;
+            font-size: 48px; font-weight: bold; background: #0f3460;
+            padding: 20px; border-radius: 15px; margin: 15px 0; direction: ltr; color: #2ecc71;
         }
         ul { list-style: none; padding: 0; }
-        li {
-            background: #0f3460;
-            margin: 5px 0;
-            padding: 12px 20px;
-            border-radius: 20px;
-            font-size: 18px;
-        }
-        .room-link {
-            background: #0f3460;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            word-break: break-all;
-            direction: ltr;
-            font-size: 14px;
-        }
-        .copy-btn { padding: 6px 16px; font-size: 14px; margin: 5px; }
-        #vote-buttons button {
-            display: block;
-            width: 80%;
-            margin: 8px auto;
-            font-size: 18px;
-            padding: 14px;
-        }
+        li { background: #0f3460; margin: 5px 0; padding: 12px 20px; border-radius: 20px; font-size: 18px; }
+        .room-link { background: #0f3460; padding: 15px; border-radius: 10px; margin: 15px 0; word-break: break-all; direction: ltr; font-size: 14px; }
+        #vote-buttons button { display: block; width: 80%; margin: 8px auto; font-size: 18px; padding: 14px; }
         .notification {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #e94560;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 30px;
-            z-index: 1000;
-            font-size: 16px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: #e94560; color: white; padding: 12px 24px; border-radius: 30px;
+            z-index: 1000; font-size: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.4);
             animation: fadeIn 0.3s;
         }
         @keyframes fadeIn {
-            from { opacity: 0; top: 10px; }
-            to { opacity: 1; top: 20px; }
+            from { opacity: 0; top: 10px; } to { opacity: 1; top: 20px; }
         }
-        .wrong-box {
-            background: #4a1a1a;
-            border: 2px solid #e94560;
-            color: #ff6b6b;
-            padding: 15px;
-            border-radius: 15px;
-            margin: 10px 0;
-            font-size: 28px;
-            font-weight: bold;
-        }
-        .spy-reveal-box {
-            background: #1a1a4a;
-            border: 2px solid #f1c40f;
-            color: #f1c40f;
-            padding: 15px;
-            border-radius: 15px;
-            margin: 10px 0;
-            font-size: 22px;
-            font-weight: bold;
-        }
-        .correct-box {
-            background: #1a472a;
-            border: 2px solid #2ecc71;
-            color: #2ecc71;
-            padding: 15px;
-            border-radius: 15px;
-            margin: 10px 0;
-            font-size: 28px;
-            font-weight: bold;
-        }
-        .word-box {
-            background: #1a472a;
-            border: 2px solid #2ecc71;
-            color: #2ecc71;
-            padding: 25px;
-            border-radius: 15px;
-            margin: 15px 0;
-            font-size: 28px;
-            font-weight: bold;
-            letter-spacing: 3px;
-        }
-        .spy-box {
-            background: #4a1a1a;
-            border: 2px solid #e94560;
-            color: #e94560;
-            padding: 25px;
-            border-radius: 15px;
-            margin: 15px 0;
-            font-size: 24px;
-            font-weight: bold;
-        }
-        .vote-log {
-            background: #2c2c54;
-            padding: 12px;
-            border-radius: 10px;
-            margin: 8px 0;
-            font-size: 16px;
-            color: #ddd;
-        }
-        .waiting-votes {
-            background: #2c2c54;
-            padding: 20px;
-            border-radius: 15px;
-            margin: 15px 0;
-            font-size: 18px;
-            color: #f1c40f;
-            animation: pulse 1.5s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.6; }
-        }
-        .expired-box {
-            background: #4a1a1a;
-            border: 2px solid #e94560;
-            color: #e94560;
-            padding: 30px;
-            border-radius: 15px;
-            margin: 20px 0;
-            font-size: 22px;
-            font-weight: bold;
-        }
-        .final-guess-box {
-            background: #0f3460;
-            padding: 20px;
-            border-radius: 15px;
-            margin: 15px 0;
-            font-size: 20px;
-            border: 2px solid #f1c40f;
-        }
-        #kick-section { margin-top: 15px; }
-        #kick-section button {
-            background: #ff6b6b;
-            font-size: 14px;
-            padding: 6px 14px;
-            margin: 2px;
-        }
+        .wrong-box { background: #4a1a1a; border: 2px solid #e94560; color: #ff6b6b; padding: 15px; border-radius: 15px; margin: 10px 0; font-size: 28px; font-weight: bold; }
+        .spy-reveal-box { background: #1a1a4a; border: 2px solid #f1c40f; color: #f1c40f; padding: 15px; border-radius: 15px; margin: 10px 0; font-size: 22px; font-weight: bold; }
+        .correct-box { background: #1a472a; border: 2px solid #2ecc71; color: #2ecc71; padding: 15px; border-radius: 15px; margin: 10px 0; font-size: 28px; font-weight: bold; }
+        .word-box { background: #1a472a; border: 2px solid #2ecc71; color: #2ecc71; padding: 25px; border-radius: 15px; margin: 15px 0; font-size: 28px; font-weight: bold; letter-spacing: 3px; }
+        .spy-box { background: #4a1a1a; border: 2px solid #e94560; color: #e94560; padding: 25px; border-radius: 15px; margin: 15px 0; font-size: 24px; font-weight: bold; }
+        .vote-log { background: #2c2c54; padding: 12px; border-radius: 10px; margin: 8px 0; font-size: 16px; color: #ddd; }
+        .waiting-votes { background: #2c2c54; padding: 20px; border-radius: 15px; margin: 15px 0; font-size: 18px; color: #f1c40f; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.6;} }
+        .expired-box { background: #4a1a1a; border: 2px solid #e94560; color: #e94560; padding: 30px; border-radius: 15px; margin: 20px 0; font-size: 22px; font-weight: bold; }
+        .final-guess-box { background: #0f3460; padding: 20px; border-radius: 15px; margin: 15px 0; font-size: 20px; border: 2px solid #f1c40f; }
+        #kick-section button { background: #ff6b6b; font-size: 14px; padding: 6px 14px; margin: 2px; }
         .host-name-display {
             background: linear-gradient(135deg, #f093fb, #f5576c, #ffd700);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-size: 20px;
-            font-weight: bold;
-            margin: 8px 0;
-            display: inline-block;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            background-clip: text; font-size: 20px; font-weight: bold; margin: 8px 0; display: inline-block;
         }
-        .host-box {
-            background: #0f3460;
-            padding: 15px 20px;
-            border-radius: 15px;
-            margin: 10px 0;
-            border: 1px solid #e94560;
-        }
+        .host-box { background: #0f3460; padding: 15px 20px; border-radius: 15px; margin: 10px 0; border: 1px solid #e94560; }
     </style>
 </head>
 <body>
     <div id="app">
-        <!-- شاشة البداية -->
         <div id="start-screen">
             <h1><span class="title-spy">🕵️ لعبة الجاسوس</span></h1>
-            
-            <div id="expired-message" style="display:none;" class="expired-box">
-                ⚠️ انتهت صلاحية الرابط!<br><small>الغرفة لم تعد موجودة، اطلب رابط جديد من الهوست.</small>
-            </div>
-            
+            <div id="expired-message" style="display:none;" class="expired-box">⚠️ انتهت صلاحية الرابط!</div>
             <div id="create-section">
                 <div class="host-box">
-                    <p style="color:#aaa; margin-bottom:5px;">👑 أنت الهوست</p>
+                    <p style="color:#aaa;">👑 أنت الهوست</p>
                     <p>اسمك: <span class="host-name-display">⚔️ S A S U K E ⚔️</span></p>
                 </div>
                 <button onclick="createRoom()" style="font-size:18px; padding:14px 30px;">🎮 إنشاء غرفة جديدة</button>
             </div>
-            
             <div id="join-section" style="display:none;">
                 <p style="color:#aaa;">ادخل غرفة صديقك:</p>
-                <input type="text" id="player-name" placeholder="اكتب اسمك">
-                <br>
+                <input type="text" id="player-name" placeholder="اكتب اسمك"><br>
                 <button onclick="joinRoom()">🚪 انضمام للغرفة</button>
             </div>
         </div>
-
-        <!-- شاشة اللعبة -->
         <div id="game-screen" style="display:none;">
             <h2>🕵️ لعبة الجاسوس</h2>
-            
             <div id="room-link-box" class="room-link" style="display:none;">
-                <p style="margin-bottom:8px;">🔗 رابط الغرفة (ابعته لأصحابك):</p>
-                <span id="room-link-text"></span>
-                <br>
+                <p>🔗 رابط الغرفة:</p><span id="room-link-text"></span><br>
                 <button class="copy-btn" onclick="copyLink()">📋 نسخ الرابط</button>
-                <br>
-                <span style="font-size:14px; color:#aaa;">أو كود الغرفة: <strong id="room-id-display"></strong></span>
             </div>
-            
             <div id="word-display" style="display:none;"></div>
-            
             <div id="timer-display">10:00</div>
-            
             <div id="host-controls" style="display:none;">
                 <button onclick="startGame()">🚀 ابدأ اللعبة</button>
                 <button onclick="skipTime()">⏩ اسكب الوقت</button>
             </div>
-
-            <h3>👥 اللاعبون المتصلون:</h3>
-            <ul id="player-list"></ul>
-            
-            <div id="kick-section" style="display:none;"></div>
-
-            <div id="vote-log-section" style="display:none;">
-                <h3>📋 سجل التصويتات:</h3>
-                <div id="vote-log"></div>
-            </div>
-
-            <div id="vote-section" style="display:none;">
-                <h3>🗳️ صوّت على الجاسوس:</h3>
-                <div id="vote-buttons"></div>
-            </div>
-
-            <div id="waiting-votes" style="display:none;" class="waiting-votes">
-                ⏳ في انتظار باقي اللاعبين للتصويت...
-            </div>
-
-            <div id="vote-result-wrong" style="display:none;" class="wrong-box">
-                ❌ مش هو الجاسوس!
-            </div>
-            <div id="spy-reveal" style="display:none;" class="spy-reveal-box">
-                🕵️ الجاسوس كان: <span id="spy-reveal-name"></span>
-            </div>
-            
-            <div id="vote-result-correct" style="display:none;" class="correct-box">
-                ✅ صحيح! الجاسوس هو <span id="correct-spy-name"></span>
-            </div>
-            
+            <h3>👥 اللاعبون:</h3><ul id="player-list"></ul>
+            <div id="kick-section"></div>
+            <div id="vote-log-section" style="display:none;"><h3>📋 التصويتات:</h3><div id="vote-log"></div></div>
+            <div id="vote-section" style="display:none;"><h3>🗳️ صوت على الجاسوس:</h3><div id="vote-buttons"></div></div>
+            <div id="waiting-votes" style="display:none;" class="waiting-votes">⏳ في انتظار باقي اللاعبين...</div>
+            <div id="vote-result-wrong" style="display:none;" class="wrong-box">❌ مش هو الجاسوس!</div>
+            <div id="spy-reveal" style="display:none;" class="spy-reveal-box">🕵️ الجاسوس كان: <span id="spy-reveal-name"></span></div>
+            <div id="vote-result-correct" style="display:none;" class="correct-box">✅ صحيح! الجاسوس هو <span id="correct-spy-name"></span></div>
             <div id="spy-guess-section" style="display:none;">
-                <h3>🤔 أنت الجاسوس! خمّن الكلمة السرية:</h3>
-                <input type="text" id="spy-guess-input" placeholder="اكتب الكلمة">
-                <br>
-                <button onclick="submitSpyGuess()">📨 إرسال التخمين</button>
+                <h3>🤔 أنت الجاسوس! خمن الكلمة:</h3>
+                <input type="text" id="spy-guess-input" placeholder="اكتب الكلمة"><br>
+                <button onclick="submitSpyGuess()">📨 إرسال</button>
             </div>
-
-            <!-- نتيجة التخمين تظهر للكل -->
             <div id="spy-guess-result" style="display:none;" class="final-guess-box"></div>
-            
-            <br>
-            <button onclick="leaveRoom()" style="background:#555;">🚪 مغادرة الغرفة</button>
+            <button onclick="leaveRoom()" style="background:#555;">🚪 مغادرة</button>
         </div>
     </div>
 
@@ -331,536 +131,130 @@
             appId: "1:261865713515:web:8868e0998ccd0d00aba62e",
             measurementId: "G-37MWRPZ2Q4"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        let myPlayerId = null;
-        let myPlayerName = null;
-        let roomId = null;
-        let isHost = false;
-        let gamePhase = 'waiting';
-        let spyPlayerId = null;
-        let secretWord = null;
-        let timerInterval = null;
-        let localTimer = 600;
-        let totalPlayerCount = 0;
-        let allPlayersData = {};
-        let gameFinished = false;
+        let myPlayerId=null,myPlayerName=null,roomId=null,isHost=false,gamePhase='waiting';
+        let spyPlayerId=null,secretWord=null,timerInterval=null,localTimer=600,totalPlayerCount=0,allPlayersData={},gameFinished=false;
 
-        const params = new URLSearchParams(window.location.search);
-        const ridFromUrl = params.get('room');
-        
-        if (ridFromUrl) {
-            roomId = ridFromUrl;
-            checkRoomExists(ridFromUrl);
-        } else {
-            document.getElementById('create-section').style.display = 'block';
-            document.getElementById('join-section').style.display = 'none';
-        }
+        const params=new URLSearchParams(window.location.search),ridFromUrl=params.get('room');
+        if(ridFromUrl){roomId=ridFromUrl;checkRoomExists(ridFromUrl);}
+        else{document.getElementById('create-section').style.display='block';document.getElementById('join-section').style.display='none';}
 
-        function checkRoomExists(rid) {
-            const roomRef = ref(db, 'rooms/' + rid);
-            get(roomRef).then(snapshot => {
-                if (snapshot.exists()) {
-                    const roomData = snapshot.val();
-                    if (roomData.phase === 'waiting') {
-                        document.getElementById('create-section').style.display = 'none';
-                        document.getElementById('join-section').style.display = 'block';
-                        document.getElementById('expired-message').style.display = 'none';
-                    } else {
-                        showExpiredMessage();
-                    }
-                } else {
-                    showExpiredMessage();
-                }
-            }).catch(() => {
-                showExpiredMessage();
+        function checkRoomExists(rid){
+            get(ref(db,'rooms/'+rid)).then(s=>{
+                if(s.exists()){let d=s.val();if(d.phase==='waiting'){document.getElementById('create-section').style.display='none';document.getElementById('join-section').style.display='block';}
+                else{showExpired();}}
+                else{showExpired();}
             });
         }
+        function showExpired(){document.getElementById('create-section').style.display='none';document.getElementById('join-section').style.display='none';document.getElementById('expired-message').style.display='block';}
 
-        function showExpiredMessage() {
-            document.getElementById('create-section').style.display = 'none';
-            document.getElementById('join-section').style.display = 'none';
-            document.getElementById('expired-message').style.display = 'block';
-        }
-
-        window.createRoom = function() {
-            myPlayerName = '⚔️ SASUKE ⚔️';
-            
-            roomId = 'room-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
-            myPlayerId = 'host-' + Date.now().toString(36);
-            isHost = true;
-            gameFinished = false;
-            
-            const roomRef = ref(db, 'rooms/' + roomId);
-            const roomData = {
-                hostId: myPlayerId,
-                hostName: myPlayerName,
-                phase: 'waiting',
-                active: true,
-                timer: 600,
-                timerRunning: false,
-                timerEndAt: null,
-                spyPlayerId: null,
-                secretWord: null,
-                voteResults: {},
-                voteLogs: {},
-                voteResultPhase: 'waiting',
-                spyGuessResult: null,
-                createdAt: Date.now()
-            };
-            
-            set(roomRef, roomData).then(() => {
-                addPlayerToRoom();
-                showGameScreen();
-                document.getElementById('host-controls').style.display = 'block';
-                document.getElementById('room-link-box').style.display = 'block';
-                const fullLink = window.location.origin + window.location.pathname + '?room=' + roomId;
-                document.getElementById('room-link-text').textContent = fullLink;
-                document.getElementById('room-id-display').textContent = roomId;
-                listenToPlayers();
-                listenToGameState();
-                listenToVotes();
-                listenToVoteLogs();
-                listenToSpyGuess();
-                showNotification('✅ تم إنشاء الغرفة! انسخ الرابط وابعته لأصحابك');
+        window.createRoom=function(){
+            myPlayerName='⚔️ SASUKE ⚔️';roomId='room-'+Date.now().toString(36)+Math.random().toString(36).substr(2,5);
+            myPlayerId='host-'+Date.now().toString(36);isHost=true;gameFinished=false;
+            set(ref(db,'rooms/'+roomId),{hostId:myPlayerId,phase:'waiting',active:true,timer:600,timerRunning:false,spyPlayerId:null,secretWord:null,voteResults:{},voteLogs:{},voteResultPhase:'waiting',spyGuessResult:null,createdAt:Date.now()}).then(()=>{
+                addPlayer();showGame();document.getElementById('host-controls').style.display='block';
+                document.getElementById('room-link-box').style.display='block';
+                document.getElementById('room-link-text').textContent=location.origin+location.pathname+'?room='+roomId;
+                document.getElementById('room-id-display').textContent=roomId;
+                listenPlayers();listenGame();listenVotes();listenLogs();listenGuess();
+                notify('✅ تم إنشاء الغرفة!');
             });
         };
 
-        window.joinRoom = function() {
-            const nameInput = document.getElementById('player-name');
-            const name = nameInput.value.trim();
-            
-            if (!name) return showNotification('⚠️ اكتب اسمك الأول!');
-            if (!roomId) return showNotification('⚠️ كود الغرفة مش موجود!');
-            
-            myPlayerName = name;
-            myPlayerId = 'player-' + Date.now().toString(36);
-            isHost = false;
-            gameFinished = false;
-            
-            const roomRef = ref(db, 'rooms/' + roomId);
-            get(roomRef).then(snapshot => {
-                if (snapshot.exists()) {
-                    const roomData = snapshot.val();
-                    if (!roomData.active || roomData.phase !== 'waiting') {
-                        showExpiredMessage();
-                        showNotification('⚠️ انتهت صلاحية الرابط!');
-                        return;
-                    }
-                    addPlayerToRoom();
-                    showGameScreen();
-                    document.getElementById('room-link-box').style.display = 'none';
-                    document.getElementById('host-controls').style.display = 'none';
-                    listenToPlayers();
-                    listenToGameState();
-                    listenToVotes();
-                    listenToVoteLogs();
-                    listenToSpyGuess();
-                    showNotification(`👋 مرحباً ${name}، أنت في الغرفة!`);
-                } else {
-                    showExpiredMessage();
-                    showNotification('❌ انتهت صلاحية الرابط!');
-                }
+        window.joinRoom=function(){
+            let n=document.getElementById('player-name').value.trim();
+            if(!n)return notify('⚠️ اكتب اسمك!');
+            myPlayerName=n;myPlayerId='player-'+Date.now().toString(36);isHost=false;gameFinished=false;
+            get(ref(db,'rooms/'+roomId)).then(s=>{
+                if(s.exists()){let d=s.val();if(!d.active||d.phase!=='waiting'){showExpired();return;}
+                    addPlayer();showGame();document.getElementById('room-link-box').style.display='none';
+                    document.getElementById('host-controls').style.display='none';
+                    listenPlayers();listenGame();listenVotes();listenLogs();listenGuess();
+                    notify('👋 مرحباً '+n+'!');
+                }else{showExpired();}
             });
         };
 
-        function addPlayerToRoom() {
-            const playerRef = ref(db, 'rooms/' + roomId + '/players/' + myPlayerId);
-            const playerData = {
-                id: myPlayerId,
-                name: myPlayerName,
-                isHost: isHost,
-                connected: true
-            };
-            set(playerRef, playerData);
-            onDisconnect(playerRef).remove();
+        function addPlayer(){let r=ref(db,'rooms/'+roomId+'/players/'+myPlayerId);set(r,{id:myPlayerId,name:myPlayerName,isHost,connected:true});onDisconnect(r).remove();}
+        function listenPlayers(){onValue(ref(db,'rooms/'+roomId+'/players'),s=>{let p=s.val()||{};allPlayersData=p;totalPlayerCount=Object.keys(p).length;updatePlayerList(p);});}
+        function updatePlayerList(p){
+            let h='';Object.keys(p).forEach(i=>{h+=`<li>${p[i].name} ${p[i].isHost?'👑':''}</li>`;});
+            document.getElementById('player-list').innerHTML=h;
+            if(isHost&&gamePhase==='waiting'){let k='<h4>طرد لاعب:</h4>';Object.keys(p).forEach(i=>{if(i!==myPlayerId)k+=`<button onclick="kickPlayer('${i}')">❌ ${p[i].name}</button>`;});document.getElementById('kick-section').innerHTML=k;document.getElementById('kick-section').style.display=Object.keys(p).length>1?'block':'none';}
         }
+        window.kickPlayer=function(id){if(!isHost)return;remove(ref(db,'rooms/'+roomId+'/players/'+id));notify('👢 تم الطرد!');};
+        window.copyLink=function(){navigator.clipboard.writeText(document.getElementById('room-link-text').textContent).then(()=>notify('📋 تم النسخ!'));};
+        function listenGame(){onValue(ref(db,'rooms/'+roomId),s=>{if(!s.exists())return;let d=s.val();if(d.phase!==gamePhase){gamePhase=d.phase;handlePhase(d);}spyPlayerId=d.spyPlayerId;secretWord=d.secretWord;if(d.timerRunning&&d.timerEndAt)startTimer(d.timerEndAt);if(!d.timerRunning){stopTimer();localTimer=d.timer||localTimer;updateTimer();}});}
+        function listenGuess(){onValue(ref(db,'rooms/'+roomId+'/spyGuessResult'),s=>{let d=s.val();if(d)showGuess(d);});}
+        function listenLogs(){onValue(ref(db,'rooms/'+roomId+'/voteLogs'),s=>{let l=s.val()||{},h='';Object.values(l).forEach(x=>{h+=`<div class="vote-log">🗳️ ${x.voterName} ➡️ ${x.targetName}</div>`;});document.getElementById('vote-log').innerHTML=h||'<div class="vote-log">لا تصويتات بعد</div>';});}
+        function listenVotes(){onValue(ref(db,'rooms/'+roomId+'/voteResults'),s=>{if(gamePhase!=='voting')return;let v=s.val()||{},c=Object.keys(v).length;if(c>0&&c<totalPlayerCount){document.getElementById('waiting-votes').style.display='block';document.getElementById('waiting-votes').textContent='⏳ انتظار... ('+c+' من '+totalPlayerCount+')';}if(c>=totalPlayerCount&&totalPlayerCount>0&&!gameFinished){gameFinished=true;document.getElementById('waiting-votes').style.display='none';finalize(v);}});}
 
-        function listenToPlayers() {
-            const playersRef = ref(db, 'rooms/' + roomId + '/players');
-            onValue(playersRef, snapshot => {
-                const players = snapshot.val() || {};
-                allPlayersData = players;
-                totalPlayerCount = Object.keys(players).length;
-                updatePlayerListUI(players);
-            });
+        function handlePhase(d){
+            document.getElementById('vote-section').style.display='none';document.getElementById('vote-log-section').style.display='none';
+            document.getElementById('vote-result-wrong').style.display='none';document.getElementById('spy-reveal').style.display='none';
+            document.getElementById('vote-result-correct').style.display='none';document.getElementById('spy-guess-section').style.display='none';
+            document.getElementById('spy-guess-result').style.display='none';document.getElementById('waiting-votes').style.display='none';
+            if(d.phase==='playing'){showWord(d);notify('🚀 بدأت!');}
+            if(d.phase==='voting'){document.getElementById('word-display').style.display='none';document.getElementById('vote-log-section').style.display='block';showVoteUI();}
+            if(d.phase==='spyGuess'||d.phase==='finished'){document.getElementById('word-display').style.display='none';document.getElementById('vote-log-section').style.display='block';showResult(d);if(d.spyGuessResult)showGuess(d.spyGuessResult);}
         }
-
-        function updatePlayerListUI(players) {
-            const list = document.getElementById('player-list');
-            let html = '';
-            const playerIds = Object.keys(players);
-            
-            playerIds.forEach(pid => {
-                const p = players[pid];
-                html += `<li>${p.name} ${p.isHost ? '👑 (هوست)' : ''}</li>`;
-            });
-            
-            list.innerHTML = html || '<li style="color:#888;">لا يوجد لاعبون بعد...</li>';
-            
-            if (isHost && gamePhase === 'waiting') {
-                let kickHtml = '<h4>طرد لاعب:</h4>';
-                playerIds.forEach(pid => {
-                    const p = players[pid];
-                    if (pid !== myPlayerId) {
-                        kickHtml += `<button onclick="kickPlayer('${pid}')">❌ طرد ${p.name}</button> `;
-                    }
-                });
-                document.getElementById('kick-section').innerHTML = kickHtml;
-                document.getElementById('kick-section').style.display = playerIds.length > 1 ? 'block' : 'none';
-            }
+        function showGuess(g){let div=document.getElementById('spy-guess-result');div.style.display='block';div.innerHTML=g.correct?`🎉 صح! الكلمة: <strong>${g.secretWord}</strong>`:`😞 غلط! الكلمة: <strong>${g.secretWord}</strong>`;div.style.borderColor=g.correct?'#2ecc71':'#e94560';div.style.color=g.correct?'#2ecc71':'#e94560';}
+        function showResult(d){
+            let sn=allPlayersData[d.spyPlayerId]?.name||'???';
+            if(d.voteResultPhase==='correct'){document.getElementById('vote-result-correct').style.display='block';document.getElementById('correct-spy-name').textContent=sn;}
+            else{document.getElementById('vote-result-wrong').style.display='block';document.getElementById('spy-reveal').style.display='block';document.getElementById('spy-reveal-name').textContent=sn;}
+            if(myPlayerId===d.spyPlayerId)document.getElementById('spy-guess-section').style.display='block';
         }
-
-        window.kickPlayer = function(playerId) {
-            if (!isHost) return;
-            const playerRef = ref(db, 'rooms/' + roomId + '/players/' + playerId);
-            remove(playerRef);
-            showNotification('👢 تم طرد اللاعب!');
-        };
-
-        window.copyLink = function() {
-            const link = document.getElementById('room-link-text').textContent;
-            navigator.clipboard.writeText(link).then(() => {
-                showNotification('📋 تم نسخ الرابط!');
+        function showWord(d){let w=document.getElementById('word-display');w.style.display='block';if(myPlayerId===d.spyPlayerId){w.className='spy-box';w.innerHTML='🕵️ أنت الجاسوس!';}else{w.className='word-box';w.innerHTML='🔑 الكلمة:<br>'+d.secretWord;}}
+        window.startGame=function(){
+            if(!isHost)return;gameFinished=false;
+            get(ref(db,'rooms/'+roomId+'/players')).then(s=>{
+                let p=s.val(),ids=Object.keys(p);if(ids.length<2)return notify('⚠️ محتاج لاعبين!');
+                let spy=ids[Math.floor(Math.random()*ids.length)];
+                let words=['تفاحة','سيارة','قمر','شمس','بحر','جبل','كتاب','قلم','نجمة','وردة','أسد','فيل','طائرة','سفينة','مفتاح','كاميرا','شجرة','نهر','ساعة','كرة','بيانو','تلفون','كنز','قناع'];
+                let sw=words[Math.floor(Math.random()*words.length)],now=Date.now();
+                update(ref(db,'rooms/'+roomId),{phase:'playing',spyPlayerId:spy,secretWord:sw,timer:600,timerRunning:true,timerEndAt:now+600000,voteResults:{},voteLogs:{},voteResultPhase:'waiting',spyGuessResult:null});
+                document.getElementById('kick-section').style.display='none';
             });
         };
-
-        function listenToGameState() {
-            const roomRef = ref(db, 'rooms/' + roomId);
-            onValue(roomRef, snapshot => {
-                if (!snapshot.exists()) return;
-                const data = snapshot.val();
-                
-                if (data.phase !== gamePhase) {
-                    gamePhase = data.phase;
-                    handlePhaseChange(data);
-                }
-                
-                if (data.spyPlayerId) spyPlayerId = data.spyPlayerId;
-                if (data.secretWord) secretWord = data.secretWord;
-                
-                if (data.timerRunning && data.timerEndAt) {
-                    startLocalTimer(data.timerEndAt);
-                }
-                if (!data.timerRunning) {
-                    stopLocalTimer();
-                    if (data.timer !== undefined) {
-                        localTimer = data.timer;
-                        updateTimerDisplay();
-                    }
-                }
+        window.skipTime=function(){if(!isHost)return;gameFinished=false;update(ref(db,'rooms/'+roomId),{timerRunning:false,timer:0,phase:'voting'});};
+        function showVoteUI(){
+            document.getElementById('vote-section').style.display='block';
+            get(ref(db,'rooms/'+roomId+'/players')).then(s=>{
+                let p=s.val(),h='';Object.keys(p).forEach(i=>{if(i!==myPlayerId)h+=`<button onclick="voteFor('${i}')">${p[i].name}</button>`;});
+                document.getElementById('vote-buttons').innerHTML=h;notify('🗳️ وقت التصويت!');
             });
         }
-
-        function listenToSpyGuess() {
-            const guessRef = ref(db, 'rooms/' + roomId + '/spyGuessResult');
-            onValue(guessRef, snapshot => {
-                const data = snapshot.val();
-                if (data) {
-                    const guessDiv = document.getElementById('spy-guess-result');
-                    guessDiv.style.display = 'block';
-                    if (data.correct) {
-                        guessDiv.innerHTML = `🎉 الجاسوس خمن صح! الكلمة كانت: <strong>${data.secretWord}</strong><br>التخمين: ${data.guess}`;
-                        guessDiv.style.borderColor = '#2ecc71';
-                        guessDiv.style.color = '#2ecc71';
-                    } else {
-                        guessDiv.innerHTML = `😞 تخمين خاطئ! الكلمة كانت: <strong>${data.secretWord}</strong><br>التخمين: ${data.guess}`;
-                        guessDiv.style.borderColor = '#e94560';
-                        guessDiv.style.color = '#e94560';
-                    }
-                }
-            });
-        }
-
-        function listenToVoteLogs() {
-            const logsRef = ref(db, 'rooms/' + roomId + '/voteLogs');
-            onValue(logsRef, snapshot => {
-                const logs = snapshot.val() || {};
-                updateVoteLogUI(logs);
-            });
-        }
-
-        function updateVoteLogUI(logs) {
-            const logDiv = document.getElementById('vote-log');
-            let html = '';
-            Object.values(logs).forEach(log => {
-                html += `<div class="vote-log">🗳️ ${log.voterName} ➡️ ${log.targetName}</div>`;
-            });
-            logDiv.innerHTML = html || '<div class="vote-log" style="color:#888;">لا يوجد تصويتات بعد...</div>';
-        }
-
-        function listenToVotes() {
-            const votesRef = ref(db, 'rooms/' + roomId + '/voteResults');
-            onValue(votesRef, snapshot => {
-                if (gamePhase !== 'voting') return;
-                const votes = snapshot.val() || {};
-                const voteCount = Object.keys(votes).length;
-                
-                if (voteCount > 0 && voteCount < totalPlayerCount) {
-                    document.getElementById('waiting-votes').style.display = 'block';
-                    document.getElementById('waiting-votes').textContent = 
-                        `⏳ في انتظار باقي اللاعبين للتصويت... (${voteCount} من ${totalPlayerCount})`;
-                }
-                
-                if (voteCount >= totalPlayerCount && totalPlayerCount > 0 && !gameFinished) {
-                    gameFinished = true;
-                    document.getElementById('waiting-votes').style.display = 'none';
-                    finalizeVotes(votes);
-                }
-            });
-        }
-
-        function handlePhaseChange(data) {
-            document.getElementById('vote-section').style.display = 'none';
-            document.getElementById('vote-log-section').style.display = 'none';
-            document.getElementById('vote-result-wrong').style.display = 'none';
-            document.getElementById('spy-reveal').style.display = 'none';
-            document.getElementById('vote-result-correct').style.display = 'none';
-            document.getElementById('spy-guess-section').style.display = 'none';
-            document.getElementById('spy-guess-result').style.display = 'none';
-            document.getElementById('waiting-votes').style.display = 'none';
-            
-            switch(data.phase) {
-                case 'playing':
-                    showWordOrSpy(data);
-                    showNotification('🚀 اللعبة بدأت!');
-                    break;
-                case 'voting':
-                    document.getElementById('word-display').style.display = 'none';
-                    document.getElementById('vote-log-section').style.display = 'block';
-                    showVotingUI(data);
-                    break;
-                case 'spyGuess':
-                    document.getElementById('word-display').style.display = 'none';
-                    document.getElementById('vote-log-section').style.display = 'block';
-                    showStoredResult(data);
-                    // إظهار نتيجة التخمين لو موجودة
-                    if (data.spyGuessResult) {
-                        showSpyGuessToAll(data.spyGuessResult);
-                    }
-                    break;
-                case 'finished':
-                    document.getElementById('word-display').style.display = 'none';
-                    document.getElementById('vote-log-section').style.display = 'block';
-                    showStoredResult(data);
-                    if (data.spyGuessResult) {
-                        showSpyGuessToAll(data.spyGuessResult);
-                    }
-                    break;
-            }
-        }
-
-        function showSpyGuessToAll(guessData) {
-            const guessDiv = document.getElementById('spy-guess-result');
-            guessDiv.style.display = 'block';
-            if (guessData.correct) {
-                guessDiv.innerHTML = `🎉 الجاسوس خمن صح! الكلمة كانت: <strong>${guessData.secretWord}</strong><br>التخمين: ${guessData.guess}`;
-                guessDiv.style.borderColor = '#2ecc71';
-                guessDiv.style.color = '#2ecc71';
-            } else {
-                guessDiv.innerHTML = `😞 تخمين خاطئ! الكلمة كانت: <strong>${guessData.secretWord}</strong><br>التخمين: ${guessData.guess}`;
-                guessDiv.style.borderColor = '#e94560';
-                guessDiv.style.color = '#e94560';
-            }
-        }
-
-        function showStoredResult(data) {
-            if (data.voteResultPhase === 'correct') {
-                const spyName = allPlayersData[data.spyPlayerId] ? allPlayersData[data.spyPlayerId].name : '???';
-                document.getElementById('vote-result-correct').style.display = 'block';
-                document.getElementById('correct-spy-name').textContent = spyName;
-            } else if (data.voteResultPhase === 'wrong') {
-                const spyName = allPlayersData[data.spyPlayerId] ? allPlayersData[data.spyPlayerId].name : '???';
-                document.getElementById('vote-result-wrong').style.display = 'block';
-                document.getElementById('spy-reveal').style.display = 'block';
-                document.getElementById('spy-reveal-name').textContent = spyName;
-            }
-            
-            if (myPlayerId === data.spyPlayerId) {
-                document.getElementById('spy-guess-section').style.display = 'block';
-            }
-        }
-
-        function showWordOrSpy(data) {
-            const wordDiv = document.getElementById('word-display');
-            wordDiv.style.display = 'block';
-            
-            if (myPlayerId === data.spyPlayerId) {
-                wordDiv.className = 'spy-box';
-                wordDiv.innerHTML = '🕵️ أنت الجاسوس!<br><small>حاول تكتشف الكلمة من الأسئلة</small>';
-            } else {
-                wordDiv.className = 'word-box';
-                wordDiv.innerHTML = `🔑 الكلمة السرية:<br>${data.secretWord}`;
-            }
-        }
-
-        window.startGame = function() {
-            if (!isHost) return;
-            gameFinished = false;
-            
-            const playersRef = ref(db, 'rooms/' + roomId + '/players');
-            get(playersRef).then(snapshot => {
-                const players = snapshot.val();
-                const playerIds = Object.keys(players);
-                
-                if (playerIds.length < 2) {
-                    return showNotification('⚠️ محتاج لاعبين على الأقل!');
-                }
-                
-                const randomIndex = Math.floor(Math.random() * playerIds.length);
-                const spyId = playerIds[randomIndex];
-                
-                const words = ['تفاحة', 'سيارة', 'قمر', 'شمس', 'بحر', 'جبل', 'كتاب', 'قلم', 'نجمة', 'وردة', 'أسد', 'فيل', 'طائرة', 'سفينة', 'مفتاح', 'كاميرا', 'شجرة', 'نهر', 'ساعة', 'كرة', 'بيانو', 'تلفون', 'كنز', 'قناع'];
-                const secretW = words[Math.floor(Math.random() * words.length)];
-                
-                const roomRef = ref(db, 'rooms/' + roomId);
-                const now = Date.now();
-                update(roomRef, {
-                    phase: 'playing',
-                    spyPlayerId: spyId,
-                    secretWord: secretW,
-                    timer: 600,
-                    timerRunning: true,
-                    timerEndAt: now + 600000,
-                    voteResults: {},
-                    voteLogs: {},
-                    voteResultPhase: 'waiting',
-                    spyGuessResult: null
-                });
-                
-                document.getElementById('kick-section').style.display = 'none';
-            });
+        window.voteFor=function(id){
+            set(ref(db,'rooms/'+roomId+'/voteResults/'+myPlayerId),id);
+            set(ref(db,'rooms/'+roomId+'/voteLogs/'+myPlayerId),{voterName:myPlayerName,targetName:allPlayersData[id]?.name||'???'});
+            document.getElementById('vote-section').style.display='none';document.getElementById('waiting-votes').style.display='block';
+            notify('✅ تم التصويت!');
         };
-
-        window.skipTime = function() {
-            if (!isHost) return;
-            gameFinished = false;
-            const roomRef = ref(db, 'rooms/' + roomId);
-            update(roomRef, {
-                timerRunning: false,
-                timer: 0,
-                phase: 'voting'
-            });
-        };
-
-        function showVotingUI(data) {
-            document.getElementById('vote-section').style.display = 'block';
-            document.getElementById('waiting-votes').style.display = 'none';
-            const playersRef = ref(db, 'rooms/' + roomId + '/players');
-            get(playersRef).then(snapshot => {
-                const players = snapshot.val();
-                let html = '';
-                Object.keys(players).forEach(pid => {
-                    if (pid !== myPlayerId) {
-                        html += `<button onclick="voteFor('${pid}')">${players[pid].name}</button>`;
-                    }
-                });
-                document.getElementById('vote-buttons').innerHTML = html || '<p>لا يوجد لاعبين للتصويت</p>';
-                showNotification('🗳️ وقت التصويت!');
-            });
+        function finalize(v){
+            let vc={};Object.values(v).forEach(x=>{vc[x]=(vc[x]||0)+1;});
+            let max=0,mv=null;Object.entries(vc).forEach(([id,c])=>{if(c>max){max=c;mv=id;}});
+            let ok=(mv===spyPlayerId),sn=allPlayersData[spyPlayerId]?.name||'???';
+            if(ok){document.getElementById('vote-result-correct').style.display='block';document.getElementById('correct-spy-name').textContent=sn;}
+            else{document.getElementById('vote-result-wrong').style.display='block';document.getElementById('spy-reveal').style.display='block';document.getElementById('spy-reveal-name').textContent=sn;}
+            if(myPlayerId===spyPlayerId)document.getElementById('spy-guess-section').style.display='block';
+            update(ref(db,'rooms/'+roomId),{phase:'spyGuess',voteResultPhase:ok?'correct':'wrong'});
         }
-
-        window.voteFor = function(targetId) {
-            const voteRef = ref(db, 'rooms/' + roomId + '/voteResults/' + myPlayerId);
-            set(voteRef, targetId);
-            
-            const targetName = allPlayersData[targetId] ? allPlayersData[targetId].name : '???';
-            const logRef = ref(db, 'rooms/' + roomId + '/voteLogs/' + myPlayerId);
-            set(logRef, {
-                voterName: myPlayerName,
-                targetName: targetName,
-                time: Date.now()
-            });
-            
-            document.getElementById('vote-section').style.display = 'none';
-            document.getElementById('waiting-votes').style.display = 'block';
-            document.getElementById('waiting-votes').textContent = '⏳ في انتظار باقي اللاعبين للتصويت...';
-            showNotification('✅ تم تسجيل صوتك! في انتظار باقي اللاعبين...');
+        window.submitSpyGuess=function(){
+            let g=document.getElementById('spy-guess-input').value.trim();if(!g)return notify('⚠️ اكتب تخمينك!');
+            let ok=(g===secretWord),gd={guess:g,correct:ok,secretWord:secretWord,time:Date.now()};
+            set(ref(db,'rooms/'+roomId+'/spyGuessResult'),gd);
+            showGuess(gd);document.getElementById('spy-guess-section').style.display='none';
+            update(ref(db,'rooms/'+roomId),{phase:'finished',timerRunning:false,active:false,spyGuessResult:gd});
         };
-
-        function finalizeVotes(votes) {
-            const voteCount = {};
-            Object.values(votes).forEach(v => {
-                voteCount[v] = (voteCount[v] || 0) + 1;
-            });
-            
-            let maxVotes = 0;
-            let mostVoted = null;
-            Object.entries(voteCount).forEach(([id, count]) => {
-                if (count > maxVotes) { maxVotes = count; mostVoted = id; }
-            });
-            
-            const isCorrect = (mostVoted === spyPlayerId);
-            const spyName = allPlayersData[spyPlayerId] ? allPlayersData[spyPlayerId].name : '???';
-            
-            document.getElementById('waiting-votes').style.display = 'none';
-            
-            if (isCorrect) {
-                document.getElementById('vote-result-correct').style.display = 'block';
-                document.getElementById('correct-spy-name').textContent = spyName;
-            } else {
-                document.getElementById('vote-result-wrong').style.display = 'block';
-                document.getElementById('spy-reveal').style.display = 'block';
-                document.getElementById('spy-reveal-name').textContent = spyName;
-            }
-            
-            if (myPlayerId === spyPlayerId) {
-                document.getElementById('spy-guess-section').style.display = 'block';
-            }
-            
-            const roomRef = ref(db, 'rooms/' + roomId);
-            update(roomRef, {
-                phase: 'spyGuess',
-                voteResultPhase: isCorrect ? 'correct' : 'wrong'
-            });
-        }
-
-        window.submitSpyGuess = function() {
-            const guessInput = document.getElementById('spy-guess-input');
-            const guess = guessInput.value.trim();
-            if (!guess) return showNotification('⚠️ اكتب تخمينك!');
-            
-            const isCorrectGuess = (guess === secretWord);
-            
-            // حفظ التخمين في قاعدة البيانات عشان يظهر للكل
-            const guessRef = ref(db, 'rooms/' + roomId + '/spyGuessResult');
-            const guessData = {
-                guess: guess,
-                correct: isCorrectGuess,
-                secretWord: secretWord,
-                time: Date.now()
-            };
-            set(guessRef, guessData);
-            
-            // إظهار النتيجة للجاسوس
-            const guessDiv = document.getElementById('spy-guess-result');
-            guessDiv.style.display = 'block';
-            if (isCorrectGuess) {
-                guessDiv.innerHTML = `🎉 مبروك! التخمين صحيح! الكلمة كانت: <strong>${secretWord}</strong>`;
-                guessDiv.style.borderColor = '#2ecc71';
-                guessDiv.style.color = '#2ecc71';
-            } else {
-                guessDiv.innerHTML = `😞 للأسف تخمين خاطئ! الكلمة كانت: <strong>${secretWord}</strong>`;
-                guessDiv.style.borderColor = '#e94560';
-                guessDiv.style.color = '#e94560';
-            }
-            
-            document.getElementById('spy-guess-section').style.display = 'none';
-            
-            // تغيير المرحلة للكل - بس بدون ماحد يخرج
-            const roomRef = ref(db, 'rooms/' + roomId);
-            update(roomRef, { 
-                phase: 'finished', 
-                timerRunning: false, 
-                active: false,
-                spyGuessResult: guessData
-            });
-        };
-
-        function startLocalTimer(endAt) {
-            if (timerInterval) clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                const remaining = Math.max(0, Math.floor((endAt - Date.now()) / 1000));
-               
+        function startTimer(end){stopTimer();timerInterval=setInterval(()=>{localTimer=Math.max(0,Math.floor((end-Date.now())/1000));updateTimer();if(localTimer<=0)stopTimer();},200);}
+        function stopTimer(){if(timerInterval){clearInterval(timerInterval);timerInterval=null;}}
+        function updateTimer(){let m=Math.floor(localTimer/60),s=localTimer%60;document.getElementById('timer-display').textContent=m.toString().padStart(2,'0')+':'+s.toString().padStart(2,'0');}
+        function showGame(){document.getElementById('start-screen').style.display='none';document.getElementById('game-screen').style.display='block';}
+        window.leaveRoom=function(){if(myPlayerId&&roomId)remove(ref(db,'rooms/'+roomId+'/players/'+myPlayerId));stopTimer();location.href=location.origin+location.pathname;}
+        function notify(msg){let o=document.querySelector('.notification');if(o)o.remove();let n=document.createElement('div');n.className='notification';n.textContent=msg;document.body.appendChild(n);setTimeout(()=>n.remove(),3000);}
+    </script>
+</body>
+</html>
