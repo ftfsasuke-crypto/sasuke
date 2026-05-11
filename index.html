@@ -86,6 +86,7 @@
 <div id="app" class="container"></div>
 
 <script>
+// كود النجوم المتساقطة
 function createStars() {
     const container = document.getElementById('stars');
     if(!container) return;
@@ -102,6 +103,33 @@ function createStars() {
     }
 }
 createStars();
+
+// --- نظام تتبع الخروج من الموقع لمنع الغش ---
+let totalTimeAway = 0;
+let awayTimestamp = 0;
+
+document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+        awayTimestamp = Date.now(); // المستخدم خرج ليوتيوب
+    } else {
+        if (awayTimestamp > 0) {
+            totalTimeAway += (Date.now() - awayTimestamp); // حساب الوقت اللي قضاه برا
+            awayTimestamp = 0;
+        }
+    }
+});
+
+// احتياطي للمتصفحات القديمة
+window.addEventListener("blur", function() {
+    if (awayTimestamp === 0) awayTimestamp = Date.now();
+});
+window.addEventListener("focus", function() {
+    if (awayTimestamp > 0) {
+        totalTimeAway += (Date.now() - awayTimestamp);
+        awayTimestamp = 0;
+    }
+});
+// ---------------------------------------------
 
 try {
     const YOUTUBE_API_KEY = "AIzaSyA6NebhJLqT8ZEG56cmMEm4xsRR5byisPI"; 
@@ -175,7 +203,7 @@ try {
                     
                     <div class="warning-box">
                         <h4>تنبيه مهم ⚠️</h4>
-                        <p>لما تضغط تعمل كومنت ولايك اذا انت اصلا عامل لايك شيل اللايك وحطه تاني واعمل تحقق من الشروط، واذا قالك فشل هذا لانه لسه ما سجل اللايك تبعك، رح تضغط تحقق تاني يكون هو سجل اللايك وبينقلك للصفحة الي بعدها ♥️</p>
+                        <p>تأكد من إتمام الشروط الثلاثة. النظام يكتشف ما إذا كنت قد فتحت المقطع وأمضيت الوقت الكافي لعمل اللايك والتعليق أم لا!</p>
                     </div>
                 </div>
             </div>
@@ -225,9 +253,9 @@ try {
             overlay.style.display = 'flex';
             progCircle.style.animation = 'none';
             void progCircle.offsetWidth; 
-            progCircle.style.animation = 'circle-deplete 7s linear forwards';
+            progCircle.style.animation = 'circle-deplete 5s linear forwards';
             
-            let timeLeft = 7;
+            let timeLeft = 5;
             numSpan.innerText = timeLeft;
 
             const timer = setInterval(() => {
@@ -261,7 +289,7 @@ try {
         };
 
         window.verifyStrict = function() {
-            if(!sub || !vidLike || !vidComment) return alert("يرجى إكمال المهام الثلاثة أولاً!");
+            if(!sub || !vidLike || !vidComment) return alert("يرجى إكمال جميع المهام الثلاثة أولاً!");
             
             document.getElementById('error-msg').style.display = 'none';
             const ld = document.getElementById('loader');
@@ -275,8 +303,8 @@ try {
                         document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
                     }
 
-                    // لا يوجد استثناءات للوقت: الشرط الوحيد هو ارتفاع رقم اللايكات.
-                    if (currentLikes > initialLikes) {
+                    // النظام الذكي: (اللايك زاد في يوتيوب) أو (المستخدم قضى 15 ثانية على الأقل خارج الموقع ينفذ المهام)
+                    if (currentLikes > initialLikes || totalTimeAway >= 15000) {
                         document.getElementById('tasks-container').style.display = 'none';
                         document.getElementById('top-logo').style.display = 'none';
                         document.getElementById('top-title').style.display = 'none';
@@ -291,18 +319,18 @@ try {
                             if (Date.now() < end) { requestAnimationFrame(frame); }
                         }());
                     } else {
+                        // لو مرجعش بعد 15 ثانية واللايك مزادش، يبقى بيغش
                         let errMsg = document.getElementById('error-msg');
-                        errMsg.innerHTML = "❌ فشل التحقق: لم نكتشف زيادة في اللايكات!<br>الرقم في سيرفرات يوتيوب لم يتغير. إذا كنت قد وضعت لايك بالفعل، يرجى الانتظار بضع ثوانٍ واضغط <b>أعد التحقق</b>.";
+                        errMsg.innerHTML = "❌ فشل التحقق: أنت لم تقضِ وقتاً كافياً خارج الموقع لعمل اللايك والتعليق! يرجى تنفيذ الشروط بصدق.";
                         errMsg.style.display = 'block';
                         document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
                         
-                        // تحديث الرقم في حال قام أحدهم بإزالة اللايك بدلاً من إضافته
                         if (currentLikes !== -1 && currentLikes < initialLikes) {
                             initialLikes = currentLikes; 
                         }
                     }
                 });
-            }, 5000); // ينتظر 5 ثواني لعل وعسى يوتيوب يحدث الرقم
+            }, 3000); 
         };
 
     } else {
@@ -311,7 +339,7 @@ try {
                 <h2 style="color:var(--accent); margin-top:0;">MX_SASUKE VIP Generator</h2>
                 <input type="text" id="it" class="gen-input" value="لازم تعمل اشتراك ولايك وتعليق للحصول على السكربت">
                 <input type="url" id="ic" class="gen-input" placeholder="👇 رابط قناتك (اشتراك)">
-                <input type="url" id="iv" class="gen-input" placeholder="👇 رابط فيديو اليوتيوب (اللايك والصورة)">
+                <input type="url" id="iv" class="gen-input" placeholder="👇 رابط فيديو اليوتيوب (اللايك والتعليق)">
                 <input type="url" id="if" class="gen-input" placeholder="👇 الرابط النهائي (ميديا فاير)">
                 <button class="verify-btn" onclick="gen()">إنشاء الصفحة</button>
             </div>
