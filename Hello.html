@@ -215,14 +215,15 @@
             onValue(ref(db,'rooms/'+roomId+'/spyChoice'),s=>{
                 let choice=s.val();
                 if(choice){
+                    document.getElementById('spy-choices').style.display='none';
                     if(choice.action==='continue'){
                         document.getElementById('spy-choice-announce').style.display='block';
-                        document.getElementById('spy-choice-announce').textContent='🎮 الجاسوس قرر يكمل اللعب!';
+                        document.getElementById('spy-choice-announce').innerHTML='🎮 الجاسوس قرر يكمل اللعب!';
                         document.getElementById('spy-choice-announce').style.color='#3498db';
                         document.getElementById('spy-choice-announce').style.borderColor='#3498db';
                     }else if(choice.action==='guess'){
                         document.getElementById('spy-choice-announce').style.display='block';
-                        document.getElementById('spy-choice-announce').textContent='🤔 الجاسوس قرر يخمن الكلمة... في انتظار التخمين';
+                        document.getElementById('spy-choice-announce').innerHTML='🤔 الجاسوس قرر يخمن الكلمة... في انتظار التخمين';
                         document.getElementById('spy-choice-announce').style.color='#f39c12';
                         document.getElementById('spy-choice-announce').style.borderColor='#f39c12';
                         if(myPlayerId===spyPlayerId)document.getElementById('spy-guess-section').style.display='block';
@@ -263,6 +264,8 @@
         function showGuess(g){
             let div=document.getElementById('spy-guess-result');div.style.display='block';
             div.innerHTML=`✍️ الجاسوس خمن: <strong>${g.guess}</strong><br>🔑 الكلمة الصحيحة كانت: <strong>${g.secretWord}</strong>`;
+            if(g.correct){document.getElementById('spy-guess-correct').style.display='block';}
+            else{document.getElementById('spy-guess-wrong').style.display='block';}
             div.style.borderColor='#f1c40f';div.style.color='#f1c40f';
         }
         function showResult(d){
@@ -312,4 +315,11 @@
                     if(activePlayerCount-1<=2){
                         let remaining=Object.values(allPlayersData).filter(x=>!x.eliminated&&x.id!==mv);
                         if(remaining.length<=2&&remaining.find(x=>x.id===spyPlayerId)){
-                            update(ref(db,'
+                            update(ref(db,'rooms/'+roomId),{phase:'finished',spyWon:true,timerRunning:false,active:false});
+                            return;
+                        }
+                    }
+                    // الجاسوس يختار
+                    if(myPlayerId===spyPlayerId)document.getElementById('spy-choices').style.display='block';
+                    gameFinished=false;
+                    update(ref(db,'rooms/'+roomId),{phase:'playing',voteResults:{},voteLog
