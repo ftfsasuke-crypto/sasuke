@@ -22,7 +22,15 @@
             border-radius: 20px;
             padding: 20px;
         }
-        h1, h2 { color: #e94560; margin-bottom: 15px; }
+        h1 { margin-bottom: 15px; }
+        h1 .title-spy {
+            background: linear-gradient(135deg, #e94560, #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 42px;
+        }
+        h2 { color: #e94560; margin-bottom: 15px; }
         h3 { margin: 15px 0 10px; color: #ccc; }
         button {
             background: #e94560;
@@ -56,6 +64,7 @@
             border-radius: 15px;
             margin: 15px 0;
             direction: ltr;
+            color: #2ecc71;
         }
         ul { list-style: none; padding: 0; }
         li {
@@ -122,6 +131,19 @@
             font-size: 24px;
             font-weight: bold;
         }
+        .waiting-votes {
+            background: #2c2c54;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 15px 0;
+            font-size: 18px;
+            color: #f1c40f;
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
         #kick-section { margin-top: 15px; }
         #kick-section button {
             background: #ff6b6b;
@@ -129,11 +151,22 @@
             padding: 6px 14px;
             margin: 2px;
         }
-        .host-name-section {
+        .host-name-display {
+            background: linear-gradient(135deg, #f093fb, #f5576c, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 8px 0;
+            display: inline-block;
+        }
+        .host-box {
             background: #0f3460;
-            padding: 20px;
+            padding: 15px 20px;
             border-radius: 15px;
-            margin: 20px 0;
+            margin: 10px 0;
+            border: 1px solid #e94560;
         }
     </style>
 </head>
@@ -141,14 +174,15 @@
     <div id="app">
         <!-- شاشة البداية -->
         <div id="start-screen">
-            <h1>🕵️ لعبة الجاسوس</h1>
+            <h1><span class="title-spy">🕵️ لعبة الجاسوس</span></h1>
             
             <!-- قسم الهوست -->
             <div id="create-section">
-                <p style="color:#aaa; margin-bottom:5px;">أنشئ غرفة وادعو أصحابك:</p>
-                <input type="text" id="host-name" placeholder="اكتب اسمك الأول">
-                <br>
-                <button onclick="createRoom()">🎮 إنشاء غرفة جديدة</button>
+                <div class="host-box">
+                    <p style="color:#aaa; margin-bottom:5px;">👑 أنت الهوست</p>
+                    <p>اسمك: <span class="host-name-display">⚔️ S A S U K E ⚔️</span></p>
+                </div>
+                <button onclick="createRoom()" style="font-size:18px; padding:14px 30px;">🎮 إنشاء غرفة جديدة</button>
             </div>
             
             <!-- قسم اللاعب -->
@@ -190,6 +224,11 @@
             <div id="vote-section" style="display:none;">
                 <h3>🗳️ صوّت على الجاسوس:</h3>
                 <div id="vote-buttons"></div>
+            </div>
+
+            <!-- رسالة انتظار المصوتين -->
+            <div id="waiting-votes" style="display:none;" class="waiting-votes">
+                ⏳ في انتظار باقي اللاعبين للتصويت...
             </div>
 
             <div id="vote-result" style="display:none;" class="result-box"></div>
@@ -234,6 +273,7 @@
         let secretWord = null;
         let timerInterval = null;
         let localTimer = 600;
+        let totalPlayerCount = 0;
 
         const params = new URLSearchParams(window.location.search);
         const ridFromUrl = params.get('room');
@@ -248,14 +288,10 @@
         }
 
         window.createRoom = function() {
-            const hostNameInput = document.getElementById('host-name');
-            const name = hostNameInput.value.trim();
-            
-            if (!name) return showNotification('⚠️ اكتب اسمك الأول!');
+            myPlayerName = '⚔️ SASUKE ⚔️';
             
             roomId = 'room-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
             myPlayerId = 'host-' + Date.now().toString(36);
-            myPlayerName = name;
             isHost = true;
             
             const roomRef = ref(db, 'rooms/' + roomId);
@@ -282,6 +318,7 @@
                 document.getElementById('room-id-display').textContent = roomId;
                 listenToPlayers();
                 listenToGameState();
+                listenToVotes();
                 showNotification('✅ تم إنشاء الغرفة! انسخ الرابط وابعته لأصحابك');
             });
         };
@@ -310,6 +347,7 @@
                     document.getElementById('host-controls').style.display = 'none';
                     listenToPlayers();
                     listenToGameState();
+                    listenToVotes();
                     showNotification(`👋 مرحباً ${name}، أنت في الغرفة!`);
                 } else {
                     showNotification('❌ الغرفة مش موجودة!');
@@ -333,6 +371,7 @@
             const playersRef = ref(db, 'rooms/' + roomId + '/players');
             onValue(playersRef, snapshot => {
                 const players = snapshot.val() || {};
+                totalPlayerCount = Object.keys(players).length;
                 updatePlayerListUI(players);
             });
         }
@@ -403,6 +442,29 @@
             });
         }
 
+        // متابعة الأصوات
+        function listenToVotes() {
+            const votesRef = ref(db, 'rooms/' + roomId + '/voteResults');
+            onValue(votesRef, snapshot => {
+                if (gamePhase !== 'voting') return;
+                const votes = snapshot.val() || {};
+                const voteCount = Object.keys(votes).length;
+                
+                if (voteCount > 0 && voteCount < totalPlayerCount) {
+                    // فيه أصوات، بس لسه مش كلهم صوتوا
+                    document.getElementById('waiting-votes').style.display = 'block';
+                    document.getElementById('waiting-votes').textContent = 
+                        `⏳ في انتظار باقي اللاعبين للتصويت... (${voteCount} من ${totalPlayerCount})`;
+                }
+                
+                if (voteCount >= totalPlayerCount && totalPlayerCount > 0) {
+                    // الكل صوت
+                    document.getElementById('waiting-votes').style.display = 'none';
+                    calculateVoteResult(votes);
+                }
+            });
+        }
+
         function handlePhaseChange(data) {
             document.getElementById('vote-section').style.display = 'none';
             document.getElementById('vote-result').style.display = 'none';
@@ -410,6 +472,7 @@
             document.getElementById('spy-guess-section').style.display = 'none';
             document.getElementById('final-result').style.display = 'none';
             document.getElementById('final-result').innerHTML = '';
+            document.getElementById('waiting-votes').style.display = 'none';
             
             switch(data.phase) {
                 case 'playing':
@@ -422,7 +485,6 @@
                     break;
                 case 'spyGuess':
                     document.getElementById('word-display').style.display = 'none';
-                    checkVoteResult(data);
                     break;
             }
         }
@@ -455,7 +517,7 @@
                 const randomIndex = Math.floor(Math.random() * playerIds.length);
                 const spyId = playerIds[randomIndex];
                 
-                const words = ['تفاحة', 'سيارة', 'قمر', 'شمس', 'بحر', 'جبل', 'كتاب', 'قلم', 'نجمة', 'وردة', 'أسد', 'فيل', 'طائرة', 'سفينة', 'مفتاح', 'كاميرا', 'شجرة', 'نهر', 'ساعة', 'كرة'];
+                const words = ['تفاحة', 'سيارة', 'قمر', 'شمس', 'بحر', 'جبل', 'كتاب', 'قلم', 'نجمة', 'وردة', 'أسد', 'فيل', 'طائرة', 'سفينة', 'مفتاح', 'كاميرا', 'شجرة', 'نهر', 'ساعة', 'كرة', 'بيانو', 'تلفون', 'كنز', 'قناع'];
                 const secretW = words[Math.floor(Math.random() * words.length)];
                 
                 const roomRef = ref(db, 'rooms/' + roomId);
@@ -486,6 +548,7 @@
 
         function showVotingUI(data) {
             document.getElementById('vote-section').style.display = 'block';
+            document.getElementById('waiting-votes').style.display = 'none';
             const playersRef = ref(db, 'rooms/' + roomId + '/players');
             get(playersRef).then(snapshot => {
                 const players = snapshot.val();
@@ -504,11 +567,12 @@
             const voteRef = ref(db, 'rooms/' + roomId + '/voteResults/' + myPlayerId);
             set(voteRef, targetId);
             document.getElementById('vote-section').style.display = 'none';
-            showNotification('✅ تم تسجيل صوتك!');
+            document.getElementById('waiting-votes').style.display = 'block';
+            document.getElementById('waiting-votes').textContent = '⏳ في انتظار باقي اللاعبين للتصويت...';
+            showNotification('✅ تم تسجيل صوتك! في انتظار باقي اللاعبين...');
         };
 
-        function checkVoteResult(data) {
-            const votes = data.voteResults || {};
+        function calculateVoteResult(votes) {
             const voteCount = {};
             Object.values(votes).forEach(v => {
                 voteCount[v] = (voteCount[v] || 0) + 1;
@@ -539,6 +603,10 @@
                 if (myPlayerId === spyPlayerId) {
                     document.getElementById('spy-guess-section').style.display = 'block';
                 }
+                
+                // تغيير المرحلة لـ spyGuess
+                const roomRef = ref(db, 'rooms/' + roomId);
+                update(roomRef, { phase: 'spyGuess' });
             });
         }
 
