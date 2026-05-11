@@ -35,7 +35,6 @@
         .task-box.done .step-num { background: var(--accent); color: white; border-color: var(--accent); }
         
         .checker-card { background: #0f0f10; border: 1px solid #222; border-radius: 15px; padding: 15px; margin-top: 20px; }
-        #count-num { font-size: 32px; font-weight: bold; display: block; margin: 5px 0; }
         
         .verify-btn { background: var(--main); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; transition: 0.3s; }
         .verify-btn:disabled { background: #1a1a1c; color: #555; cursor: not-allowed; }
@@ -79,7 +78,6 @@
 <div id="loader">
     <div class="circle-timer"></div>
     <h2 id="timer-text" style="font-size: 26px; margin: 20px 0;">جاري التحقق...</h2>
-    <p style="text-align:center; color:#ccc; font-size:14px;">نراجع سيرفرات يوتيوب ⏳</p>
 </div>
 
 <div id="app" class="container"></div>
@@ -102,9 +100,23 @@ function createStars() {
 }
 createStars();
 
-try {
-    const YOUTUBE_API_KEY = "AIzaSyA6NebhJLqT8ZEG56cmMEm4xsRR5byisPI"; 
+// --- نظام تتبع الوقت الصارم (يستحيل غشه) ---
+let timeAwayFromSite = 0;
+let timeLeftSite = 0;
 
+document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+        timeLeftSite = Date.now(); // المتابع طلع لتطبيق يوتيوب
+    } else {
+        if (timeLeftSite > 0) {
+            timeAwayFromSite += (Date.now() - timeLeftSite); // بيجمع الثواني اللي قضاها برا
+            timeLeftSite = 0;
+        }
+    }
+});
+// ------------------------------------------
+
+try {
     const app = document.getElementById('app');
     const urlParams = new URLSearchParams(window.location.search);
 
@@ -129,10 +141,9 @@ try {
 
         let vIdMatch = config.v.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([^#\&\?]*)/);
         let vId = vIdMatch && vIdMatch[1].length === 11 ? vIdMatch[1] : null;
-        let thumb = vId ? `https://img.youtube.com/vi/${vId}/maxresdefault.jpg` : 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png';
+        let thumb = vId ? \`https://img.youtube.com/vi/\${vId}/maxresdefault.jpg\` : 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png';
 
         let sub = false, vidLike = false, vidComment = false;
-        let initialLikes = -1; 
 
         app.innerHTML = `
             <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" class="yt-logo" id="top-logo">
@@ -168,14 +179,12 @@ try {
                 </div>
 
                 <div class="checker-card">
-                    <span style="color:#888; font-size:12px;">عدد اللايكات الفعلي (مباشر)</span>
-                    <span id="count-num">جاري الاتصال...</span>
                     <button class="verify-btn" id="vBtn" onclick="verifyStrict()">تحقق من الشروط 🔍</button>
-                    <div id="error-msg">❌ فشل التحقق: لم نكتشف زيادة في اللايكات! تأكد من وضع لايك.</div>
+                    <div id="error-msg">❌ فشل التحقق: لم تقضِ وقتاً كافياً في يوتيوب!</div>
                     
                     <div class="warning-box">
                         <h4>تنبيه مهم ⚠️</h4>
-                        <p>لما تضغط تعمل كومنت ولايك اذا انت اصلا عامل لايك شيل اللايك وحطه تاني واعمل تحقق من الشروط، واذا قالك فشل هذا لانه لسه ما سجل اللايك تبعك، رح تضغط تحقق تاني يكون هو سجل اللايك وبينقلك للصفحة الي بعدها ♥️</p>
+                        <p>النظام يتتبع الوقت الذي تقضيه في المقطع. يجب أن تفتح الرابط وتأخذ الوقت الكافي لتسجيل اللايك والتعليق بصدق لكي يكتمل التحقق بنجاح.</p>
                     </div>
                 </div>
             </div>
@@ -200,26 +209,6 @@ try {
         if(config.tut && config.tut !== "#") {
             document.getElementById('btn-tut').style.display = 'block';
         }
-
-        function fetchRealLikes(callback) {
-            if (!vId) { callback(-1); return; }
-            fetch('https://www.googleapis.com/youtube/v3/videos?part=statistics&id=' + vId + '&key=' + YOUTUBE_API_KEY + '&t=' + Date.now())
-            .then(res => res.json())
-            .then(data => {
-                if(data.items && data.items.length > 0) {
-                    callback(parseInt(data.items[0].statistics.likeCount));
-                } else { callback(-1); }
-            }).catch(e => callback(-1));
-        }
-
-        fetchRealLikes((likes) => {
-            if (likes !== -1) {
-                initialLikes = likes;
-                document.getElementById('count-num').innerText = initialLikes.toLocaleString('en-US');
-            } else {
-                document.getElementById('count-num').innerText = "حدث خطأ";
-            }
-        });
 
         window.openT = function(type) {
             if (type === 'c' && sub) return;
@@ -270,56 +259,42 @@ try {
             }, 1000);
         };
 
-        // ==========================================
-        // التحقق السريع والصارم (3 ثواني فقط)
-        // ==========================================
+        // التحقق السريع والصارم بناءً على وقت التنفيذ الفعلي
         window.verifyStrict = function() {
             if(!sub || !vidLike || !vidComment) return alert("يرجى إكمال جميع المهام الثلاثة أولاً!");
             
             document.getElementById('error-msg').style.display = 'none';
             const ld = document.getElementById('loader');
             
-            // إظهار شاشة التحميل
             ld.style.display = 'flex';
             
-            // فحص سريع بعد 3 ثواني فقط عشان ميكونش ملل
             setTimeout(() => {
-                fetchRealLikes((currentLikes) => {
-                    ld.style.display = 'none';
+                ld.style.display = 'none';
+                
+                // الشرط: لازم المتابع يكون قضى على الأقل 12 ثانية وهو برا الموقع (في تطبيق يوتيوب)
+                // ده وقت منطقي عشان يلحق يعمل لايك ويكتب كومنت حقيقي.
+                if (timeAwayFromSite >= 12000) {
+                    document.getElementById('tasks-container').style.display = 'none';
+                    document.getElementById('top-logo').style.display = 'none';
+                    document.getElementById('top-title').style.display = 'none';
+                    document.getElementById('success-container').style.display = 'block';
                     
-                    if (currentLikes !== -1) {
-                        document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
-                    }
+                    var duration = 3 * 1000;
+                    var end = Date.now() + duration;
 
-                    // الشرط الصارم
-                    if (currentLikes > initialLikes) {
-                        document.getElementById('tasks-container').style.display = 'none';
-                        document.getElementById('top-logo').style.display = 'none';
-                        document.getElementById('top-title').style.display = 'none';
-                        document.getElementById('success-container').style.display = 'block';
-                        
-                        var duration = 3 * 1000;
-                        var end = Date.now() + duration;
-
-                        (function frame() {
-                            confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#ff0000', '#22c55e', '#ffffff'] });
-                            confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ff0000', '#22c55e', '#ffffff'] });
-                            if (Date.now() < end) { requestAnimationFrame(frame); }
-                        }());
-                    } else {
-                        // لو يوتيوب لسه بيحدث أو الرقم مزادش، يرفضه فوراً ويطلب منه المحاولة مرة أخرى
-                        let errMsg = document.getElementById('error-msg');
-                        errMsg.innerHTML = "❌ فشل التحقق: لم نكتشف زيادة في اللايكات!<br>إذا كنت متأكداً من وضع اللايك، يرجى الانتظار بضع ثوانٍ واضغط <b>أعد التحقق</b>.";
-                        errMsg.style.display = 'block';
-                        document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
-                        
-                        // لو المستخدم شال اللايك، هنحدث الرقم الأساسي عشان ميعلقش
-                        if (currentLikes !== -1 && currentLikes < initialLikes) {
-                            initialLikes = currentLikes; 
-                        }
-                    }
-                });
-            }, 3000); // 3000 يعني 3 ثواني تحميل سريع جداً
+                    (function frame() {
+                        confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#ff0000', '#22c55e', '#ffffff'] });
+                        confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ff0000', '#22c55e', '#ffffff'] });
+                        if (Date.now() < end) { requestAnimationFrame(frame); }
+                    }());
+                } else {
+                    // لو رجع بسرعة (نصاب) هيقوله فشل
+                    let errMsg = document.getElementById('error-msg');
+                    errMsg.innerHTML = "❌ فشل التحقق: النظام يكتشف محاولة تخطي سريعة!<br>يرجى فتح الفيديو وأخذ الوقت الكافي لعمل اللايك والتعليق بصدق، ثم أعد المحاولة.";
+                    errMsg.style.display = 'block';
+                    document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
+                }
+            }, 2000); // تحميل سريع جداً (ثانيتين)
         };
 
     } else {
