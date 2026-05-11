@@ -26,7 +26,7 @@
         .star { position: absolute; background: white; border-radius: 50%; opacity: 0.5; animation: fall linear infinite; }
         @keyframes fall { from { transform: translateY(-10vh); } to { transform: translateY(110vh); } }
 
-        .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; position: relative; z-index: 10; display: none; /* مخفي افتراضياً حتى يقرر الكود أيهما يظهر */ }
+        .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; position: relative; z-index: 10; display: none; }
         
         .yt-logo { width: 50px; margin-bottom: 10px; transition: 0.3s; }
         .page-title { font-size: 24px; font-weight: bold; margin-bottom: 25px; word-wrap: break-word; line-height: 1.4; transition: 0.3s; }
@@ -194,30 +194,30 @@ let finalLink = "#";
 let tutLink = "#";
 let cLink = "#";
 let vLink = "#";
-let verifyAttempts = 0; // متغير جديد لحساب عدد المحاولات
+let verifyAttempts = 0; // متغير لحساب عدد المحاولات عشان نعديه لو يوتيوب معلق
 
 function safeEncode(str) { return btoa(encodeURIComponent(str || "")); }
-function safeDecode(str) { try { return decodeURIComponent(atob(str.replace(/ /g, '+'))); } catch(e) { return "خطأ_في_الرابط"; } }
+function safeDecode(str) { try { return decodeURIComponent(atob(str.replace(/ /g, '+'))); } catch(e) { return ""; } }
 function fixUrl(url) {
-    if (!url || url === 'undefined' || url === "" || url === "خطأ_في_الرابط") return "#";
+    if (!url || url === 'undefined' || url === "") return "#";
     url = url.trim();
     if (!/^https?:\/\//i.test(url) && url !== "#") return 'https://' + url;
     return url;
 }
 
-// تنفيذ الكود مباشرة (بدون شاشة انتظار)
+// تنفيذ الكود مباشرة 
 try {
     const urlParams = new URLSearchParams(window.location.search);
 
     if (urlParams.has('data') && urlParams.get('data').length > 5) {
-        // إظهار صفحة التخطي فوراً
         document.getElementById('task-view').style.display = 'block';
         
         const raw = urlParams.get('data').split('|');
         const titleText = safeDecode(raw[0]);
-        cLink = fixUrl(safeDecode(raw[1] || raw[0]));
-        vLink = fixUrl(safeDecode(raw[2] || raw[1]));
-        finalLink = fixUrl(safeDecode(raw[3] || raw[2]));
+        // تم إصلاح سحب الروابط عشان متوديش لمكان غلط أبداً
+        cLink = fixUrl(safeDecode(raw[1]));
+        vLink = fixUrl(safeDecode(raw[2]));
+        finalLink = fixUrl(safeDecode(raw[3]));
         tutLink = raw[4] ? fixUrl(safeDecode(raw[4])) : "#";
 
         let vIdMatch = vLink.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/ytscreeningroom\?v=|\/sandayat\?v=|\/condition_video_id\/|\/watch\?feature=player_embedded&v=))([^#\&\?]*)/);
@@ -237,15 +237,12 @@ try {
         });
 
     } else {
-        // إظهار صفحة الإنشاء فوراً
         document.getElementById('generator-view').style.display = 'block';
     }
 } catch (error) {
-    // لو حصل خطأ جبار، هنظهر صفحة الإنشاء كاحتياطي
     document.getElementById('generator-view').style.display = 'block';
 }
 
-// جلب اللايكات
 function fetchRealLikes(callback) {
     if (!vId) { callback(-1); return; }
     fetch('https://www.googleapis.com/youtube/v3/videos?part=statistics&id=' + vId + '&key=' + YOUTUBE_API_KEY + '&t=' + Date.now())
@@ -257,7 +254,6 @@ function fetchRealLikes(callback) {
     }).catch(e => callback(-1));
 }
 
-// فتح الروابط والأزرار
 window.openC = function() { processTask('c', cLink); };
 window.openV = function() { processTask('v', vLink); };
 window.openTut = function() { window.open(tutLink, '_blank'); };
@@ -305,12 +301,11 @@ function processTask(type, url) {
     }, 1000);
 }
 
-// فحص الشروط وإظهار واجهة النجاح
 window.verifyStrict = function() {
     if(!sub || !vid) return alert("يرجى إكمال المهام أولاً!");
     
-    verifyAttempts++; // زيادة عدد المحاولات في كل ضغطة
-    
+    verifyAttempts++; // بنزود عدد المحاولات هنا
+
     document.getElementById('error-msg').style.display = 'none';
     const ld = document.getElementById('loader');
     ld.style.display = 'flex';
@@ -323,7 +318,7 @@ window.verifyStrict = function() {
                 document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
             }
 
-            // التعديل السحري: هيعديه لو اللايكات زادت، أو لو داس للمرة التانية (بسبب تأخير يوتيوب)
+            // لو اللايك زاد، أو لو المستخدم جرب مرتين (عشان يوتيوب بيتأخر) هيعديه فوراً!
             if (currentLikes > initialLikes || verifyAttempts >= 2) {
                 document.getElementById('tasks-container').style.display = 'none';
                 document.getElementById('top-logo').style.display = 'none';
@@ -342,15 +337,19 @@ window.verifyStrict = function() {
                 }
             } else {
                 let errMsg = document.getElementById('error-msg');
-                errMsg.innerHTML = "❌ يوتيوب يحتاج لبعض الوقت لتحديث اللايكات! بما أنك متأكد، اضغط على <b>أعد التحقق</b> مرة أخرى وسيتم الفتح.";
+                errMsg.innerHTML = "❌ يوتيوب يحتاج لبعض الوقت لتحديث اللايكات! بما أنك متأكد، اضغط على <b>أعد التحقق</b> مجدداً وسيتم الفتح.";
                 errMsg.style.display = 'block';
                 document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
+                
+                if (currentLikes !== -1 && currentLikes < initialLikes) {
+                    initialLikes = currentLikes; 
+                }
             }
         });
     }, 3000);
 };
 
-// إنشاء رابط جديد
+// إنشاء رابط جديد (بنفس الطريقة اللي طلبتها بالظبط)
 window.gen = function() {
     const elId = id => document.getElementById(id) ? document.getElementById(id).value : "";
     const d = [
