@@ -14,34 +14,26 @@
         @keyframes fall { from { transform: translateY(-10vh); } to { transform: translateY(110vh); } }
         .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; position: relative; z-index: 10; }
         .yt-logo { width: 50px; margin-bottom: 10px; }
-        .page-title { font-size: 24px; font-weight: bold; margin-bottom: 25px; word-wrap: break-word; line-height: 1.4; }
-        .video-card { position: relative; width: 100%; border-radius: 15px; overflow: hidden; margin-bottom: 25px; border: 1px solid #333; cursor: pointer; background: rgba(17, 17, 17, 0.8); min-height: 180px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(5px); }
+        .page-title { font-size: 24px; font-weight: bold; margin-bottom: 25px; line-height: 1.4; }
+        .video-card { position: relative; width: 100%; border-radius: 15px; overflow: hidden; margin-bottom: 25px; border: 1px solid #333; cursor: pointer; background: #111; min-height: 180px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .video-card img { width: 100%; display: block; }
         .task-box { background: rgba(21, 21, 23, 0.8); backdrop-filter: blur(10px); border-radius: 15px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; border: 2px solid transparent; text-align: right; cursor: pointer; transition: 0.3s; }
-        .task-box.active { border-color: var(--main); box-shadow: 0 0 15px rgba(255,0,0,0.2); }
-        .task-box.done { border-color: var(--accent); cursor: default; }
-        .task-info { flex-grow: 1; margin-right: 15px; }
-        .task-info h4 { margin: 0; font-size: 16px; color: white; }
+        .task-box.active { border-color: var(--main); }
+        .task-box.done { border-color: var(--accent); opacity: 0.8; cursor: default; }
+        .task-info h4 { margin: 0; font-size: 16px; }
         .task-info p { margin: 5px 0 0; font-size: 12px; color: #94a3b8; }
         .step-icon { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; color: var(--main); }
-        .step-icon svg { width: 100%; height: 100%; filter: drop-shadow(0 0 5px rgba(255,0,0,0.4)); }
-        .task-box.done .step-icon { color: var(--accent); }
-        .checker-card { background: rgba(15, 15, 16, 0.8); border: 1px solid #222; border-radius: 15px; padding: 15px; margin-top: 20px; }
-        #count-num { font-size: 32px; font-weight: bold; display: block; margin: 5px 0; }
-        .verify-btn { background: var(--main); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; transition: 0.3s; }
-        #error-msg { display: none; color: var(--fail); font-size: 13px; margin-top: 10px; font-weight: bold; line-height: 1.5; }
-        .warning-box { background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 10px; padding: 15px; margin-top: 15px; text-align: right; }
-        #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        #countdown-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 999; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+        .verify-btn { background: var(--main); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; }
+        #error-msg { display: none; color: var(--fail); font-size: 13px; margin-top: 10px; font-weight: bold; }
+        #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
+        #countdown-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 999; flex-direction: column; align-items: center; justify-content: center; }
         .countdown-wrapper { position: relative; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; }
         .countdown-num { position: absolute; font-size: 40px; font-weight: bold; color: white; }
         .progress-ring { transform: rotate(-90deg); }
         #progress-circle { stroke-dasharray: 264; stroke-dashoffset: 0; }
         @keyframes circle-deplete { 0% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 264; } }
-        .gen-input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #333; background: #111; color: white; box-sizing: border-box; text-align: right; font-family: 'Cairo', sans-serif; }
+        .gen-input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #333; background: #111; color: white; box-sizing: border-box; text-align: right; }
         .menu-btn { position: fixed; top: 20px; left: 20px; z-index: 999; background: rgba(21, 21, 23, 0.8); border: 1px solid #333; padding: 10px; border-radius: 10px; cursor: pointer; }
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; }
-        .modal-box { background: #151517; border: 2px solid #333; border-radius: 20px; padding: 30px 20px; width: 85%; max-width: 350px; text-align: center; }
     </style>
 </head>
 <body>
@@ -52,108 +44,85 @@
     <svg viewBox="0 0 24 24" width="28" height="28" fill="white"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
 </div>
 
-<div id="about-modal" class="modal-overlay" onclick="this.style.display='none'">
-    <div class="modal-box" onclick="event.stopPropagation()">
+<div id="about-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9999; justify-content:center; align-items:center;">
+    <div style="background:#151517; padding:30px; border-radius:20px; width:80%; max-width:350px; text-align:center; border:1px solid #333;">
         <h3>معلومات النظام 👑</h3>
-        <p style="font-size: 14px; line-height: 1.6;">تم صنع هذا الموقع بالكامل من خلال مبرمج <span style="color:red">MX_SASUKE</span> وهو غير صالح للاستخدام العام، إنه مجرد أداة لـ <span style="color:green">SASUKE</span> فقط.</p>
+        <p>تم صنع هذا الموقع بالكامل من خلال مبرمج <span style="color:red">MX_SASUKE</span> وهو غير صالح للاستخدام العام، إنه مجرد أداة لـ <span style="color:green">SASUKE</span> فقط.</p>
         <button class="verify-btn" onclick="document.getElementById('about-modal').style.display='none'">إغلاق</button>
     </div>
 </div>
 
 <div id="countdown-overlay">
     <div class="countdown-wrapper">
-        <svg class="progress-ring" width="100" height="100">
-            <circle stroke="#333" stroke-width="6" fill="transparent" r="42" cx="50" cy="50"/>
-            <circle id="progress-circle" stroke="var(--main)" stroke-width="6" fill="transparent" r="42" cx="50" cy="50"/>
-        </svg>
+        <svg class="progress-ring" width="100" height="100"><circle stroke="#333" stroke-width="6" fill="transparent" r="42" cx="50" cy="50"/><circle id="progress-circle" stroke="var(--main)" stroke-width="6" fill="transparent" r="42" cx="50" cy="50"/></svg>
         <span id="countdown-number" class="countdown-num">5</span>
     </div>
     <h2 style="margin-top: 15px;">انتظر قليلاً... ⏳</h2>
 </div>
 
 <div id="loader">
-    <div style="width: 50px; height: 50px; border: 5px solid #222; border-top: 5px solid var(--main); border-radius: 50%; animation: fall 1s linear infinite;"></div>
-    <h2 style="margin-top: 20px;">جاري التحقق من اللايك بصرامة...</h2>
+    <div style="width: 50px; height: 50px; border: 5px solid #222; border-top: 5px solid var(--main); border-radius: 50%; animation: spin 1s linear infinite;"></div>
+    <h2 style="margin-top: 20px;">جاري التحقق من الشروط...</h2>
+    <p style="color:#888">ثواني وبنفتح لك الرابط ✅</p>
 </div>
 
 <div id="app" class="container"></div>
 
 <script>
-const YOUTUBE_API_KEY = "AIzaSyA6NebhJLqT8ZEG56cmMEm4xsRR5byisPI"; 
-let sub = false, vid = false, initialLikes = -1, vId = null, config = {};
-
-function safeEncode(str) { return btoa(encodeURIComponent(str || "")); }
-function safeDecode(str) { try { return decodeURIComponent(atob(str.replace(/ /g, '+'))); } catch(e) { return ""; } }
-function fixUrl(url) { return (url && !/^https?:\/\//i.test(url)) ? 'https://' + url : url; }
-
+let sub = false, vid = false, startTime = 0, config = {};
 const app = document.getElementById('app');
 const urlParams = new URLSearchParams(window.location.search);
 
+function safeEncode(str) { return btoa(encodeURIComponent(str || "")); }
+function safeDecode(str) { try { return decodeURIComponent(atob(str.replace(/ /g, '+'))); } catch(e) { return ""; } }
+
 if (urlParams.has('data')) {
     const raw = urlParams.get('data').split('|');
-    config = { t: safeDecode(raw[0]), c: fixUrl(safeDecode(raw[1])), v: fixUrl(safeDecode(raw[2])), f: fixUrl(safeDecode(raw[3])), tut: fixUrl(safeDecode(raw[4])) };
-    vId = (config.v.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/\?v=))([^#\&\?]{11})/) || [])[1];
-    let thumb = vId ? `https://img.youtube.com/vi/${vId}/maxresdefault.jpg` : '';
-
+    config = { t: safeDecode(raw[0]), c: safeDecode(raw[1]), v: safeDecode(raw[2]), f: safeDecode(raw[3]), tut: safeDecode(raw[4]) };
+    let vId = (config.v.match(/(?:youtu\.be\/|youtube\.com.*v=)([^#\&\?]{11})/) || [])[1];
+    
     app.innerHTML = `
         <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" class="yt-logo">
         <div class="page-title">${config.t}</div>
-        <div id="tasks-container">
-            <div class="video-card" onclick="openT('v')"><img src="${thumb}"></div>
-            <div class="task-box active" id="tk1" onclick="openT('c')">
-                <div class="task-info"><h4>Subscribe to channel</h4><p>اضغط هنا للاشتراك في القناة</p></div>
-                <div class="step-icon"><svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg></div>
+        <div id="tasks">
+            <div class="video-card" onclick="openTask('v')"><img src="https://img.youtube.com/vi/${vId}/maxresdefault.jpg"></div>
+            <div class="task-box active" id="tk1" onclick="openTask('c')">
+                <div class="task-info"><h4>Subscribe</h4><p>اضغط للاشتراك في القناة 🔔</p></div>
+                <div class="step-icon">🔔</div>
             </div>
-            <div class="task-box" id="tk2" onclick="openT('v')">
-                <div class="task-info"><h4>Like & comment on video</h4><p>اعمل لايك وكومنت على الفيديو</p></div>
-                <div class="step-icon" style="display:flex; gap:5px">
-                    <svg viewBox="0 0 24 24" width="20"><path fill="currentColor" d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
-                    <svg viewBox="0 0 24 24" width="20"><path fill="currentColor" d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18z"/></svg>
-                </div>
+            <div class="task-box" id="tk2" onclick="openTask('v')">
+                <div class="task-info"><h4>Like & Comment</h4><p>اعمل لايك وكومنت على الفيديو 👍💬</p></div>
+                <div class="step-icon">👍💬</div>
             </div>
-            <div class="checker-card">
-                <span style="color:#888; font-size:12px;">عدد اللايكات الفعلي</span>
-                <span id="count-num">جاري الاتصال...</span>
-                <button class="verify-btn" id="vBtn" onclick="verifyStrict()">تحقق من الشروط 🔍</button>
+            <div class="checker-card" style="padding:20px">
+                <button class="verify-btn" onclick="verify()">تحقق من الشروط 🔍</button>
                 <div id="error-msg"></div>
             </div>
         </div>
-        <div id="success-container" style="display:none; background:rgba(21,21,23,0.8); padding:25px; border-radius:15px; border:1px solid #333;">
+        <div id="success" style="display:none">
             <div style="font-size:60px">🎉</div>
             <h2>احسنت يا بطل 😎</h2>
-            <p style="color:#fbbf24; font-weight:900; border:2px dashed #fbbf24; padding:10px; border-radius:10px;">قبل فتح الرابط شوف فيديو طريقة التخطي</p>
-            <button class="verify-btn" style="background:#ef4444" onclick="window.open('https://youtu.be/wOaEuyXW9H0', '_blank')">🛠️ حل مشكلة مانع الاعلانات</button>
             <button class="verify-btn" style="background:#3b82f6" onclick="window.open('${config.tut}', '_blank')">📺 فيديو طريقة التخطي</button>
-            <button class="verify-btn" style="background:var(--accent)" onclick="window.location.href='${config.f}'">🔓 افتح الرابط</button>
+            <button class="verify-btn" style="background:#22c55e" onclick="window.location.href='${config.f}'">🔓 افتح الرابط</button>
         </div>
     `;
-
-    fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${vId}&key=${YOUTUBE_API_KEY}`)
-    .then(r => r.json()).then(d => {
-        initialLikes = parseInt(d.items[0].statistics.likeCount);
-        document.getElementById('count-num').innerText = initialLikes.toLocaleString();
-    });
-
 } else {
     app.innerHTML = `
         <div class="task-box" style="display:block; text-align:center;">
             <h2 style="color:var(--accent)">MX_SASUKE VIP Generator</h2>
             <input type="text" id="it" class="gen-input" value="لازم تعمل اشتراك ولايك وتعليق للحصول على السكربت">
-            <input type="url" id="ic" class="gen-input" placeholder="👇 رابط قناتك">
-            <input type="url" id="iv" class="gen-input" placeholder="👇 رابط فيديو اللايك">
-            <input type="url" id="itut" class="gen-input" placeholder="👇 رابط فيديو الشرح">
-            <input type="url" id="if" class="gen-input" placeholder="👇 الرابط النهائي">
-            <button class="verify-btn" onclick="gen()">إنشاء الصفحة وتقصير الرابط ✨</button>
-            <div id="res" style="display:none; margin-top:15px; background:#000; padding:10px; border-radius:10px; border:1px solid var(--accent);">
-                <input type="text" id="out" class="gen-input" style="text-align:center; color:#3b82f6" readonly>
-                <button class="verify-btn" style="background:var(--accent)" onclick="copy()">نسخ الرابط القصير 📋</button>
-            </div>
+            <input type="url" id="ic" class="gen-input" placeholder="رابط قناتك">
+            <input type="url" id="iv" class="gen-input" placeholder="رابط فيديو اللايك">
+            <input type="url" id="itut" class="gen-input" placeholder="رابط فيديو الشرح">
+            <input type="url" id="if" class="gen-input" placeholder="الرابط النهائي">
+            <button class="verify-btn" onclick="gen()">إنشاء الرابط ✨</button>
+            <div id="res" style="display:none; margin-top:15px;"><input type="text" id="out" class="gen-input" readonly><button class="verify-btn" style="background:green" onclick="copy()">نسخ 📋</button></div>
         </div>
     `;
 }
 
-window.openT = function(type) {
-    if ((type === 'c' && sub) || (type === 'v' && vid)) return;
+window.openTask = function(type) {
+    if (type === 'v') startTime = Date.now();
     window.open(type === 'c' ? config.c : config.v, '_blank');
     const over = document.getElementById('countdown-overlay');
     over.style.display = 'flex';
@@ -163,51 +132,47 @@ window.openT = function(type) {
         tl--; document.getElementById('countdown-number').innerText = tl;
         if (tl <= 0) {
             clearInterval(timer); over.style.display = 'none';
-            if(type === 'c') { sub = true; document.getElementById('tk1').className = 'task-box done'; document.getElementById('tk2').className = 'task-box active'; }
-            else { vid = true; document.getElementById('tk2').className = 'task-box done'; }
+            if(type === 'c') { sub = true; document.getElementById('tk1').className='task-box done'; document.getElementById('tk2').className='task-box active'; }
+            else vid = true;
         }
     }, 1000);
 };
 
-window.verifyStrict = function() {
-    if(!sub || !vid) return alert("خلص المهام الأول!");
-    document.getElementById('loader').style.display = 'flex';
+window.verify = function() {
+    if(!sub || !vid) return alert("اعمل المهام الأول يا حب!");
+    document.getElementById('loader').style.display='flex';
     setTimeout(() => {
-        fetch(`https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${vId}&key=${YOUTUBE_API_KEY}&t=${Date.now()}`)
-        .then(r => r.json()).then(d => {
-            document.getElementById('loader').style.display = 'none';
-            let cur = parseInt(d.items[0].statistics.likeCount);
-            document.getElementById('count-num').innerText = cur.toLocaleString();
-            if (cur > initialLikes) {
-                document.getElementById('tasks-container').style.display = 'none';
-                document.getElementById('success-container').style.display = 'block';
-                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-            } else {
-                let err = document.getElementById('error-msg');
-                err.innerHTML = "❌ فشل: اللايك لسه مظهرش! استنى 10 ثواني وجرب تاني.";
-                err.style.display = 'block';
-            }
-        });
-    }, 5000);
+        document.getElementById('loader').style.display='none';
+        const timeSpent = (Date.now() - startTime) / 1000;
+        // لو قضى أكتر من 12 ثانية من وقت ما فتح الفيديو، هيعديه فوراً
+        if (timeSpent >= 12) {
+            document.getElementById('tasks').style.display='none';
+            document.getElementById('success').style.display='block';
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+        } else {
+            const err = document.getElementById('error-msg');
+            err.innerHTML = "❌ فشل: أنت لم تقضِ وقتاً كافياً لعمل اللايك! روح اعمل لايك بجد وارجع.";
+            err.style.display='block';
+        }
+    }, 3000);
 };
 
 window.gen = async function() {
     const d = [safeEncode(document.getElementById('it').value), safeEncode(document.getElementById('ic').value), safeEncode(document.getElementById('iv').value), safeEncode(document.getElementById('if').value), safeEncode(document.getElementById('itut').value)].join('|');
     const long = window.location.origin + window.location.pathname + "?data=" + encodeURIComponent(d);
-    document.getElementById('res').style.display = 'block';
-    document.getElementById('out').value = "جاري التقصير...";
-    try {
-        const r = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(long)}`);
-        document.getElementById('out').value = r.ok ? await r.text() : long;
-    } catch(e) { document.getElementById('out').value = long; }
+    document.getElementById('res').style.display='block';
+    const r = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(long)}`);
+    document.getElementById('out').value = r.ok ? await r.text() : long;
 };
 
 window.copy = function() { let o = document.getElementById('out'); o.select(); document.execCommand('copy'); alert("تم النسخ!"); };
 
+// رسم النجوم
 for (let i = 0; i < 80; i++) {
     const s = document.createElement('div'); s.className = 'star';
     s.style.width = s.style.height = Math.random() * 3 + 'px';
-    s.style.left = Math.random() * 100 + '%'; s.style.animationDuration = (Math.random() * 3 + 2) + 's';
+    s.style.left = Math.random() * 100 + '%'; s.style.top = Math.random() * 100 + '%';
+    s.style.animationDuration = (Math.random() * 3 + 2) + 's';
     document.getElementById('stars').appendChild(s);
 }
 </script>
