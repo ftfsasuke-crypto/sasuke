@@ -70,7 +70,7 @@
             <circle stroke="#333" stroke-width="6" fill="transparent" r="42" cx="50" cy="50"/>
             <circle id="progress-circle" stroke="var(--main)" stroke-width="6" fill="transparent" r="42" cx="50" cy="50"/>
         </svg>
-        <span id="countdown-number" class="countdown-num">7</span>
+        <span id="countdown-number" class="countdown-num">5</span>
     </div>
     <h2 style="margin-top: 10px; font-size: 24px;">انتظر قليلاً... ⏳</h2>
     <p style="color: #888; font-size: 14px; text-align: center; width: 80%;">انتظر فقط، النظام يتحقق من إتمامك للشرط</p>
@@ -78,8 +78,8 @@
 
 <div id="loader">
     <div class="circle-timer"></div>
-    <h2 id="timer-text" style="font-size: 30px; margin: 20px 0;">جاري التحقق</h2>
-    <p style="text-align:center; color:#ccc; font-size:14px;">ننتظر استجابة سيرفرات يوتيوب... ⏳<br>قد يستغرق بضع ثوانٍ لتسجيل اللايك.</p>
+    <h2 id="timer-text" style="font-size: 24px; margin: 20px 0;">جاري التحقق...</h2>
+    <p style="color:#aaa; font-size:13px; text-align:center;">يتم فحص سيرفرات يوتيوب الآن<br>قد يستغرق بضع ثوانٍ لتسجيل اللايك</p>
 </div>
 
 <div id="app" class="container"></div>
@@ -175,7 +175,7 @@ try {
                     
                     <div class="warning-box">
                         <h4>تنبيه مهم ⚠️</h4>
-                        <p>لما تضغط تعمل كومنت ولايك اذا انت اصلا عامل لايك شيل اللايك وحطه تاني واعمل تحقق من الشروط، واذا قالك فشل هذا لانه لسه ما سجل اللايك تبعك، رح تضغط تحقق تاني يكون هو سجل اللايك وبينقلك للصفحة الي بعدها ♥️</p>
+                        <p>تأكد من إتمام الشروط. إذا كنت قد وضعت لايك بالفعل وقال لك فشل، شيل اللايك وحطه تاني واضغط تحقق. يوتيوب يتأخر ثواني في التسجيل.</p>
                     </div>
                 </div>
             </div>
@@ -270,24 +270,30 @@ try {
             }, 1000);
         };
 
-        // نظام الفحص المتكرر (الذكي والصارم)
+        // ==========================================
+        // نظام "الرادار": فحص صارم للايك فقط مع تكرار السؤال لتخطي بطء يوتيوب
+        // ==========================================
         window.verifyStrict = function() {
             if(!sub || !vidLike || !vidComment) return alert("يرجى إكمال جميع المهام الثلاثة أولاً!");
             
             document.getElementById('error-msg').style.display = 'none';
             const ld = document.getElementById('loader');
+            const timerText = document.getElementById('timer-text');
             ld.style.display = 'flex';
             
             let attempts = 0;
-            const maxAttempts = 3; // هنجرب نسأل يوتيوب 3 مرات ورا بعض
+            const maxAttempts = 6; // السكربت هيسأل يوتيوب 6 مرات ورا بعض (كل 5 ثواني)
 
-            function checkLikeLoop() {
+            function radarCheck() {
+                attempts++;
+                timerText.innerHTML = "جاري التحقق (" + attempts + "/6)<br><span style='font-size:14px; color:#aaa'>نبحث عن اللايك في سيرفرات يوتيوب...</span>";
+
                 fetchRealLikes((currentLikes) => {
                     if (currentLikes !== -1) {
                         document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
                     }
 
-                    // لو اللايك زاد، نجاح فوراً
+                    // الشرط الصارم والوحيد للعبور
                     if (currentLikes > initialLikes) {
                         ld.style.display = 'none';
                         document.getElementById('tasks-container').style.display = 'none';
@@ -304,15 +310,14 @@ try {
                             if (Date.now() < end) { requestAnimationFrame(frame); }
                         }());
                     } else {
-                        attempts++;
+                        // لو الرقم لسه مزادش، هنسأله تاني
                         if (attempts < maxAttempts) {
-                            // لو لسه محصلش تحديث من يوتيوب، استنى 4 ثواني واسأله تاني من غير ما المستخدم يدوس حاجة
-                            setTimeout(checkLikeLoop, 4000);
+                            setTimeout(radarCheck, 5000); // استنى 5 ثواني واسأل تاني
                         } else {
-                            // لو بعد الـ 3 محاولات (حوالي 12 ثانية) مفيش زيادة، يبقي فشل
+                            // لو خلصنا الـ 6 محاولات (يعني نص دقيقة) ويوتيوب ملقاش لايك، يرفضه!
                             ld.style.display = 'none';
                             let errMsg = document.getElementById('error-msg');
-                            errMsg.innerHTML = "❌ فشل التحقق: لم نكتشف زيادة في اللايكات!<br>الرقم في سيرفرات يوتيوب لم يتغير حتى الآن. تأكد من اللايك واضغط <b>أعد التحقق</b>.";
+                            errMsg.innerHTML = "❌ فشل التحقق: لم نكتشف زيادة في اللايكات!<br>تأكد من وضعك للايك، إذا كنت متأكداً، اضغط 'أعد التحقق' لأن يوتيوب أحياناً يتأخر جداً.";
                             errMsg.style.display = 'block';
                             document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
                             
@@ -324,9 +329,8 @@ try {
                     }
                 });
             }
-            
-            // بدء الدوامة الأولى
-            checkLikeLoop(); 
+
+            radarCheck(); // تشغيل الرادار
         };
 
     } else {
