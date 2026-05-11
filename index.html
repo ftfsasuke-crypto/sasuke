@@ -146,14 +146,16 @@ try {
         var initialLikes = -1; 
         var lastTaskClickTime = 0; 
 
-        // جزء فيديو الشرح والنص الخاص به بيظهر بس لو فيه رابط
+        // جزء فيديو الشرح في الصفحة الرئيسية (مكان صندوق التنبيه القديم)
         var tutSection = "";
         if(config.tut && config.tut !== "#") {
             tutSection = `
-                <p style="color: #e2e8f0; font-family: 'Cairo', sans-serif; font-size: 15px; margin-bottom: 15px; font-weight: bold;">
-                    اذا مو عارف كيف تتخطي الروابط سايبلك تحت رابط فيديو طريقه تخطي الروابط
-                </p>
-                <button style="display: block; width: 100%; background: #3b82f6; padding: 15px; border-radius: 12px; color: white; border: none; font-weight: bold; font-size: 15px; cursor: pointer; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);" onclick="window.open('${config.tut}', '_blank')">📺 فيديو شرح كيفية تخطي الروابط</button>
+                <div style="margin-top: 20px; border-top: 1px solid #333; padding-top: 15px;">
+                    <p style="color: #e2e8f0; font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: bold; text-align: center; margin: 0 0 10px 0; line-height: 1.6;">
+                        اذا مو عارف كيف تتخطي الروابط سايبلك تحت رابط فيديو طريقه تخطي الروابط
+                    </p>
+                    <button style="display: block; width: 100%; background: #3b82f6; padding: 12px; border-radius: 10px; color: white; border: none; font-weight: bold; font-size: 14px; cursor: pointer; box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);" onclick="window.open('${config.tut}', '_blank')">📺 فيديو شرح كيفية تخطي الروابط</button>
+                </div>
             `;
         }
 
@@ -195,16 +197,16 @@ try {
                     <span id="count-num">جاري الاتصال...</span>
                     <button class="verify-btn" id="vBtn" onclick="verifyStrict()">تحقق من الشروط 🔍</button>
                     <div id="error-msg">❌ فشل التحقق: تأكد من إنهاء جميع الشروط بشكل صحيح.</div>
+                    
+                    ${tutSection}
                 </div>
             </div>
 
             <div id="success-container" style="display: none; background: var(--card); border-radius: 15px; padding: 35px 20px; text-align: center; border: 1px solid #333; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
                 <div style="font-size: 70px; margin-bottom: 10px; animation: bounce-icon 2s infinite;">🎉</div>
                 
-                <h2 style="margin: 0 0 20px; font-size: 28px; color: white;">احسنت يا بطل 😎</h2>
+                <h2 style="margin: 0 0 25px; font-size: 28px; color: white;">احسنت يا بطل 😎</h2>
                 
-                ${tutSection}
-
                 <button style="display: block; width: 100%; background: #ef4444; padding: 15px; border-radius: 12px; color: white; border: none; font-weight: bold; font-size: 15px; cursor: pointer; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);" onclick="window.open('https://youtu.be/wOaEuyXW9H0?si=Rn1iFmkvuytRDFLO', '_blank')">🛠️ طريقة حل مشكلة يرجى تعطيل مانع الاعلانات</button>
 
                 <button style="display: block; width: 100%; background: var(--accent); padding: 18px; border-radius: 12px; color: white; border: none; font-weight: bold; font-size: 18px; cursor: pointer; box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3);" onclick="window.location.href='${config.f}'">🔓 افتح الرابط</button>
@@ -306,7 +308,7 @@ try {
 
                     var timePassedSinceLastClick = Date.now() - lastTaskClickTime;
 
-                    if (currentLikes > initialLikes || timePassedSinceLastClick >= 12000) {
+                    if (currentLikes > initialLikes || timePassedSinceLastClick >= 15000) {
                         document.getElementById('tasks-container').style.display = 'none';
                         document.getElementById('top-logo').style.display = 'none';
                         document.getElementById('top-title').style.display = 'none';
