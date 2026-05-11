@@ -71,7 +71,7 @@
         
         .gen-input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #333; background: #111; color: white; box-sizing: border-box; text-align: right; font-family: 'Cairo', sans-serif; }
 
-        /* ستايل زر الإعدادات والمربع المنبثق (الجديد) */
+        /* ستايل زر الإعدادات والمربع المنبثق */
         .menu-btn { position: fixed; top: 20px; left: 20px; z-index: 999; background: rgba(21, 21, 23, 0.8); backdrop-filter: blur(5px); border: 1px solid #333; padding: 10px; border-radius: 10px; color: white; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         .menu-btn:hover { border-color: var(--main); color: var(--main); }
         .menu-btn svg { width: 28px; height: 28px; fill: currentColor; }
@@ -114,8 +114,7 @@
             <circle stroke="#333" stroke-width="6" fill="transparent" r="42" cx="50" cy="50"/>
             <circle id="progress-circle" stroke="var(--main)" stroke-width="6" fill="transparent" r="42" cx="50" cy="50"/>
         </svg>
-        <span id="countdown-number" class="countdown-num">7</span>
-    </div>
+        <span id="countdown-number" class="countdown-num">5</span> </div>
     <h2 style="margin-top: 10px; font-size: 24px;">انتظر قليلاً... ⏳</h2>
     <p style="color: #888; font-size: 14px; text-align: center; width: 80%;">انتظر فقط، النظام يتحقق من إتمامك للشرط<br>بعد الانتهاء ستكتمل المهمة 👍</p>
 </div>
@@ -307,9 +306,11 @@ function processTask(type, url) {
     overlay.style.display = 'flex';
     progCircle.style.animation = 'none';
     void progCircle.offsetWidth; 
-    progCircle.style.animation = 'circle-deplete 7s linear forwards';
+    // تم تعديل الأنيميشن هنا لـ 5 ثواني
+    progCircle.style.animation = 'circle-deplete 5s linear forwards';
     
-    let timeLeft = 7;
+    // تم التعديل هنا لـ 5 ثواني
+    let timeLeft = 5;
     numSpan.innerText = timeLeft;
 
     const timer = setInterval(() => {
@@ -336,7 +337,7 @@ function processTask(type, url) {
     }, 1000);
 }
 
-// التحقق الصارم والانتظار 7 ثواني (النسخة المتفق عليها)
+// التحقق الصارم والانتظار 7 ثواني 
 window.verifyStrict = function() {
     if(!sub || !vid) return alert("يرجى إكمال المهام أولاً!");
 
