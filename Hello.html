@@ -6,35 +6,59 @@
     <title>لعبة الجاسوس</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #eee; text-align: center; padding: 20px; min-height: 100vh; direction: rtl; }
-        #app { max-width: 600px; margin: 0 auto; background: rgba(0,0,0,0.3); border-radius: 20px; padding: 20px; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3e 50%, #0d0d2b 100%);
+            color: #eee; text-align: center; padding: 20px; min-height: 100vh; direction: rtl;
+            overflow-x: hidden;
+        }
+        .stars-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0; overflow: hidden;
+        }
+        .star {
+            position: absolute; background: white; border-radius: 50%;
+            animation: fall linear infinite; opacity: 0.8;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-10vh) translateX(0) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) translateX(20px) rotate(360deg); opacity: 0; }
+        }
+        #app {
+            max-width: 600px; margin: 0 auto; background: rgba(0,0,0,0.4);
+            border-radius: 20px; padding: 20px; position: relative; z-index: 1;
+            backdrop-filter: blur(5px); border: 1px solid rgba(255,255,255,0.1);
+        }
         h1 { margin-bottom: 15px; } h1 .title-spy { background: linear-gradient(135deg, #e94560, #ff6b6b); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 42px; }
         h2 { color: #e94560; margin-bottom: 15px; } h3 { margin: 15px 0 10px; color: #ccc; }
         button { background: #e94560; color: white; border: none; padding: 12px 24px; margin: 8px; border-radius: 30px; font-size: 16px; cursor: pointer; transition: 0.3s; font-family: inherit; }
         button:hover { background: #c23152; transform: scale(1.05); } button:disabled { background: #666; cursor: not-allowed; }
-        input { padding: 12px; border-radius: 20px; border: none; margin: 8px; font-size: 16px; width: 70%; text-align: center; font-family: inherit; }
-        #timer-display { font-size: 48px; font-weight: bold; background: #0f3460; padding: 20px; border-radius: 15px; margin: 15px 0; direction: ltr; color: #2ecc71; }
-        ul { list-style: none; padding: 0; } li { background: #0f3460; margin: 5px 0; padding: 12px 20px; border-radius: 20px; font-size: 18px; }
-        .room-link { background: #0f3460; padding: 15px; border-radius: 10px; margin: 15px 0; word-break: break-all; direction: ltr; font-size: 14px; }
+        input { padding: 12px; border-radius: 20px; border: none; margin: 8px; font-size: 16px; width: 70%; text-align: center; font-family: inherit; background: rgba(255,255,255,0.1); color: #fff; }
+        input::placeholder { color: #aaa; }
+        #timer-display { font-size: 48px; font-weight: bold; background: rgba(15,52,96,0.6); padding: 20px; border-radius: 15px; margin: 15px 0; direction: ltr; color: #2ecc71; backdrop-filter: blur(3px); }
+        ul { list-style: none; padding: 0; } li { background: rgba(15,52,96,0.6); margin: 5px 0; padding: 12px 20px; border-radius: 20px; font-size: 18px; backdrop-filter: blur(3px); }
+        .room-link { background: rgba(15,52,96,0.6); padding: 15px; border-radius: 10px; margin: 15px 0; word-break: break-all; direction: ltr; font-size: 14px; backdrop-filter: blur(3px); }
         #vote-buttons button { display: block; width: 80%; margin: 8px auto; font-size: 18px; padding: 14px; }
         .notification { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #e94560; color: white; padding: 12px 24px; border-radius: 30px; z-index: 1000; font-size: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); animation: fadeIn 0.3s; }
         @keyframes fadeIn { from { opacity: 0; top: 10px; } to { opacity: 1; top: 20px; } }
-        .wrong-box { background: #4a1a1a; border: 2px solid #e94560; color: #ff6b6b; padding: 15px; border-radius: 15px; margin: 10px 0; font-size: 28px; font-weight: bold; }
-        .spy-reveal-box { background: #1a1a4a; border: 2px solid #f1c40f; color: #f1c40f; padding: 15px; border-radius: 15px; margin: 10px 0; font-size: 22px; font-weight: bold; }
-        .correct-box { background: #1a472a; border: 2px solid #2ecc71; color: #2ecc71; padding: 15px; border-radius: 15px; margin: 10px 0; font-size: 28px; font-weight: bold; }
-        .word-box { background: #1a472a; border: 2px solid #2ecc71; color: #2ecc71; padding: 25px; border-radius: 15px; margin: 15px 0; font-size: 28px; font-weight: bold; }
-        .spy-box { background: #4a1a1a; border: 2px solid #e94560; color: #e94560; padding: 25px; border-radius: 15px; margin: 15px 0; font-size: 24px; font-weight: bold; }
-        .vote-log { background: #2c2c54; padding: 12px; border-radius: 10px; margin: 8px 0; font-size: 16px; color: #ddd; }
-        .waiting-votes { background: #2c2c54; padding: 20px; border-radius: 15px; margin: 15px 0; font-size: 18px; color: #f1c40f; animation: pulse 1.5s infinite; }
+        .wrong-box { background: rgba(74,26,26,0.8); border: 2px solid #e94560; color: #ff6b6b; padding: 15px; border-radius: 15px; margin: 10px 0; font-size: 28px; font-weight: bold; backdrop-filter: blur(3px); }
+        .spy-reveal-box { background: rgba(26,26,74,0.8); border: 2px solid #f1c40f; color: #f1c40f; padding: 15px; border-radius: 15px; margin: 10px 0; font-size: 22px; font-weight: bold; backdrop-filter: blur(3px); }
+        .correct-box { background: rgba(26,71,42,0.8); border: 2px solid #2ecc71; color: #2ecc71; padding: 15px; border-radius: 15px; margin: 10px 0; font-size: 28px; font-weight: bold; backdrop-filter: blur(3px); }
+        .word-box { background: rgba(26,71,42,0.8); border: 2px solid #2ecc71; color: #2ecc71; padding: 25px; border-radius: 15px; margin: 15px 0; font-size: 28px; font-weight: bold; backdrop-filter: blur(3px); }
+        .spy-box { background: rgba(74,26,26,0.8); border: 2px solid #e94560; color: #e94560; padding: 25px; border-radius: 15px; margin: 15px 0; font-size: 24px; font-weight: bold; backdrop-filter: blur(3px); }
+        .vote-log { background: rgba(44,44,84,0.6); padding: 12px; border-radius: 10px; margin: 8px 0; font-size: 16px; color: #ddd; backdrop-filter: blur(3px); }
+        .waiting-votes { background: rgba(44,44,84,0.6); padding: 20px; border-radius: 15px; margin: 15px 0; font-size: 18px; color: #f1c40f; animation: pulse 1.5s infinite; backdrop-filter: blur(3px); }
         @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.6;} }
-        .expired-box { background: #4a1a1a; border: 2px solid #e94560; color: #e94560; padding: 30px; border-radius: 15px; margin: 20px 0; font-size: 22px; font-weight: bold; }
-        .final-guess-box { background: #0f3460; padding: 20px; border-radius: 15px; margin: 15px 0; font-size: 20px; border: 2px solid #f1c40f; }
+        .expired-box { background: rgba(74,26,26,0.8); border: 2px solid #e94560; color: #e94560; padding: 30px; border-radius: 15px; margin: 20px 0; font-size: 22px; font-weight: bold; backdrop-filter: blur(3px); }
+        .final-guess-box { background: rgba(15,52,96,0.6); padding: 20px; border-radius: 15px; margin: 15px 0; font-size: 20px; border: 2px solid #f1c40f; backdrop-filter: blur(3px); }
         #kick-section button { background: #ff6b6b; font-size: 14px; padding: 6px 14px; margin: 2px; }
         .host-name-display { background: linear-gradient(135deg, #f093fb, #f5576c, #ffd700); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; font-size: 20px; font-weight: bold; margin: 8px 0; display: inline-block; }
-        .host-box { background: #0f3460; padding: 15px 20px; border-radius: 15px; margin: 10px 0; border: 1px solid #e94560; }
+        .host-box { background: rgba(15,52,96,0.6); padding: 15px 20px; border-radius: 15px; margin: 10px 0; border: 1px solid #e94560; backdrop-filter: blur(3px); }
     </style>
 </head>
 <body>
+    <div class="stars-container" id="starsContainer"></div>
+
     <div id="app">
         <div id="start-screen">
             <h1><span class="title-spy">🕵️ لعبة الجاسوس</span></h1>
@@ -56,7 +80,7 @@
             <div id="host-controls" style="display:none;"><button onclick="startGame()">🚀 ابدأ اللعبة</button><button onclick="skipTime()">⏩ اسكب الوقت</button></div>
             <h3>👥 اللاعبون:</h3><ul id="player-list"></ul>
             <div id="kick-section"></div>
-            <div id="vote-log-section" style="display:none;"><h3>📋 التصويتات:</h3><div id="vote-log"></div></div>
+            <div id="vote-log-section" style="display:none;"><h3>📋 سجل التصويتات:</h3><div id="vote-log"></div></div>
             <div id="vote-section" style="display:none;"><h3>🗳️ صوت على الجاسوس:</h3><div id="vote-buttons"></div></div>
             <div id="waiting-votes" style="display:none;" class="waiting-votes">⏳ في انتظار باقي اللاعبين...</div>
             <div id="vote-result-wrong" style="display:none;" class="wrong-box">❌ مش هو الجاسوس!</div>
@@ -68,9 +92,27 @@
         </div>
     </div>
 
+    <script>
+        function createStars() {
+            const container = document.getElementById('starsContainer');
+            for (let i = 0; i < 60; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                const size = Math.random() * 3 + 1;
+                star.style.width = size + 'px'; star.style.height = size + 'px';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.animationDuration = (Math.random() * 4 + 3) + 's';
+                star.style.animationDelay = Math.random() * 5 + 's';
+                star.style.opacity = Math.random() * 0.7 + 0.3;
+                container.appendChild(star);
+            }
+        }
+        createStars();
+    </script>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getDatabase, ref, set, get, update, onValue, onDisconnect, remove, onChildAdded, onChildRemoved } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+        import { getDatabase, ref, set, get, update, onValue, onDisconnect, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDTyJqVntFqKe3I-zntb_rMx9Qcv7Nqi94",
@@ -132,12 +174,8 @@
             onDisconnect(r).remove();
         }
         function listenPlayers(){
-            let playersRef=ref(db,'rooms/'+roomId+'/players');
-            onValue(playersRef,s=>{
-                let p=s.val()||{};
-                allPlayersData=p;
-                totalPlayerCount=Object.keys(p).length;
-                updatePlayerList(p);
+            onValue(ref(db,'rooms/'+roomId+'/players'),s=>{
+                let p=s.val()||{};allPlayersData=p;totalPlayerCount=Object.keys(p).length;updatePlayerList(p);
             });
         }
         function updatePlayerList(p){
@@ -162,7 +200,7 @@
             });
         }
         function listenGuess(){onValue(ref(db,'rooms/'+roomId+'/spyGuessResult'),s=>{let d=s.val();if(d)showGuess(d);});}
-        function listenLogs(){onValue(ref(db,'rooms/'+roomId+'/voteLogs'),s=>{let l=s.val()||{},h='';Object.values(l).forEach(x=>{h+=`<div class="vote-log">🗳️ ${x.voterName} ➡️ ${x.targetName}</div>`;});document.getElementById('vote-log').innerHTML=h||'<div class="vote-log">لا تصويتات</div>';});}
+        function listenLogs(){onValue(ref(db,'rooms/'+roomId+'/voteLogs'),s=>{let l=s.val()||{},h='';Object.values(l).forEach(x=>{h+=`<div class="vote-log">🗳️ ${x.voterName} ➡️ ${x.targetName}</div>`;});document.getElementById('vote-log').innerHTML=h||'<div class="vote-log">لا تصويتات بعد</div>';});}
         function listenVotes(){onValue(ref(db,'rooms/'+roomId+'/voteResults'),s=>{if(gamePhase!=='voting')return;let v=s.val()||{},c=Object.keys(v).length;
                 if(c>0&&c<totalPlayerCount){document.getElementById('waiting-votes').style.display='block';document.getElementById('waiting-votes').textContent='⏳ انتظار... ('+c+' من '+totalPlayerCount+')';}
                 if(c>=totalPlayerCount&&totalPlayerCount>0&&!gameFinished){gameFinished=true;document.getElementById('waiting-votes').style.display='none';finalize(v);}
@@ -177,7 +215,11 @@
             if(d.phase==='voting'){document.getElementById('word-display').style.display='none';document.getElementById('vote-log-section').style.display='block';showVoteUI();}
             if(d.phase==='spyGuess'||d.phase==='finished'){document.getElementById('word-display').style.display='none';document.getElementById('vote-log-section').style.display='block';showResult(d);if(d.spyGuessResult)showGuess(d.spyGuessResult);}
         }
-        function showGuess(g){let div=document.getElementById('spy-guess-result');div.style.display='block';div.innerHTML=g.correct?`🎉 صح! الكلمة: <strong>${g.secretWord}</strong>`:`😞 غلط! الكلمة: <strong>${g.secretWord}</strong>`;div.style.borderColor=g.correct?'#2ecc71':'#e94560';div.style.color=g.correct?'#2ecc71':'#e94560';}
+        function showGuess(g){
+            let div=document.getElementById('spy-guess-result');div.style.display='block';
+            div.innerHTML=`✍️ الجاسوس كتب: <strong>${g.guess}</strong><br>🔑 الكلمة الصحيحة كانت: <strong>${g.secretWord}</strong>`;
+            div.style.borderColor='#f1c40f';div.style.color='#f1c40f';
+        }
         function showResult(d){
             let sn=allPlayersData[d.spyPlayerId]?.name||'???';
             if(d.voteResultPhase==='correct'){document.getElementById('vote-result-correct').style.display='block';document.getElementById('correct-spy-name').textContent=sn;}
@@ -221,7 +263,7 @@
         }
         window.submitSpyGuess=function(){
             let g=document.getElementById('spy-guess-input').value.trim();if(!g)return notify('⚠️ اكتب تخمينك!');
-            let ok=(g===secretWord),gd={guess:g,correct:ok,secretWord:secretWord,time:Date.now()};
+            let gd={guess:g,secretWord:secretWord,time:Date.now()};
             set(ref(db,'rooms/'+roomId+'/spyGuessResult'),gd);
             showGuess(gd);document.getElementById('spy-guess-section').style.display='none';
             update(ref(db,'rooms/'+roomId),{phase:'finished',timerRunning:false,active:false,spyGuessResult:gd});
