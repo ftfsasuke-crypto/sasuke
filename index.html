@@ -6,6 +6,21 @@
     <title>MX_SASUKE | VIP Unlocker</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <script>
+        window.onerror = function(msg, url, line, col, error) {
+            document.body.innerHTML = `
+            <div style="color:white; text-align:center; padding:30px; font-family:'Cairo', sans-serif; background:#1a0a2e; min-height:100vh; display:flex; flex-direction:column; justify-content:center;">
+                <h2 style="color:#ef4444; font-size:24px;">عذراً، حدث خطأ في الكود ⚠️</h2>
+                <div style="background:rgba(0,0,0,0.5); padding:15px; border-radius:10px; text-align:left; direction:ltr; margin-bottom:20px; color:#fbbf24; font-family:monospace; word-wrap:break-word;">
+                    ${msg}<br>Line: ${line}
+                </div>
+                <p style="color:#22c55e; font-size:16px; font-weight:bold;">يرجى تصوير هذه الشاشة لتتمكن من إصلاح الخطأ.</p>
+            </div>`;
+            return false;
+        };
+    </script>
+
     <style>
         :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; }
         
@@ -104,11 +119,14 @@
     <p>بنتأكد من اللايك في سيرفر يوتيوب... ⏳</p>
 </div>
 
-<div id="app" class="container"></div>
+<div id="app" class="container">
+    <h3 style="color:#888; margin-top:50px;">جاري تحميل الصفحة...</h3>
+</div>
 
 <script>
 function createStars() {
     const container = document.getElementById('stars');
+    if(!container) return; // حماية إضافية
     const starCount = 80;
     for (let i = 0; i < starCount; i++) {
         const star = document.createElement('div');
@@ -127,12 +145,14 @@ createStars();
 try {
     const YOUTUBE_API_KEY = "AIzaSyA6NebhJLqT8ZEG56cmMEm4xsRR5byisPI"; 
     const app = document.getElementById('app');
+    if(!app) throw new Error("العنصر الرئيسي app غير موجود في الصفحة");
+    
     const urlParams = new URLSearchParams(window.location.search);
 
-    function safeEncode(str) { return btoa(encodeURIComponent(str)); }
+    function safeEncode(str) { return btoa(encodeURIComponent(str || "")); }
     function safeDecode(str) { try { return decodeURIComponent(atob(str.replace(/ /g, '+'))); } catch(e) { return ""; } }
     function fixUrl(url) {
-        if (!url || url === 'undefined') return "#";
+        if (!url || url === 'undefined' || url === "") return "#";
         url = url.trim();
         if (!/^https?:\/\//i.test(url) && url !== "#") return 'https://' + url;
         return url;
@@ -324,23 +344,4 @@ try {
             <div class="task-box" style="display:block; text-align:center; cursor:default;">
                 <h2 style="color:var(--accent); margin-top:0;">MX_SASUKE VIP Generator</h2>
                 <input type="text" id="it" class="gen-input" value="لازم تعمل اشتراك ولايك وتعليق للحصول على السكربت">
-                <input type="url" id="ic" class="gen-input" placeholder="👇 رابط قناتك (اشتراك)">
-                <input type="url" id="iv" class="gen-input" placeholder="👇 رابط فيديو اليوتيوب (اللايك والصورة)">
-                <input type="url" id="itut" class="gen-input" placeholder="👇 رابط فيديو طريقة التخطي (مهم جداً)">
-                <input type="url" id="if" class="gen-input" placeholder="👇 الرابط النهائي (ميديا فاير)">
-                <button class="verify-btn" onclick="gen()">إنشاء الصفحة</button>
-            </div>
-        `;
-        window.gen = function() {
-            const d = [
-                safeEncode(document.getElementById('it').value),
-                safeEncode(document.getElementById('ic').value),
-                safeEncode(document.getElementById('iv').value),
-                safeEncode(document.getElementById('if').value),
-                safeEncode(document.getElementById('itut').value)
-            ].join('|');
-            window.location.href = "?data=" + encodeURIComponent(d);
-        };
-    }
-} catch (error) {
-    // تعديل الحماية: لو العنصر app ممسوح هيطبع
+       
