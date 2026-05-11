@@ -1,4 +1,186 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MX_SASUKE | VIP Unlocker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" async></script>
+    <style>
+        :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; }
+        
+        body { 
+            background: #0a0a0f;
+            background-image: radial-gradient(ellipse at 20% 50%, #1a0a2e 0%, transparent 60%),
+                              radial-gradient(ellipse at 80% 20%, #0a1a2e 0%, transparent 60%);
+            color: white; 
+            font-family: 'Cairo', sans-serif; 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            min-height: 100vh; 
+            overflow-x: hidden; 
+        }
+
+        .stars-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 1; }
+        .star { position: absolute; background: white; border-radius: 50%; opacity: 0.5; animation: fall linear infinite; }
+        @keyframes fall { from { transform: translateY(-10vh); } to { transform: translateY(110vh); } }
+
+        .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; position: relative; z-index: 10; }
+        
+        .yt-logo { width: 50px; margin-bottom: 10px; transition: 0.3s; }
+        .page-title { font-size: 24px; font-weight: bold; margin-bottom: 25px; word-wrap: break-word; line-height: 1.4; transition: 0.3s; }
+        
+        .video-card { position: relative; width: 100%; border-radius: 15px; overflow: hidden; margin-bottom: 25px; border: 1px solid #333; cursor: pointer; background: rgba(17, 17, 17, 0.8); min-height: 180px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(5px); }
+        .video-card img { width: 100%; display: block; }
+        
+        .task-box { background: rgba(21, 21, 23, 0.8); backdrop-filter: blur(10px); border-radius: 15px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; border: 2px solid transparent; text-align: right; cursor: pointer; transition: 0.3s; }
+        .task-box.active { border-color: var(--main); }
+        .task-box.done { border-color: var(--accent); cursor: default; }
+        
+        .task-info { flex-grow: 1; margin-right: 15px; }
+        .task-info h4 { margin: 0; font-size: 16px; color: white; }
+        .task-info p { margin: 5px 0 0; font-size: 12px; color: #94a3b8; }
+        
+        .step-icon { width: 35px; height: 35px; display: flex; align-items: center; justify-content: center; color: var(--main); transition: 0.3s; }
+        .step-icon svg { width: 100%; height: 100%; filter: drop-shadow(0 0 5px rgba(255,0,0,0.4)); transition: 0.3s; }
+        .task-box.done .step-icon { color: var(--accent); }
+        .task-box.done .step-icon svg { filter: drop-shadow(0 0 5px rgba(34,197,94,0.4)); }
+        
+        .checker-card { background: rgba(15, 15, 16, 0.8); backdrop-filter: blur(10px); border: 1px solid #222; border-radius: 15px; padding: 15px; margin-top: 20px; }
+        #count-num { font-size: 32px; font-weight: bold; display: block; margin: 5px 0; }
+        
+        .verify-btn { background: var(--main); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; transition: 0.3s; }
+        .verify-btn:disabled { background: #333; cursor: not-allowed; }
+        
+        #error-msg { display: none; color: var(--fail); font-size: 13px; margin-top: 10px; font-weight: bold; line-height: 1.5; }
+
+        .warning-box { background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 10px; padding: 15px; margin-top: 15px; text-align: right; }
+        .warning-box h4 { color: var(--fail); margin: 0 0 5px; font-size: 14px; }
+        .warning-box p { color: #94a3b8; font-size: 12px; margin: 0; line-height: 1.6; }
+
+        #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        .circle-timer { width: 60px; height: 60px; border: 5px solid #222; border-top: 5px solid var(--main); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        
+        #countdown-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 999; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+        .countdown-wrapper { position: relative; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+        .countdown-num { position: absolute; font-size: 40px; font-weight: bold; color: white; }
+        .progress-ring { transform: rotate(-90deg); }
+        #progress-circle { stroke-dasharray: 264; stroke-dashoffset: 0; stroke-linecap: round; }
+        @keyframes circle-deplete { 0% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 264; } }
+        
+        @keyframes bounce-icon { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-15px); } 60% { transform: translateY(-7px); } }
+
+        .gen-input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #333; background: #e2e8f0; color: #000; box-sizing: border-box; text-align: right; font-family: 'Cairo', sans-serif; font-weight: bold; }
+        .gen-input::placeholder { color: #64748b; font-weight: normal; }
+    </style>
+</head>
+<body>
+
+<div class="stars-container" id="stars"></div>
+
+<div id="countdown-overlay">
+    <div class="countdown-wrapper">
+        <svg class="progress-ring" width="100" height="100">
+            <circle stroke="#333" stroke-width="6" fill="transparent" r="42" cx="50" cy="50"/>
+            <circle id="progress-circle" stroke="var(--main)" stroke-width="6" fill="transparent" r="42" cx="50" cy="50"/>
+        </svg>
+        <span id="countdown-number" class="countdown-num">7</span>
+    </div>
+    <h2 style="margin-top: 10px; font-size: 24px;">انتظر قليلاً... ⏳</h2>
+    <p style="color: #888; font-size: 14px; text-align: center; width: 80%;">انتظر فقط، النظام يتحقق من إتمامك للشرط<br>بعد الانتهاء ستكتمل المهمة 👍</p>
+</div>
+
+<div id="loader">
+    <div class="circle-timer"></div>
+    <h2 style="font-size: 30px; margin: 20px 0;">جاري التحقق</h2>
+    <p>بنتأكد من اللايك في سيرفر يوتيوب... ⏳</p>
+</div>
+
+<div id="generator-view" class="container" style="display: none;">
+    <div class="task-box" style="display:block; text-align:center; cursor:default; background: #151517;">
+        <h2 style="color:var(--accent); margin-top:0;">MX_SASUKE VIP Generator</h2>
+        
+        <input type="text" id="it" class="gen-input" value="لازم تعمل اشتراك ولايك وتعليق للحصول على السكربت">
+        <input type="url" id="ic" class="gen-input" placeholder="👇 رابط قناتك (اشتراك)">
+        <input type="url" id="iv" class="gen-input" placeholder="👇 رابط فيديو اليوتيوب (اللايك والصورة)">
+        <input type="url" id="itut" class="gen-input" placeholder="👇 رابط فيديو طريقة التخطي (مهم جداً)">
+        <input type="url" id="if" class="gen-input" placeholder="👇 الرابط النهائي (ميديا فاير)">
+        
+        <button id="gen-btn" class="verify-btn" style="background: red;" onclick="generateLink()">إنشاء رابط قصير ✨</button>
+
+        <div id="result-box" style="display:none; margin-top: 15px; background: #111; padding: 15px; border-radius: 10px; border: 1px solid var(--accent);">
+            <p style="color: var(--accent); margin: 0 0 10px; font-weight: bold;">تم إنشاء الرابط بنجاح! 🎉</p>
+            <input type="text" id="short-link-input" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #333; background: #000; color: #3b82f6; text-align: center; margin-bottom: 10px; direction: ltr; font-weight: bold;" readonly>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="copyMyLink()" style="flex: 1; background: var(--accent); color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold;">نسخ الرابط 📋</button>
+                <button onclick="testMyLink()" style="flex: 1; background: #3b82f6; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold;">تجربة 🔗</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="task-view" class="container" style="display: none;">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" class="yt-logo" id="top-logo">
+    <div class="page-title" id="top-title"></div>
+
+    <div id="tasks-container">
+        <div class="video-card" onclick="openV()">
+            <img id="vid-thumb" src="">
+        </div>
+
+        <div class="task-box active" id="tk1" onclick="openC()">
+            <div class="task-info">
+                <h4>Subscribe to channel</h4>
+                <p>اضغط هنا للاشتراك في القناة</p>
+            </div>
+            <div class="step-icon">
+                <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+            </div>
+        </div>
+
+        <div class="task-box" id="tk2" onclick="openV()">
+            <div class="task-info">
+                <h4>Like & comment on video</h4>
+                <p>اعمل لايك وكومنت على الفيديو</p>
+            </div>
+            <div class="step-icon" style="width: auto; gap: 8px;">
+                <svg viewBox="0 0 24 24" style="width: 24px; height: 24px;"><path fill="currentColor" d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-2z"/></svg>
+                <svg viewBox="0 0 24 24" style="width: 24px; height: 24px;"><path fill="currentColor" d="M21.99 4c0-1.1-.89-2-1.99-2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14l4 4-.01-18zM18 14H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+            </div>
+        </div>
+
+        <div class="checker-card">
+            <span style="color:#888; font-size:12px;">عدد اللايكات الفعلي (مباشر)</span>
+            <span id="count-num">جاري الاتصال...</span>
+            <button class="verify-btn" id="vBtn" onclick="verifyStrict()">تحقق من الشروط 🔍</button>
+            <div id="error-msg">❌ فشل التحقق: لم نكتشف زيادة في اللايكات! تأكد من وضع لايك.</div>
+            
+            <div class="warning-box">
+                <h4>تنبيه مهم ⚠️</h4>
+                <p>يوتيوب يحتاج إلى ثوانٍ لتسجيل اللايك. إذا قمت بعمل لايك وظهر لك فشل، جرب الضغط على (أعد التحقق) مرة أخرى.</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="success-container" style="display:none; background: rgba(21, 21, 23, 0.8); backdrop-filter: blur(10px); border-radius: 15px; padding: 35px 20px; text-align: center; border: 1px solid #333; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
+        <div style="font-size: 70px; margin-bottom: 10px; animation: bounce-icon 2s infinite;">🎉</div>
+        <h2 style="margin: 0 0 15px; font-size: 28px; color: white;">احسنت يا بطل 😎</h2>
+        
+        <p style="color: #fbbf24; font-family: 'Cairo', sans-serif; font-weight: 900; font-size: 17px; margin-bottom: 25px; line-height: 1.7; border: 2px dashed #fbbf24; padding: 12px; border-radius: 10px; background: rgba(251, 191, 36, 0.08);">
+            قبل ما تعمل فتح للرابط شوف فيديو طريقة تخطي الروابط لكي تفهم كيفية تخطي الروابط 
+        </p>
+
+        <button style="display: block; width: 100%; background: #ef4444; padding: 15px; border-radius: 12px; color: white; border: none; font-weight: bold; font-size: 16px; cursor: pointer; margin-bottom: 12px; box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);" onclick="window.open('https://youtu.be/wOaEuyXW9H0?si=mbRgaIvBA3HeUvsJ', '_blank')">🛠️ حل مشكلة يرجى تعطيل مانع الاعلانات</button>
+
+        <button style="display: block; width: 100%; background: #3b82f6; padding: 15px; border-radius: 12px; color: white; border: none; font-weight: bold; font-size: 16px; cursor: pointer; margin-bottom: 12px; box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);" onclick="openTut()">📺 فيديو طريقة التخطي</button>
+        <button style="display: block; width: 100%; background: var(--accent); padding: 18px; border-radius: 12px; color: white; border: none; font-weight: bold; font-size: 18px; cursor: pointer; box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3);" onclick="openFinal()">🔓 افتح الرابط</button>
+    </div>
+</div>
+
 <script>
+// إنشاء النجوم
 function createStars() {
     const container = document.getElementById('stars');
     if(!container) return;
@@ -28,10 +210,10 @@ function fixUrl(url) {
     return url;
 }
 
+// تحديد أي شاشة تظهر فوراً
 try {
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('data') && urlParams.get('data').length > 5) {
-        document.getElementById('generator-view').style.display = 'none';
         document.getElementById('task-view').style.display = 'block';
         
         const raw = urlParams.get('data').split('|');
@@ -45,19 +227,23 @@ try {
         vId = vIdMatch && vIdMatch[1].length === 11 ? vIdMatch[1] : null;
         let thumb = vId ? `https://img.youtube.com/vi/${vId}/maxresdefault.jpg` : 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png';
 
-        if(document.getElementById('top-title')) document.getElementById('top-title').innerText = titleText;
-        if(document.getElementById('vid-thumb')) document.getElementById('vid-thumb').src = thumb;
+        document.getElementById('top-title').innerText = titleText;
+        document.getElementById('vid-thumb').src = thumb;
 
         fetchRealLikes((likes) => {
             if (likes !== -1) {
                 initialLikes = likes;
-                if(document.getElementById('count-num')) document.getElementById('count-num').innerText = initialLikes.toLocaleString('en-US');
+                document.getElementById('count-num').innerText = initialLikes.toLocaleString('en-US');
             } else {
-                if(document.getElementById('count-num')) document.getElementById('count-num').innerText = "حدث خطأ";
+                document.getElementById('count-num').innerText = "حدث خطأ";
             }
         });
+    } else {
+        document.getElementById('generator-view').style.display = 'block';
     }
-} catch (error) {}
+} catch (error) {
+    document.getElementById('generator-view').style.display = 'block';
+}
 
 function fetchRealLikes(callback) {
     if (!vId) { callback(-1); return; }
@@ -85,39 +271,33 @@ function processTask(type, url) {
     const numSpan = document.getElementById('countdown-number');
     const progCircle = document.getElementById('progress-circle');
     
-    if(overlay) overlay.style.display = 'flex';
-    if(progCircle) {
-        progCircle.style.animation = 'none';
-        void progCircle.offsetWidth; 
-        progCircle.style.animation = 'circle-deplete 7s linear forwards';
-    }
+    overlay.style.display = 'flex';
+    progCircle.style.animation = 'none';
+    void progCircle.offsetWidth; 
+    progCircle.style.animation = 'circle-deplete 7s linear forwards';
     
     let timeLeft = 7;
-    if(numSpan) numSpan.innerText = timeLeft;
+    numSpan.innerText = timeLeft;
 
     const timer = setInterval(() => {
         timeLeft--;
-        if(numSpan) numSpan.innerText = timeLeft;
+        numSpan.innerText = timeLeft;
 
         if (timeLeft <= 0) {
             clearInterval(timer);
-            if(overlay) overlay.style.display = 'none';
+            overlay.style.display = 'none';
 
             if(type === 'c') { 
                 sub = true; 
-                if(document.getElementById('tk1')) {
-                    document.getElementById('tk1').classList.remove('active');
-                    document.getElementById('tk1').classList.add('done'); 
-                    document.getElementById('tk1').querySelector('.step-icon').innerHTML = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
-                }
-                if(document.getElementById('tk2')) document.getElementById('tk2').classList.add('active'); 
+                document.getElementById('tk1').classList.remove('active');
+                document.getElementById('tk1').classList.add('done'); 
+                document.getElementById('tk1').querySelector('.step-icon').innerHTML = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
+                document.getElementById('tk2').classList.add('active'); 
             } else { 
                 vid = true; 
-                if(document.getElementById('tk2')) {
-                    document.getElementById('tk2').classList.remove('active');
-                    document.getElementById('tk2').classList.add('done'); 
-                    document.getElementById('tk2').querySelector('.step-icon').innerHTML = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
-                }
+                document.getElementById('tk2').classList.remove('active');
+                document.getElementById('tk2').classList.add('done'); 
+                document.getElementById('tk2').querySelector('.step-icon').innerHTML = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
             }
         }
     }, 1000);
@@ -126,23 +306,23 @@ function processTask(type, url) {
 window.verifyStrict = function() {
     if(!sub || !vid) return alert("يرجى إكمال المهام أولاً!");
     
-    if(document.getElementById('error-msg')) document.getElementById('error-msg').style.display = 'none';
+    document.getElementById('error-msg').style.display = 'none';
     const ld = document.getElementById('loader');
-    if(ld) ld.style.display = 'flex';
+    ld.style.display = 'flex';
     
     setTimeout(() => {
         fetchRealLikes((currentLikes) => {
-            if(ld) ld.style.display = 'none';
+            ld.style.display = 'none';
             
-            if (currentLikes !== -1 && document.getElementById('count-num')) {
+            if (currentLikes !== -1) {
                 document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
             }
 
             if (currentLikes > initialLikes) {
-                if(document.getElementById('tasks-container')) document.getElementById('tasks-container').style.display = 'none';
-                if(document.getElementById('top-logo')) document.getElementById('top-logo').style.display = 'none';
-                if(document.getElementById('top-title')) document.getElementById('top-title').style.display = 'none';
-                if(document.getElementById('success-container')) document.getElementById('success-container').style.display = 'block';
+                document.getElementById('tasks-container').style.display = 'none';
+                document.getElementById('top-logo').style.display = 'none';
+                document.getElementById('top-title').style.display = 'none';
+                document.getElementById('success-container').style.display = 'block';
                 
                 var duration = 3 * 1000;
                 var end = Date.now() + duration;
@@ -156,77 +336,4 @@ window.verifyStrict = function() {
                 }
             } else {
                 let errMsg = document.getElementById('error-msg');
-                if(errMsg) {
-                    errMsg.innerHTML = "❌ فشل التحقق: لم نكتشف زيادة في اللايكات! إذا كنت متأكداً من وضع اللايك، اضغط على <b>أعد التحقق</b> مجدداً بعد ثوانٍ.";
-                    errMsg.style.display = 'block';
-                }
-                if(document.getElementById('vBtn')) document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
-                
-                if (currentLikes !== -1 && currentLikes < initialLikes) {
-                    initialLikes = currentLikes; 
-                }
-            }
-        });
-    }, 3000);
-};
-
-// ==========================================
-// دالة الإنشاء الجديدة الخارقة (مضادة للحظر)
-// ==========================================
-window.gen = function() {
-    const elId = id => document.getElementById(id) ? document.getElementById(id).value.trim() : "";
-    const d = [
-        safeEncode(elId('it')),
-        safeEncode(elId('ic')),
-        safeEncode(elId('iv')),
-        safeEncode(elId('if')),
-        safeEncode(elId('itut'))
-    ].join('|');
-    
-    let baseUrl = window.location.href.split('?')[0];
-    const finalUrl = baseUrl + "?data=" + encodeURIComponent(d);
-    
-    // محاولة إظهار النتيجة في الصندوق لو موجود
-    let box = document.getElementById('result-box');
-    let input = document.getElementById('short-link-input');
-    
-    if (box && input) {
-        box.style.display = 'block';
-        input.value = finalUrl;
-        
-        // محاولة تقصير الرابط في الخلفية بدون ما نوقف الموقع
-        fetch(`https://is.gd/create.php?format=json&url=${encodeURIComponent(finalUrl)}`)
-        .then(res => res.json())
-        .then(data => {
-            if(data.shorturl) {
-                input.value = data.shorturl; // تحديث الرابط للقصير لو نجح
-            }
-        }).catch(e => { /* تجاهل الخطأ واحتفظ بالرابط الطويل */ });
-        
-    } else {
-        // لو الصندوق مش موجود في الـ HTML بتاعك، هيطلعلك رسالة منبثقة إجبارية تنسخ منها
-        prompt("تم إنشاء الرابط بنجاح! انسخه من المربع التالي:", finalUrl);
-    }
-};
-
-window.copyLink = function() {
-    const copyText = document.getElementById("short-link-input");
-    if(!copyText) return;
-    copyText.select();
-    copyText.setSelectionRange(0, 99999);
-    
-    if (navigator.clipboard) {
-        navigator.clipboard.writeText(copyText.value).then(() => {
-            alert("تم نسخ الرابط! 📋");
-        });
-    } else {
-        document.execCommand("copy");
-        alert("تم نسخ الرابط! 📋");
-    }
-};
-
-window.testLink = function() {
-    const url = document.getElementById("short-link-input");
-    if(url && url.value) window.open(url.value, '_blank');
-};
-</script>
+                errMsg.innerHTML = "
