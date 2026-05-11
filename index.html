@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MX_SASUKE | VIP Unlocker</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; }
@@ -130,12 +130,12 @@ try {
             f: fixUrl(safeDecode(raw[3] || raw[2]))
         };
 
-        // تطوير بسيط لاستخراج الـ ID حتى لو الرابط كان Shorts
         let vIdMatch = config.v.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([^#\&\?]*)/);
         let vId = vIdMatch && vIdMatch[1].length === 11 ? vIdMatch[1] : null;
         let thumb = vId ? `https://img.youtube.com/vi/${vId}/maxresdefault.jpg` : 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png';
 
-        let sub = false, vid = false;
+        // 3 متغيرات للمهام المنفصلة
+        let sub = false, vidLike = false, vidComment = false;
         let initialLikes = -1; 
 
         app.innerHTML = `
@@ -143,7 +143,7 @@ try {
             <div class="page-title" id="top-title">${config.t}</div>
 
             <div id="tasks-container">
-                <div class="video-card" onclick="openT('v')">
+                <div class="video-card" onclick="openT('vl')">
                     <img src="${thumb}">
                 </div>
 
@@ -155,12 +155,20 @@ try {
                     <div class="step-num"><span>1</span></div>
                 </div>
 
-                <div class="task-box" id="tk2" onclick="openT('v')">
+                <div class="task-box" id="tk2" onclick="openT('vl')">
                     <div class="task-info">
-                        <h4>Like & comment on video</h4>
-                        <p>اعمل لايك وكومنت على الفيديو</p>
+                        <h4>Like the video</h4>
+                        <p>اعمل لايك على المقطع</p>
                     </div>
                     <div class="step-num"><span>2</span></div>
+                </div>
+
+                <div class="task-box" id="tk3" onclick="openT('vc')">
+                    <div class="task-info">
+                        <h4>Comment on video</h4>
+                        <p>اعمل كومنت على المقطع</p>
+                    </div>
+                    <div class="step-num"><span>3</span></div>
                 </div>
 
                 <div class="checker-card">
@@ -171,7 +179,7 @@ try {
                     
                     <div class="warning-box">
                         <h4>تنبيه مهم ⚠️</h4>
-                        <p>لما تضغط على Like & comment on video وتعمل كومنت ولايك اذا انت اصلا عامل لايك شيل اللايك وحطه تاني واعمل تحقق من الشروط واذا قالك فشل هذا لانه لسه ما سجل اللايك تبعك رح تضغط عليه تاني يكون هو سجل اللايك تبعك وبينقلك للصفحة الي بعدها ♥️</p>
+                        <p>لما تضغط تعمل كومنت ولايك اذا انت اصلا عامل لايك شيل اللايك وحطه تاني واعمل تحقق من الشروط، واذا قالك فشل هذا لانه لسه ما سجل اللايك تبعك، رح تضغط تحقق تاني يكون هو سجل اللايك وبينقلك للصفحة الي بعدها ♥️</p>
                     </div>
                 </div>
             </div>
@@ -209,7 +217,8 @@ try {
 
         window.openT = function(type) {
             if (type === 'c' && sub) return;
-            if (type === 'v' && vid) return;
+            if (type === 'vl' && vidLike) return;
+            if (type === 'vc' && vidComment) return;
 
             window.open(type === 'c' ? config.c : config.v, '_blank');
 
@@ -239,26 +248,31 @@ try {
                         document.getElementById('tk1').classList.remove('active');
                         document.getElementById('tk1').classList.add('done'); 
                         document.getElementById('tk1').querySelector('.step-num span').innerText = '✓';
-                        document.getElementById('tk2').classList.add('active'); 
-                    } else { 
-                        vid = true; 
+                        if(!vidLike) document.getElementById('tk2').classList.add('active'); 
+                    } else if(type === 'vl') { 
+                        vidLike = true; 
                         document.getElementById('tk2').classList.remove('active');
                         document.getElementById('tk2').classList.add('done'); 
                         document.getElementById('tk2').querySelector('.step-num span').innerText = '✓';
+                        if(!vidComment) document.getElementById('tk3').classList.add('active');
+                    } else if(type === 'vc') {
+                        vidComment = true; 
+                        document.getElementById('tk3').classList.remove('active');
+                        document.getElementById('tk3').classList.add('done'); 
+                        document.getElementById('tk3').querySelector('.step-num span').innerText = '✓';
                     }
                 }
             }, 1000);
         };
 
-        // التحقق الصارم 100%
+        // التحقق الصارم 100% للمهام الثلاثة
         window.verifyStrict = function() {
-            if(!sub || !vid) return alert("يرجى إكمال المهام أولاً!");
+            if(!sub || !vidLike || !vidComment) return alert("يرجى إكمال المهام الثلاثة أولاً!");
             
             document.getElementById('error-msg').style.display = 'none';
             const ld = document.getElementById('loader');
             ld.style.display = 'flex';
             
-            // خليت الوقت 5 ثواني عشان يوتيوب يلحق يستوعب اللايك
             setTimeout(() => {
                 fetchRealLikes((currentLikes) => {
                     ld.style.display = 'none';
@@ -267,7 +281,6 @@ try {
                         document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
                     }
 
-                    // لازم اللايكات تزيد، مفيش أي استثناءات
                     if (currentLikes > initialLikes) {
                         document.getElementById('tasks-container').style.display = 'none';
                         document.getElementById('top-logo').style.display = 'none';
@@ -283,9 +296,8 @@ try {
                             if (Date.now() < end) { requestAnimationFrame(frame); }
                         }());
                     } else {
-                        // لو اللايك مزادش (أو يوتيوب لسه بيحدث)
                         let errMsg = document.getElementById('error-msg');
-                        errMsg.innerHTML = "❌ فشل التحقق: لم نكتشف زيادة في اللايكات!<br>إذا كنت قد وضعت لايك بالفعل، فيرجى العلم أن يوتيوب يحتاج لبعض الوقت لتحديث الرقم في سيرفراته. انتظر قليلاً وجرب مرة أخرى.";
+                        errMsg.innerHTML = "❌ فشل التحقق: لم نكتشف زيادة في اللايكات!<br>إذا كنت قد وضعت لايك بالفعل، فيرجى العلم أن يوتيوب يحتاج لبعض الوقت لتحديث الرقم في سيرفراته. انتظر قليلاً واضغط <b>أعد التحقق</b>.";
                         errMsg.style.display = 'block';
                         document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
                         
