@@ -10,6 +10,7 @@
         :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; }
         body { background: var(--bg); color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; min-height: 100vh; overflow-x: hidden; position: relative; }
         
+        /* تأثير النجوم المتساقطة */
         .stars-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
         .star { position: absolute; background: white; border-radius: 50%; opacity: 0.5; animation: fall linear infinite; }
         @keyframes fall { from { transform: translateY(-10vh); } to { transform: translateY(110vh); } }
@@ -132,10 +133,6 @@ try {
 
         let sub = false, vidLike = false, vidComment = false;
         let initialLikes = -1; 
-        
-        // متغيرات تتبع الوقت عشان نقفش اللي بيضحك علينا
-        let likeClickTime = 0;
-        let commentClickTime = 0;
 
         app.innerHTML = `
             <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" class="yt-logo" id="top-logo">
@@ -219,10 +216,6 @@ try {
             if (type === 'vl' && vidLike) return;
             if (type === 'vc' && vidComment) return;
 
-            // تسجيل وقت الضغط
-            if (type === 'vl') likeClickTime = Date.now();
-            if (type === 'vc') commentClickTime = Date.now();
-
             window.open(type === 'c' ? config.c : config.v, '_blank');
 
             const overlay = document.getElementById('countdown-overlay');
@@ -282,11 +275,8 @@ try {
                         document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
                     }
 
-                    // النظام الذكي: هيعديه لو يوتيوب حدث اللايك، أو لو المتابع خد وقت طبيعي جداً (15 ثانية) يثبت إنه عمل المهام
-                    let timeSinceLike = vidLike ? (Date.now() - likeClickTime) : 0;
-                    let timeSinceComment = vidComment ? (Date.now() - commentClickTime) : 0;
-
-                    if (currentLikes > initialLikes || (timeSinceLike >= 15000 && timeSinceComment >= 15000)) {
+                    // لا يوجد استثناءات للوقت: الشرط الوحيد هو ارتفاع رقم اللايكات.
+                    if (currentLikes > initialLikes) {
                         document.getElementById('tasks-container').style.display = 'none';
                         document.getElementById('top-logo').style.display = 'none';
                         document.getElementById('top-title').style.display = 'none';
@@ -302,16 +292,17 @@ try {
                         }());
                     } else {
                         let errMsg = document.getElementById('error-msg');
-                        errMsg.innerHTML = "❌ فشل التحقق: يبدو أنك لم تقضِ وقتاً كافياً لعمل اللايك والتعليق بصدق! لا تحاول تخطي المهام بسرعة.";
+                        errMsg.innerHTML = "❌ فشل التحقق: لم نكتشف زيادة في اللايكات!<br>الرقم في سيرفرات يوتيوب لم يتغير. إذا كنت قد وضعت لايك بالفعل، يرجى الانتظار بضع ثوانٍ واضغط <b>أعد التحقق</b>.";
                         errMsg.style.display = 'block';
                         document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
                         
+                        // تحديث الرقم في حال قام أحدهم بإزالة اللايك بدلاً من إضافته
                         if (currentLikes !== -1 && currentLikes < initialLikes) {
                             initialLikes = currentLikes; 
                         }
                     }
                 });
-            }, 5000);
+            }, 5000); // ينتظر 5 ثواني لعل وعسى يوتيوب يحدث الرقم
         };
 
     } else {
