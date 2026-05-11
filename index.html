@@ -126,7 +126,6 @@ createStars();
 
 try {
     const YOUTUBE_API_KEY = "AIzaSyA6NebhJLqT8ZEG56cmMEm4xsRR5byisPI"; 
-
     const app = document.getElementById('app');
     const urlParams = new URLSearchParams(window.location.search);
 
@@ -141,13 +140,12 @@ try {
 
     if (urlParams.has('data') && urlParams.get('data').length > 5) {
         const raw = urlParams.get('data').split('|');
-        // تم تحديث المصفوفة لتستقبل رابط الشرح كخامس عنصر
         let config = {
             t: safeDecode(raw[0]),
             c: fixUrl(safeDecode(raw[1] || raw[0])),
             v: fixUrl(safeDecode(raw[2] || raw[1])),
             f: fixUrl(safeDecode(raw[3] || raw[2])),
-            tut: raw[4] ? fixUrl(safeDecode(raw[4])) : "#" // رابط فيديو طريقة التخطي
+            tut: raw[4] ? fixUrl(safeDecode(raw[4])) : "#" 
         };
 
         let vIdMatch = config.v.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/ytscreeningroom\?v=|\/sandayat\?v=|\/condition_video_id\/|\/watch\?feature=player_embedded&v=))([^#\&\?]*)/);
@@ -322,7 +320,6 @@ try {
         };
 
     } else {
-        // تم إضافة خانة رابط فيديو التخطي هنا
         app.innerHTML = `
             <div class="task-box" style="display:block; text-align:center; cursor:default;">
                 <h2 style="color:var(--accent); margin-top:0;">MX_SASUKE VIP Generator</h2>
@@ -335,10 +332,15 @@ try {
             </div>
         `;
         window.gen = function() {
-            // تم تحديث الدالة لتقوم بتشفير الرابط الخامس
             const d = [
                 safeEncode(document.getElementById('it').value),
                 safeEncode(document.getElementById('ic').value),
                 safeEncode(document.getElementById('iv').value),
                 safeEncode(document.getElementById('if').value),
-                safeEncode(document.getElementById(
+                safeEncode(document.getElementById('itut').value)
+            ].join('|');
+            window.location.href = "?data=" + encodeURIComponent(d);
+        };
+    }
+} catch (error) {
+    // تعديل الحماية: لو العنصر app ممسوح هيطبع
