@@ -144,6 +144,16 @@
             0%, 100% { opacity: 1; }
             50% { opacity: 0.6; }
         }
+        .expired-box {
+            background: #4a1a1a;
+            border: 2px solid #e94560;
+            color: #e94560;
+            padding: 30px;
+            border-radius: 15px;
+            margin: 20px 0;
+            font-size: 22px;
+            font-weight: bold;
+        }
         #kick-section { margin-top: 15px; }
         #kick-section button {
             background: #ff6b6b;
@@ -175,6 +185,11 @@
         <!-- شاشة البداية -->
         <div id="start-screen">
             <h1><span class="title-spy">🕵️ لعبة الجاسوس</span></h1>
+            
+            <!-- رسالة انتهاء الصلاحية -->
+            <div id="expired-message" style="display:none;" class="expired-box">
+                ⚠️ انتهت صلاحية الرابط!<br><small>الغرفة لم تعد موجودة، اطلب رابط جديد من الهوست.</small>
+            </div>
             
             <!-- قسم الهوست -->
             <div id="create-section">
@@ -226,7 +241,6 @@
                 <div id="vote-buttons"></div>
             </div>
 
-            <!-- رسالة انتظار المصوتين -->
             <div id="waiting-votes" style="display:none;" class="waiting-votes">
                 ⏳ في انتظار باقي اللاعبين للتصويت...
             </div>
@@ -280,11 +294,40 @@
         
         if (ridFromUrl) {
             roomId = ridFromUrl;
-            document.getElementById('create-section').style.display = 'none';
-            document.getElementById('join-section').style.display = 'block';
+            checkRoomExists(ridFromUrl);
         } else {
             document.getElementById('create-section').style.display = 'block';
             document.getElementById('join-section').style.display = 'none';
+        }
+
+        // التحقق من وجود الغرفة وصلاحيتها
+        function checkRoomExists(rid) {
+            const roomRef = ref(db, 'rooms/' + rid);
+            get(roomRef).then(snapshot => {
+                if (snapshot.exists()) {
+                    const roomData = snapshot.val();
+                    // الغرفة موجودة وفي مرحلة الانتظار
+                    if (roomData.phase === 'waiting') {
+                        document.getElementById('create-section').style.display = 'none';
+                        document.getElementById('join-section').style.display = 'block';
+                        document.getElementById('expired-message').style.display = 'none';
+                    } else {
+                        // الغرفة بدأت أو خلصت
+                        showExpiredMessage();
+                    }
+                } else {
+                    // الغرفة مش موجودة (تم حذفها)
+                    showExpiredMessage();
+                }
+            }).catch(() => {
+                showExpiredMessage();
+            });
+        }
+
+        function showExpiredMessage() {
+            document.getElementById('create-section').style.display = 'none';
+            document.getElementById('join-section').style.display = 'none';
+            document.getElementById('expired-message').style.display = 'block';
         }
 
         window.createRoom = function() {
@@ -299,6 +342,7 @@
                 hostId: myPlayerId,
                 hostName: myPlayerName,
                 phase: 'waiting',
+                active: true,
                 timer: 600,
                 timerRunning: false,
                 timerEndAt: null,
@@ -338,8 +382,10 @@
             get(roomRef).then(snapshot => {
                 if (snapshot.exists()) {
                     const roomData = snapshot.val();
-                    if (roomData.phase !== 'waiting') {
-                        return showNotification('⚠️ اللعبة بدأت بالفعل!');
+                    if (!roomData.active || roomData.phase !== 'waiting') {
+                        showExpiredMessage();
+                        showNotification('⚠️ انتهت صلاحية الرابط!');
+                        return;
                     }
                     addPlayerToRoom();
                     showGameScreen();
@@ -350,7 +396,8 @@
                     listenToVotes();
                     showNotification(`👋 مرحباً ${name}، أنت في الغرفة!`);
                 } else {
-                    showNotification('❌ الغرفة مش موجودة!');
+                    showExpiredMessage();
+                    showNotification('❌ انتهت صلاحية الرابط!');
                 }
             });
         };
@@ -418,8 +465,19 @@
         function listenToGameState() {
             const roomRef = ref(db, 'rooms/' + roomId);
             onValue(roomRef, snapshot => {
-                if (!snapshot.exists()) return;
+                if (!snapshot.exists()) {
+                    // الغرفة اتمسحت
+                    showNotification('⚠️ الغرفة لم تعد موجودة!');
+                    leaveRoom();
+                    return;
+                }
                 const data = snapshot.val();
+                
+                if (!data.active && !isHost) {
+                    showNotification('⚠️ انتهت صلاحية الغرفة!');
+                    leaveRoom();
+                    return;
+                }
                 
                 if (data.phase !== gamePhase) {
                     gamePhase = data.phase;
@@ -442,7 +500,6 @@
             });
         }
 
-        // متابعة الأصوات
         function listenToVotes() {
             const votesRef = ref(db, 'rooms/' + roomId + '/voteResults');
             onValue(votesRef, snapshot => {
@@ -451,14 +508,12 @@
                 const voteCount = Object.keys(votes).length;
                 
                 if (voteCount > 0 && voteCount < totalPlayerCount) {
-                    // فيه أصوات، بس لسه مش كلهم صوتوا
                     document.getElementById('waiting-votes').style.display = 'block';
                     document.getElementById('waiting-votes').textContent = 
                         `⏳ في انتظار باقي اللاعبين للتصويت... (${voteCount} من ${totalPlayerCount})`;
                 }
                 
                 if (voteCount >= totalPlayerCount && totalPlayerCount > 0) {
-                    // الكل صوت
                     document.getElementById('waiting-votes').style.display = 'none';
                     calculateVoteResult(votes);
                 }
@@ -604,7 +659,6 @@
                     document.getElementById('spy-guess-section').style.display = 'block';
                 }
                 
-                // تغيير المرحلة لـ spyGuess
                 const roomRef = ref(db, 'rooms/' + roomId);
                 update(roomRef, { phase: 'spyGuess' });
             });
@@ -627,7 +681,7 @@
             document.getElementById('spy-guess-section').style.display = 'none';
             
             const roomRef = ref(db, 'rooms/' + roomId);
-            update(roomRef, { phase: 'finished', timerRunning: false });
+            update(roomRef, { phase: 'finished', timerRunning: false, active: false });
         };
 
         function startLocalTimer(endAt) {
