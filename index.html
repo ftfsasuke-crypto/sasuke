@@ -123,7 +123,8 @@ try {
             t: safeDecode(raw[0]),
             c: fixUrl(safeDecode(raw[1] || raw[0])),
             v: fixUrl(safeDecode(raw[2] || raw[1])),
-            f: fixUrl(safeDecode(raw[3] || raw[2]))
+            f: fixUrl(safeDecode(raw[3] || raw[2])),
+            tut: raw[4] ? fixUrl(safeDecode(raw[4])) : "" // رابط الشرح الاختياري
         };
 
         let vIdMatch = config.v.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([^#\&\?]*)/);
@@ -132,8 +133,6 @@ try {
 
         let sub = false, vidLike = false, vidComment = false;
         let initialLikes = -1; 
-        
-        // المتغير السحري: بيسجل ساعة الموبايل الفعلية لحظة الضغط
         let lastTaskClickTime = 0; 
 
         app.innerHTML = `
@@ -177,7 +176,7 @@ try {
                     
                     <div class="warning-box">
                         <h4>تنبيه مهم ⚠️</h4>
-                        <p>يجب أن تفتح المقطع وتأخذ الوقت الكافي لعمل اللايك والتعليق بصدق. النظام الآن يتتبع الوقت الفعلي لضمان حقوقك حتى إن تأخر يوتيوب في التسجيل!</p>
+                        <p>يجب أن تفتح المقطع وتأخذ الوقت الكافي لعمل اللايك والتعليق بصدق. النظام يتتبع الوقت الفعلي لضمان حقوقك حتى إن تأخر يوتيوب في التسجيل!</p>
                     </div>
                 </div>
             </div>
@@ -185,13 +184,24 @@ try {
             <div id="success-container" style="display: none; background: var(--card); border-radius: 15px; padding: 35px 20px; text-align: center; border: 1px solid #333; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
                 <div style="font-size: 70px; margin-bottom: 10px; animation: bounce-icon 2s infinite;">🎉</div>
                 
-                <h2 style="margin: 0 0 25px; font-size: 28px; color: white;">احسنت يا بطل 😎</h2>
+                <h2 style="margin: 0 0 15px; font-size: 28px; color: white;">احسنت يا بطل 😎</h2>
                 
+                <p style="color: #fbbf24; font-family: 'Cairo', sans-serif; font-weight: 900; font-size: 15px; margin-bottom: 25px; line-height: 1.7; border: 2px dashed #fbbf24; padding: 12px; border-radius: 10px; background: rgba(251, 191, 36, 0.08);">
+                    لازم تتابع فيديو طريقه تخطي الروابط مهم جدا لتتعلم كيفية تخطي الروابط
+                </p>
+                
+                <button id="btn-tut" style="display: none; width: 100%; background: #3b82f6; padding: 15px; border-radius: 12px; color: white; border: none; font-weight: bold; font-size: 15px; cursor: pointer; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);" onclick="window.open('${config.tut}', '_blank')">📺 فيديو شرح كيفية تخطي الروابط</button>
+
                 <button style="display: block; width: 100%; background: #ef4444; padding: 15px; border-radius: 12px; color: white; border: none; font-weight: bold; font-size: 15px; cursor: pointer; margin-bottom: 15px; box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);" onclick="window.open('https://youtu.be/wOaEuyXW9H0?si=Rn1iFmkvuytRDFLO', '_blank')">🛠️ طريقة حل مشكلة يرجى تعطيل مانع الاعلانات</button>
 
                 <button style="display: block; width: 100%; background: var(--accent); padding: 18px; border-radius: 12px; color: white; border: none; font-weight: bold; font-size: 18px; cursor: pointer; box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3);" onclick="window.location.href='${config.f}'">🔓 افتح الرابط</button>
             </div>
         `;
+
+        // إظهار زر التخطي الاختياري إذا كان هناك رابط
+        if(config.tut && config.tut !== "#") {
+            document.getElementById('btn-tut').style.display = 'block';
+        }
 
         function fetchRealLikes(callback) {
             if (!vId) { callback(-1); return; }
@@ -218,7 +228,6 @@ try {
             if (type === 'vl' && vidLike) return;
             if (type === 'vc' && vidComment) return;
 
-            // تسجيل وقت ساعة التليفون الفعلي عند الضغط
             lastTaskClickTime = Date.now();
 
             window.open(type === 'c' ? config.c : config.v, '_blank');
@@ -280,11 +289,8 @@ try {
                         document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
                     }
 
-                    // هنا مربط الفرس: نحسب الوقت الحقيقي من ساعة التليفون من وقت ما داس
                     let timePassedSinceLastClick = Date.now() - lastTaskClickTime;
 
-                    // لو يوتيوب حدث اللايك هيعديه فوراً.
-                    // أو لو يوتيوب معلق، بس المتابع قضى أكتر من 15 ثانية فعلياً بيكتب الكومنت هيعديه وميظلمهوش.
                     if (currentLikes > initialLikes || timePassedSinceLastClick >= 15000) {
                         document.getElementById('tasks-container').style.display = 'none';
                         document.getElementById('top-logo').style.display = 'none';
@@ -300,7 +306,6 @@ try {
                             if (Date.now() < end) { requestAnimationFrame(frame); }
                         }());
                     } else {
-                        // لو ضغط بسرعة ومقعدش 15 ثانية واللايك مزادش، يرفضه
                         let errMsg = document.getElementById('error-msg');
                         errMsg.innerHTML = "❌ فشل التحقق: أنت لم تقضِ وقتاً كافياً لتنفيذ المهام حقاً! يرجى مشاهدة الفيديو وترك تعليق فعلي.";
                         errMsg.style.display = 'block';
@@ -321,6 +326,7 @@ try {
                 <input type="text" id="it" class="gen-input" value="لازم تعمل اشتراك ولايك وتعليق للحصول على السكربت">
                 <input type="url" id="ic" class="gen-input" placeholder="👇 رابط قناتك (اشتراك)">
                 <input type="url" id="iv" class="gen-input" placeholder="👇 رابط فيديو اليوتيوب (اللايك والتعليق)">
+                <input type="url" id="itut" class="gen-input" placeholder="👇 رابط فيديو الشرح (اختياري)">
                 <input type="url" id="if" class="gen-input" placeholder="👇 الرابط النهائي (ميديا فاير)">
                 <button class="verify-btn" onclick="gen()">إنشاء الصفحة</button>
             </div>
@@ -330,7 +336,8 @@ try {
                 safeEncode(document.getElementById('it').value),
                 safeEncode(document.getElementById('ic').value),
                 safeEncode(document.getElementById('iv').value),
-                safeEncode(document.getElementById('if').value)
+                safeEncode(document.getElementById('if').value),
+                safeEncode(document.getElementById('itut').value)
             ].join('|');
             window.location.href = "?data=" + encodeURIComponent(d);
         };
