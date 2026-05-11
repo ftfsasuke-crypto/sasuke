@@ -101,6 +101,27 @@
             margin: 15px 0;
             font-size: 20px;
         }
+        .word-box {
+            background: #1a472a;
+            border: 2px solid #2ecc71;
+            color: #2ecc71;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 15px 0;
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 3px;
+        }
+        .spy-box {
+            background: #4a1a1a;
+            border: 2px solid #e94560;
+            color: #e94560;
+            padding: 25px;
+            border-radius: 15px;
+            margin: 15px 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
         #kick-section { margin-top: 15px; }
         #kick-section button {
             background: #ff6b6b;
@@ -115,14 +136,16 @@
         <!-- شاشة البداية -->
         <div id="start-screen">
             <h1>🕵️ لعبة الجاسوس</h1>
-            <button onclick="createRoom()">🎮 إنشاء غرفة جديدة</button>
-            <br><br>
-            <p style="color:#aaa;">أو انضم لغرفة صديقك:</p>
-            <input type="text" id="room-id-input" placeholder="الصق كود الغرفة">
-            <br>
-            <input type="text" id="player-name" placeholder="اكتب اسمك">
-            <br>
-            <button onclick="joinRoom()">🚪 انضمام لغرفة</button>
+            <div id="create-section">
+                <button onclick="createRoom()">🎮 إنشاء غرفة جديدة</button>
+            </div>
+            <div id="join-section" style="display:none;">
+                <br>
+                <p style="color:#aaa;">ادخل غرفة صديقك:</p>
+                <input type="text" id="player-name" placeholder="اكتب اسمك">
+                <br>
+                <button onclick="joinRoom()">🚪 انضمام للغرفة</button>
+            </div>
         </div>
 
         <!-- شاشة اللعبة -->
@@ -137,6 +160,9 @@
                 <br>
                 <span style="font-size:14px; color:#aaa;">أو كود الغرفة: <strong id="room-id-display"></strong></span>
             </div>
+            
+            <!-- الكلمة السرية / رسالة الجاسوس -->
+            <div id="word-display" style="display:none;"></div>
             
             <div id="timer-display">10:00</div>
             
@@ -174,7 +200,7 @@
     <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getDatabase, ref, set, get, update, onValue, onDisconnect, remove, child, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+        import { getDatabase, ref, set, get, update, onValue, onDisconnect, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDTyJqVntFqKe3I-zntb_rMx9Qcv7Nqi94",
@@ -189,18 +215,31 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // ---------- حالة اللعبة المحلية ----------
         let myPlayerId = null;
         let myPlayerName = null;
         let roomId = null;
         let isHost = false;
-        let gamePhase = 'waiting'; // waiting, playing, voting, spyGuess, finished
+        let gamePhase = 'waiting';
         let spyPlayerId = null;
         let secretWord = null;
         let timerInterval = null;
         let localTimer = 600;
 
-        // ---------- إنشاء غرفة ----------
+        // تحقق من الرابط: لو فيه room= يبقى لاعب مش هوست
+        const params = new URLSearchParams(window.location.search);
+        const ridFromUrl = params.get('room');
+        
+        if (ridFromUrl) {
+            // لاعب: أظهر خانة الاسم والانضمام فقط
+            roomId = ridFromUrl;
+            document.getElementById('create-section').style.display = 'none';
+            document.getElementById('join-section').style.display = 'block';
+        } else {
+            // هوست محتمل: أظهر إنشاء غرفة
+            document.getElementById('create-section').style.display = 'block';
+            document.getElementById('join-section').style.display = 'none';
+        }
+
         window.createRoom = function() {
             roomId = 'room-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
             myPlayerId = 'host-' + Date.now().toString(36);
@@ -225,7 +264,8 @@
                 showGameScreen();
                 document.getElementById('host-controls').style.display = 'block';
                 document.getElementById('room-link-box').style.display = 'block';
-                document.getElementById('room-link-text').textContent = window.location.href + '?room=' + roomId;
+                const fullLink = window.location.origin + window.location.pathname + '?room=' + roomId;
+                document.getElementById('room-link-text').textContent = fullLink;
                 document.getElementById('room-id-display').textContent = roomId;
                 listenToPlayers();
                 listenToGameState();
@@ -233,21 +273,17 @@
             });
         };
 
-        // ---------- انضمام لغرفة ----------
         window.joinRoom = function() {
             const nameInput = document.getElementById('player-name');
-            const roomInput = document.getElementById('room-id-input');
             const name = nameInput.value.trim();
-            const rid = roomInput.value.trim();
             
             if (!name) return showNotification('⚠️ اكتب اسمك الأول!');
-            if (!rid) return showNotification('⚠️ الصق كود الغرفة!');
+            if (!roomId) return showNotification('⚠️ كود الغرفة مش موجود!');
             
             myPlayerName = name;
             myPlayerId = 'player-' + Date.now().toString(36);
-            roomId = rid;
+            isHost = false;
             
-            // تحقق من وجود الغرفة
             const roomRef = ref(db, 'rooms/' + roomId);
             get(roomRef).then(snapshot => {
                 if (snapshot.exists()) {
@@ -263,19 +299,10 @@
                     listenToGameState();
                     showNotification(`👋 مرحباً ${name}، أنت في الغرفة!`);
                 } else {
-                    showNotification('❌ الغرفة مش موجودة! تأكد من الكود.');
+                    showNotification('❌ الغرفة مش موجودة!');
                 }
             });
         };
-
-        // دالة تلقائية: لو الرابط فيه كود غرفة، املأه تلقائي
-        window.addEventListener('load', () => {
-            const params = new URLSearchParams(window.location.search);
-            const rid = params.get('room');
-            if (rid) {
-                document.getElementById('room-id-input').value = rid;
-            }
-        });
 
         function addPlayerToRoom() {
             const playerRef = ref(db, 'rooms/' + roomId + '/players/' + myPlayerId);
@@ -286,8 +313,6 @@
                 connected: true
             };
             set(playerRef, playerData);
-            
-            // لو اللاعب قطع الاتصال، امسحه
             onDisconnect(playerRef).remove();
         }
 
@@ -311,7 +336,6 @@
             
             list.innerHTML = html || '<li style="color:#888;">لا يوجد لاعبون بعد...</li>';
             
-            // تحديث زرار الطرد للهوست
             if (isHost && gamePhase === 'waiting') {
                 let kickHtml = '<h4>طرد لاعب:</h4>';
                 playerIds.forEach(pid => {
@@ -325,7 +349,6 @@
             }
         }
 
-        // طرد لاعب
         window.kickPlayer = function(playerId) {
             if (!isHost) return;
             const playerRef = ref(db, 'rooms/' + roomId + '/players/' + playerId);
@@ -333,7 +356,6 @@
             showNotification('👢 تم طرد اللاعب!');
         };
 
-        // نسخ الرابط
         window.copyLink = function() {
             const link = document.getElementById('room-link-text').textContent;
             navigator.clipboard.writeText(link).then(() => {
@@ -347,7 +369,6 @@
                 if (!snapshot.exists()) return;
                 const data = snapshot.val();
                 
-                // تجاهل تحديثات اللاعبين (عشان ميعملش لوب)
                 if (data.phase !== gamePhase) {
                     gamePhase = data.phase;
                     handlePhaseChange(data);
@@ -356,7 +377,6 @@
                 if (data.spyPlayerId) spyPlayerId = data.spyPlayerId;
                 if (data.secretWord) secretWord = data.secretWord;
                 
-                // تحديث التايمر
                 if (data.timerRunning && data.timerEndAt) {
                     startLocalTimer(data.timerEndAt);
                 }
@@ -373,26 +393,43 @@
         function handlePhaseChange(data) {
             document.getElementById('vote-section').style.display = 'none';
             document.getElementById('vote-result').style.display = 'none';
+            document.getElementById('vote-result').innerHTML = '';
             document.getElementById('spy-guess-section').style.display = 'none';
             document.getElementById('final-result').style.display = 'none';
+            document.getElementById('final-result').innerHTML = '';
             
             switch(data.phase) {
                 case 'playing':
+                    // إظهار الكلمة أو رسالة الجاسوس
+                    showWordOrSpy(data);
                     showNotification('🚀 اللعبة بدأت!');
                     break;
                 case 'voting':
+                    document.getElementById('word-display').style.display = 'none';
                     showVotingUI(data);
                     break;
                 case 'spyGuess':
+                    document.getElementById('word-display').style.display = 'none';
                     checkVoteResult(data);
-                    break;
-                case 'finished':
-                    // اللعبة خلصت
                     break;
             }
         }
 
-        // بدء اللعبة
+        function showWordOrSpy(data) {
+            const wordDiv = document.getElementById('word-display');
+            wordDiv.style.display = 'block';
+            
+            if (myPlayerId === data.spyPlayerId) {
+                // ده الجاسوس
+                wordDiv.className = 'spy-box';
+                wordDiv.innerHTML = '🕵️ أنت الجاسوس!<br><small>حاول تكتشف الكلمة من الأسئلة</small>';
+            } else {
+                // باقي اللاعبين يشوفوا الكلمة
+                wordDiv.className = 'word-box';
+                wordDiv.innerHTML = `🔑 الكلمة السرية:<br>${data.secretWord}`;
+            }
+        }
+
         window.startGame = function() {
             if (!isHost) return;
             
@@ -405,12 +442,10 @@
                     return showNotification('⚠️ محتاج لاعبين على الأقل!');
                 }
                 
-                // اختيار جاسوس عشوائي
                 const randomIndex = Math.floor(Math.random() * playerIds.length);
                 const spyId = playerIds[randomIndex];
                 
-                // كلمات سرية ممكنة
-                const words = ['تفاحة', 'سيارة', 'قمر', 'شمس', 'بحر', 'جبل', 'كتاب', 'قلم', 'نجمة', 'وردة'];
+                const words = ['تفاحة', 'سيارة', 'قمر', 'شمس', 'بحر', 'جبل', 'كتاب', 'قلم', 'نجمة', 'وردة', 'أسد', 'فيل', 'طائرة', 'سفينة', 'مفتاح'];
                 const secretW = words[Math.floor(Math.random() * words.length)];
                 
                 const roomRef = ref(db, 'rooms/' + roomId);
@@ -425,11 +460,11 @@
                     voteResults: {}
                 });
                 
-                showNotification('🚀 اللعبة بدأت!');
+                // إخفاء زرار الطرد
+                document.getElementById('kick-section').style.display = 'none';
             });
         };
 
-        // اسكب الوقت
         window.skipTime = function() {
             if (!isHost) return;
             const roomRef = ref(db, 'rooms/' + roomId);
@@ -451,7 +486,7 @@
                         html += `<button onclick="voteFor('${pid}')">${players[pid].name}</button>`;
                     }
                 });
-                document.getElementById('vote-buttons').innerHTML = html;
+                document.getElementById('vote-buttons').innerHTML = html || '<p>لا يوجد لاعبين للتصويت</p>';
                 showNotification('🗳️ وقت التصويت!');
             });
         }
@@ -470,7 +505,6 @@
                 voteCount[v] = (voteCount[v] || 0) + 1;
             });
             
-            // الأكثر تصويتاً
             let maxVotes = 0;
             let mostVoted = null;
             Object.entries(voteCount).forEach(([id, count]) => {
@@ -481,7 +515,6 @@
             const resultDiv = document.getElementById('vote-result');
             resultDiv.style.display = 'block';
             
-            // الحصول على اسماء
             const playersRef = ref(db, 'rooms/' + roomId + '/players');
             get(playersRef).then(snapshot => {
                 const players = snapshot.val();
@@ -489,9 +522,9 @@
                 const spyName = players[spyPlayerId] ? players[spyPlayerId].name : '???';
                 
                 if (isCorrect) {
-                    resultDiv.innerHTML = `✅ صحيح! الجاسوس هو ${votedName}. عليه الآن تخمين الكلمة.`;
+                    resultDiv.innerHTML = `✅ صحيح! الجاسوس هو ${votedName}.<br>في انتظار تخمينه للكلمة...`;
                 } else {
-                    resultDiv.innerHTML = `❌ غلط! ${votedName} مش الجاسوس. الجاسوس هو ${spyName}. في انتظار تخمينه للكلمة.`;
+                    resultDiv.innerHTML = `❌ غلط! ${votedName} مش الجاسوس.<br>الجاسوس الحقيقي هو ${spyName}.<br>في انتظار تخمينه للكلمة...`;
                 }
                 
                 if (myPlayerId === spyPlayerId) {
@@ -516,7 +549,6 @@
             
             document.getElementById('spy-guess-section').style.display = 'none';
             
-            // خلصنا
             const roomRef = ref(db, 'rooms/' + roomId);
             update(roomRef, { phase: 'finished', timerRunning: false });
         };
