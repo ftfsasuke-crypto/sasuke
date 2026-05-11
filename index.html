@@ -25,7 +25,8 @@
         .star { position: absolute; background: white; border-radius: 50%; opacity: 0.5; animation: fall linear infinite; }
         @keyframes fall { from { transform: translateY(-10vh); } to { transform: translateY(110vh); } }
 
-        .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; position: relative; z-index: 10; display: none; }
+        /* الكلاس ده ظاهر دايماً، مفيش إخفاء */
+        .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; position: relative; z-index: 10; }
         
         .yt-logo { width: 50px; margin-bottom: 10px; transition: 0.3s; }
         .page-title { font-size: 24px; font-weight: bold; margin-bottom: 25px; word-wrap: break-word; line-height: 1.4; transition: 0.3s; }
@@ -119,7 +120,7 @@
     </div>
 </div>
 
-<div id="task-view" class="container">
+<div id="task-view" class="container" style="display: none;">
     <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" class="yt-logo" id="top-logo">
     <div class="page-title" id="top-title"></div>
 
@@ -167,32 +168,14 @@
         <p style="color: #fbbf24; font-family: 'Cairo', sans-serif; font-weight: 900; font-size: 17px; margin-bottom: 25px; line-height: 1.7; border: 2px dashed #fbbf24; padding: 12px; border-radius: 10px; background: rgba(251, 191, 36, 0.08);">
             قبل ما تعمل فتح للرابط شوف فيديو طريقة تخطي الروابط لكي تفهم كيفية تخطي الروابط 
         </p>
-        <button style="display: block; width: 100%; background: #ef4444; padding: 15px; border-radius: 12px; color: white; border: none; font-weight: bold; font-size: 16px; cursor: pointer; margin-bottom: 12px;" onclick="window.open('https://youtu.be/wOaEuyXW9H0?si=mbRgaIvBA3HeUvsJ', '_blank')">🛠️ حل مشكلة يرجى تعطيل مانع الاعلانات</button>
-        <button style="display: block; width: 100%; background: #3b82f6; padding: 15px; border-radius: 12px; color: white; border: none; font-weight: bold; font-size: 16px; cursor: pointer; margin-bottom: 12px;" onclick="openTut()">📺 فيديو طريقة التخطي</button>
+        <button style="display: block; width: 100%; background: #ef4444; padding: 15px; border-radius: 12px; color: white; border: none; font-weight: bold; font-size: 16px; cursor: margin-bottom: 12px;" onclick="window.open('https://youtu.be/wOaEuyXW9H0?si=mbRgaIvBA3HeUvsJ', '_blank')">🛠️ حل مشكلة يرجى تعطيل مانع الاعلانات</button>
+        <button style="display: block; width: 100%; background: #3b82f6; padding: 15px; border-radius: 12px; color: white; border: none; font-weight: bold; font-size: 16px; margin-top: 12px; margin-bottom: 12px; cursor: pointer;" onclick="openTut()">📺 فيديو طريقة التخطي</button>
         <button style="display: block; width: 100%; background: var(--accent); padding: 18px; border-radius: 12px; color: white; border: none; font-weight: bold; font-size: 18px; cursor: pointer;" onclick="openFinal()">🔓 افتح الرابط</button>
     </div>
 </div>
 
 <script>
-// إنشاء النجوم بشكل آمن
-try {
-    var container = document.getElementById('stars');
-    if(container) {
-        for (var i = 0; i < 80; i++) {
-            var star = document.createElement('div');
-            star.className = 'star';
-            var size = Math.random() * 3 + 'px';
-            star.style.width = size; 
-            star.style.height = size;
-            star.style.left = Math.random() * 100 + '%';
-            star.style.animationDuration = (Math.random() * 3 + 2) + 's';
-            star.style.animationDelay = (Math.random() * 5) + 's';
-            star.style.opacity = Math.random();
-            container.appendChild(star);
-        }
-    }
-} catch(e) {}
-
+// أكواد التشغيل الأساسية مبسطة لأقصى درجة عشان الموبايل ميوقفهاش
 var YOUTUBE_API_KEY = "AIzaSyA6NebhJLqT8ZEG56cmMEm4xsRR5byisPI"; 
 var sub = false, vid = false, initialLikes = -1, vId = null, finalLink = "#", tutLink = "#", cLink = "#", vLink = "#";
 
@@ -205,16 +188,15 @@ function fixUrl(url) {
     return url;
 }
 
-// الكود ده بيحدد يفتح صفحة المهام ولا صفحة إنشاء الرابط
-window.onload = function() {
-    var urlString = window.location.search;
-    if (urlString.indexOf('data=') !== -1 && urlString.length > 20) {
+// دالة التحقق من الرابط (بتشتغل أوتوماتيك)
+function initPage() {
+    var urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('data') && urlParams.get('data').length > 5) {
+        // لو في داتا، إخفي المصنع واظهر المهام
         document.getElementById('generator-view').style.display = 'none';
         document.getElementById('task-view').style.display = 'block';
         
-        var rawData = urlString.split('data=')[1];
-        var raw = decodeURIComponent(rawData).split('|');
-        
+        var raw = urlParams.get('data').split('|');
         var titleText = safeDecode(raw[0]);
         cLink = fixUrl(safeDecode(raw[1] || raw[0]));
         vLink = fixUrl(safeDecode(raw[2] || raw[1]));
@@ -240,11 +222,10 @@ window.onload = function() {
                 }
             }).catch(function() { document.getElementById('count-num').innerText = "حدث خطأ"; });
         }
-    } else {
-        document.getElementById('generator-view').style.display = 'block';
-        document.getElementById('task-view').style.display = 'none';
     }
-};
+}
+// تشغيل الدالة فوراً
+initPage();
 
 window.openC = function() { processTask('c', cLink); };
 window.openV = function() { processTask('v', vLink); };
@@ -329,11 +310,26 @@ window.verifyStrict = function() {
 };
 
 // ==========================================
-// دالة الإنشاء الجبارة (مستحيل مادية تعطل)
+// الزرار الأسطوري الجديد (لا يقهر)
 // ==========================================
 window.makeMyLink = function() {
-    // رسالة تنبيه عشان تتأكد إن الزرار شغال
-    alert("✅ جاري تجهيز الرابط بتاعك...");
-    
-    try {
-        var it = document.getElementById('it').
+    var it = document.getElementById('it').value;
+    var ic = document.getElementById('ic').value;
+    var iv = document.getElementById('iv').value;
+    var itut = document.getElementById('itut').value;
+    var iff = document.getElementById('if').value;
+
+    if (ic === "" || iv === "" || iff === "") {
+        alert("⚠️ يرجى ملء رابط القناة ورابط الفيديو والرابط النهائي!");
+        return;
+    }
+
+    var dataStr = safeEncode(it) + "|" + safeEncode(ic) + "|" + safeEncode(iv) + "|" + safeEncode(iff) + "|" + safeEncode(itut);
+    var fullUrl = window.location.href.split('?')[0] + "?data=" + encodeURIComponent(dataStr);
+
+    document.getElementById('result-box').style.display = 'block';
+    document.getElementById('short-link-input').value = fullUrl;
+};
+
+window.copyMyLink = function() {
+    var copyText = document.getElementById("short-lin
