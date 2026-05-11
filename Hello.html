@@ -3,377 +3,326 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MX_SASUKE | VIP Unlocker</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <title>لعبة الجاسوس</title>
     <style>
-        :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; }
-        
-        /* تأثير النجوم المتساقطة في الخلفية */
-        body { 
-            background: var(--bg); 
-            color: white; 
-            font-family: 'Cairo', sans-serif; 
-            margin: 0; 
-            display: flex; 
-            justify-content: center; 
-            min-height: 100vh; 
-            overflow-x: hidden; 
-            position: relative;
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            text-align: center;
+            padding: 20px;
+            min-height: 100vh;
         }
-
-        /* حاوية النجوم */
-        .stars-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none; /* عشان متوقفش الضغط على الزراير */
-            z-index: 0; /* خلف المحتوى الأساسي */
+        #app {
+            max-width: 600px;
+            margin: 0 auto;
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 20px;
         }
-
-        /* شكل النجمة الواحدة */
-        .star {
-            position: absolute;
-            background: white;
-            border-radius: 50%;
-            opacity: 0.6; /* شفافية خفيفة عشان متكنش مزعجة */
-            animation: fall linear infinite;
+        h1, h2 { color: #e94560; }
+        button {
+            background: #e94560;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin: 10px;
+            border-radius: 30px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: 0.3s;
         }
-
-        /* حركة التساقط من الأعلى للأسفل */
-        @keyframes fall {
-            from {
-                transform: translateY(-10vh); /* تبدأ من فوق الشاشة */
-            }
-            to {
-                transform: translateY(110vh); /* تنتهي تحت الشاشة */
-            }
+        button:hover { background: #c23152; transform: scale(1.05); }
+        input {
+            padding: 12px;
+            border-radius: 20px;
+            border: none;
+            margin: 10px;
+            font-size: 16px;
+            width: 70%;
         }
-
-        /* المحتوى الأساسي فوق النجوم */
-        .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; position: relative; z-index: 1; }
-        
-        .yt-logo { width: 50px; margin-bottom: 10px; transition: 0.3s; }
-        .page-title { font-size: 24px; font-weight: bold; margin-bottom: 25px; word-wrap: break-word; line-height: 1.4; transition: 0.3s; }
-        
-        .video-card { position: relative; width: 100%; border-radius: 15px; overflow: hidden; margin-bottom: 25px; border: 1px solid #333; cursor: pointer; background: #111; min-height: 180px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .video-card img { width: 100%; display: block; }
-        
-        .task-box { background: var(--card); border-radius: 15px; padding: 15px; margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; border: 2px solid transparent; text-align: right; cursor: pointer; transition: 0.3s; }
-        .task-box.active { border-color: var(--main); }
-        .task-box.done { border-color: var(--accent); cursor: default; }
-        
-        .task-info { flex-grow: 1; margin-right: 15px; }
-        .task-info h4 { margin: 0; font-size: 16px; color: white; }
-        .task-info p { margin: 5px 0 0; font-size: 12px; color: #94a3b8; }
-        
-        .step-num { width: 35px; height: 35px; background: #222; border: 2px solid #444; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--main); transition: 0.3s; }
-        .task-box.active .step-num { border-color: var(--main); background: rgba(255,0,0,0.1); }
-        .task-box.done .step-num { background: var(--accent); color: white; border-color: var(--accent); }
-        
-        .checker-card { background: #0f0f10; border: 1px solid #222; border-radius: 15px; padding: 15px; margin-top: 20px; position: relative; z-index: 2;}
-        #count-num { font-size: 32px; font-weight: bold; display: block; margin: 5px 0; }
-        
-        .verify-btn { background: var(--main); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; transition: 0.3s; }
-        .verify-btn:disabled { background: #1a1a1c; color: #555; cursor: not-allowed; }
-        
-        #error-msg { display: none; color: var(--fail); font-size: 13px; margin-top: 10px; font-weight: bold; line-height: 1.5; }
-
-        .warning-box { background: rgba(239, 68, 68, 0.05); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 10px; padding: 15px; margin-top: 15px; text-align: right; }
-        .warning-box h4 { color: var(--fail); margin: 0 0 5px; font-size: 14px; }
-        .warning-box p { color: #94a3b8; font-size: 12px; margin: 0; line-height: 1.6; }
-
-        #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        .circle-timer { width: 60px; height: 60px; border: 5px solid #222; border-top: 5px solid var(--main); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        
-        #countdown-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1001; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
-        .countdown-wrapper { position: relative; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
-        .countdown-num { position: absolute; font-size: 40px; font-weight: bold; color: white; }
-        .progress-ring { transform: rotate(-90deg); }
-        #progress-circle { stroke-dasharray: 264; stroke-dashoffset: 0; stroke-linecap: round; }
-        @keyframes circle-deplete { 0% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 264; } }
-        
-        @keyframes bounce-icon { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-15px); } 60% { transform: translateY(-7px); } }
-
-        .gen-input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #333; background: #111; color: white; box-sizing: border-box; text-align: right; font-family: 'Cairo', sans-serif; }
+        #timer-display {
+            font-size: 48px;
+            font-weight: bold;
+            background: #0f3460;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+        ul { list-style: none; padding: 0; }
+        li {
+            background: #0f3460;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 20px;
+        }
+        .notification { animation: fadeIn 0.3s; }
+        @keyframes fadeIn {
+            from { opacity: 0; top: 10px; }
+            to { opacity: 1; top: 20px; }
+        }
     </style>
 </head>
 <body>
+    <div id="app">
+        <!-- شاشة البداية -->
+        <div id="start-screen">
+            <h1>🕵️ لعبة الجاسوس</h1>
+            <button onclick="createRoom()">إنشاء غرفة جديدة</button>
+            <div id="join-section">
+                <input type="text" id="player-name" placeholder="اكتب اسمك">
+                <button onclick="joinRoom()">انضمام</button>
+            </div>
+        </div>
 
-<div class="stars-container" id="stars"></div>
+        <!-- شاشة الانتظار / اللعبة -->
+        <div id="game-screen" style="display:none;">
+            <h2>🕵️ لعبة الجاسوس</h2>
+            <div id="timer-display">10:00</div>
+            <div id="host-controls" style="display:none;">
+                <button onclick="startGame()">🚀 ابدأ اللعبة</button>
+                <button onclick="skipTime()">⏩ اسكب الوقت</button>
+            </div>
 
-<div id="countdown-overlay">
-    <div class="countdown-wrapper">
-        <svg class="progress-ring" width="100" height="100">
-            <circle stroke="#333" stroke-width="6" fill="transparent" r="42" cx="50" cy="50"/>
-            <circle id="progress-circle" stroke="var(--main)" stroke-width="6" fill="transparent" r="42" cx="50" cy="50"/>
-        </svg>
-        <span id="countdown-number" class="countdown-num">7</span>
+            <h3>اللاعبون المتصلون:</h3>
+            <ul id="player-list"></ul>
+
+            <!-- مرحلة التصويت -->
+            <div id="vote-section" style="display:none;">
+                <h3>صوّت على الجاسوس</h3>
+                <div id="vote-buttons"></div>
+            </div>
+
+            <!-- نتيجة التصويت -->
+            <div id="vote-result" style="display:none;"></div>
+            
+            <!-- تخمين الجاسوس للكلمة -->
+            <div id="spy-guess-section" style="display:none;">
+                <h3>خمّن الكلمة السرية</h3>
+                <input type="text" id="spy-guess-input" placeholder="اكتب الكلمة">
+                <button onclick="submitSpyGuess()">إرسال التخمين</button>
+            </div>
+
+            <div id="final-result" style="display:none;"></div>
+            
+            <button onclick="leaveRoom()">🚪 مغادرة</button>
+        </div>
     </div>
-    <h2 style="margin-top: 10px; font-size: 24px;">انتظر قليلاً... ⏳</h2>
-    <p style="color: #888; font-size: 14px; text-align: center; width: 80%;">انتظر فقط، النظام يتحقق من إتمامك للشرط<br>بعد الانتهاء ستكتمل المهمة 👍</p>
-</div>
 
-<div id="loader">
-    <div class="circle-timer"></div>
-    <h2 id="timer-text" style="font-size: 30px; margin: 20px 0;">جاري التحقق</h2>
-    <p>بنتأكد من اللايك في سيرفر يوتيوب... ⏳</p>
-</div>
-
-<div id="app" class="container"></div>
-
-<script>
-// --- كود إنشاء النجوم المتساقطة جافاسكريبت ---
-function createStars() {
-    const container = document.getElementById('stars');
-    const starCount = 50; // عدد النجوم في الشاشة
-
-    for (let i = 0; i < starCount; i++) {
-        const star = document.createElement('div');
-        star.className = 'star';
-        
-        // إعدادات عشوائية لكل نجمة عشان الشكل يطلع طبيعي
-        const size = Math.random() * 3 + 1 + 'px'; // حجم عشوائي بين 1px و 4px
-        const left = Math.random() * 100 + '%'; // مكان أفقي عشوائي
-        const duration = Math.random() * 5 + 3 + 's'; // سرعة سقوط عشوائية بين 3s و 8s
-        const delay = Math.random() * 5 + 's'; // تأخير عشوائي لبدء السقوط
-
-        star.style.width = size;
-        star.style.height = size;
-        star.style.left = left;
-        star.style.animationDuration = duration;
-        star.style.animationDelay = delay;
-
-        container.appendChild(star);
-    }
-}
-// تشغيل النجوم فوراً
-createStars();
-// ------------------------------------------
-
-try {
-    const YOUTUBE_API_KEY = "AIzaSyA6NebhJLqT8ZEG56cmMEm4xsRR5byisPI"; 
-
-    const app = document.getElementById('app');
-    const urlParams = new URLSearchParams(window.location.search);
-
-    function safeEncode(str) { return btoa(encodeURIComponent(str)); }
-    function safeDecode(str) { try { return decodeURIComponent(atob(str.replace(/ /g, '+'))); } catch(e) { return ""; } }
-    function fixUrl(url) {
-        if (!url || url === 'undefined') return "#";
-        url = url.trim();
-        if (!/^https?:\/\//i.test(url) && url !== "#") return 'https://' + url;
-        return url;
-    }
-
-    if (urlParams.has('data') && urlParams.get('data').length > 5) {
-        const raw = urlParams.get('data').split('|');
-        let config = {
-            t: safeDecode(raw[0]),
-            c: fixUrl(safeDecode(raw[1] || raw[0])),
-            v: fixUrl(safeDecode(raw[2] || raw[1])),
-            f: fixUrl(safeDecode(raw[3] || raw[2]))
+    <script>
+        // ---------- إعدادات اللعبة ----------
+        let gameState = {
+            roomId: null,
+            hostId: null,
+            players: [],
+            timer: 600,
+            timerInterval: null,
+            phase: 'waiting', // waiting, playing, voting, spyGuess, finished
+            currentPlayerId: null,
+            isHost: false,
+            voteResults: {},
+            spyPlayerId: null,
+            secretWord: 'تفاحة'
         };
 
-        let vIdMatch = config.v.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/ytscreeningroom\?v=|\/sandayat\?v=|\/condition_video_id\/|\/watch\?feature=player_embedded&v=))([^#\&\?]*)/);
-        let vId = vIdMatch && vIdMatch[1].length === 11 ? vIdMatch[1] : null;
-        let thumb = vId ? `https://img.youtube.com/vi/${vId}/maxresdefault.jpg` : 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png';
-
-        let sub = false, vid = false;
-        let initialLikes = -1; 
-        let failedAttempts = 0; 
-
-        app.innerHTML = `
-            <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" class="yt-logo" id="top-logo">
-            <div class="page-title" id="top-title">${config.t}</div>
-
-            <div id="tasks-container">
-                <div class="video-card" onclick="openT('v')">
-                    <img src="${thumb}">
-                </div>
-
-                <div class="task-box active" id="tk1" onclick="openT('c')">
-                    <div class="task-info">
-                        <h4>Subscribe to channel</h4>
-                        <p>اضغط هنا للاشتراك في القناة</p>
-                    </div>
-                    <div class="step-num"><span>1</span></div>
-                </div>
-
-                <div class="task-box" id="tk2" onclick="openT('v')">
-                    <div class="task-info">
-                        <h4>Like & comment on video</h4>
-                        <p>اعمل لايك وكومنت على الفيديو</p>
-                    </div>
-                    <div class="step-num"><span>2</span></div>
-                </div>
-
-                <div class="checker-card">
-                    <span style="color:#888; font-size:12px;">عدد اللايكات الفعلي (مباشر)</span>
-                    <span id="count-num">جاري الاتصال...</span>
-                    <button class="verify-btn" id="vBtn" onclick="verifyStrict()">تحقق من الشروط 🔍</button>
-                    <div id="error-msg">❌ فشل التحقق: لم نكتشف زيادة في اللايكات! تأكد من وضع لايك.</div>
-                    
-                    <div class="warning-box">
-                        <h4>تنبيه مهم ⚠️</h4>
-                        <p>لما تضغط على Like & comment on video وتعمل كومنت ولايك اذا انت اصلا عامل لايك شيل اللايك وحطه تاني واعمل تحقق من الشروط واذا قالك فشل هذا لانه لسه ما سجل اللايك تبعك رح تضغط عليه تاني يكون هو سجل اللايك تبعك وبينقلك للصفحة الي بعدها ♥️</p>
-                    </div>
-                </div>
-            </div>
-
-            <div id="success-container" style="display: none; background: var(--card); border-radius: 15px; padding: 35px 20px; text-align: center; border: 1px solid #333; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
-                <div style="font-size: 70px; margin-bottom: 10px; animation: bounce-icon 2s infinite;">🎉</div>
-                
-                <h2 style="margin: 0 0 15px; font-size: 28px; color: white;">احسنت يا بطل 😎</h2>
-                
-                <p style="color: var(--accent); font-size: 15px; font-weight: bold; margin-bottom: 20px; line-height: 1.6;">
-                    هذا البداية فقط ولكن لانك اسطورة رح تقدر تتخطي بقية الروابط بسهولة
-                </p>
-                
-                <div style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); border-radius: 10px; padding: 15px; margin-bottom: 25px;">
-                    <p style="color: #cbd5e1; font-size: 13px; margin: 0; line-height: 1.8;">
-                        انصحك تشاهد الفيديو بالكامل لاني بشرح فيه كيفية تخطي الروابط او تشوف التعليق المثبت رح تلاقي رابط شرح كيفية تخطي الروابط 🔥
-                    </p>
-                </div>
-
-                <button style="display: block; width: 100%; background: var(--accent); padding: 18px; border-radius: 12px; color: white; border: none; font-weight: bold; font-size: 18px; cursor: pointer; box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3);" onclick="window.location.href='${config.f}'">🔓 افتح الرابط</button>
-            </div>
-        `;
-
-        function fetchRealLikes(callback) {
-            if (!vId) { callback(-1); return; }
-            fetch('https://www.googleapis.com/youtube/v3/videos?part=statistics&id=' + vId + '&key=' + YOUTUBE_API_KEY + '&t=' + Date.now())
-            .then(res => res.json())
-            .then(data => {
-                if(data.items && data.items.length > 0) {
-                    callback(parseInt(data.items[0].statistics.likeCount));
-                } else { callback(-1); }
-            }).catch(e => callback(-1));
+        function generateId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
         }
 
-        fetchRealLikes((likes) => {
-            if (likes !== -1) {
-                initialLikes = likes;
-                document.getElementById('count-num').innerText = initialLikes.toLocaleString('en-US');
-            } else {
-                document.getElementById('count-num').innerText = "حدث خطأ";
+        // ---------- إنشاء غرفة ----------
+        function createRoom() {
+            const hostId = generateId();
+            gameState.roomId = 'room-' + generateId();
+            gameState.hostId = hostId;
+            gameState.currentPlayerId = hostId;
+            gameState.isHost = true;
+            gameState.players = [{ id: hostId, name: 'الهوست' }];
+            gameState.phase = 'waiting';
+            
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            document.getElementById('host-controls').style.display = 'block';
+            
+            updatePlayerList();
+            showNotification('تم إنشاء الغرفة. أرسل الرابط إلى أصدقائك.');
+        }
+
+        // ---------- انضمام لاعب ----------
+        function joinRoom() {
+            const nameInput = document.getElementById('player-name');
+            const name = nameInput.value.trim();
+            if (!name) {
+                alert('اكتب اسمك الأول!');
+                return;
             }
-        });
-
-        window.openT = function(type) {
-            if (type === 'c' && sub) return;
-            if (type === 'v' && vid) return;
-
-            window.open(type === 'c' ? config.c : config.v, '_blank');
-
-            const overlay = document.getElementById('countdown-overlay');
-            const numSpan = document.getElementById('countdown-number');
-            const progCircle = document.getElementById('progress-circle');
             
-            overlay.style.display = 'flex';
+            const playerId = generateId();
+            gameState.currentPlayerId = playerId;
+            gameState.isHost = false;
+            gameState.players.push({ id: playerId, name: name });
             
-            progCircle.style.animation = 'none';
-            void progCircle.offsetWidth; 
-            progCircle.style.animation = 'circle-deplete 7s linear forwards';
+            document.getElementById('start-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            document.getElementById('host-controls').style.display = 'none';
             
-            let timeLeft = 7;
-            numSpan.innerText = timeLeft;
+            updatePlayerList();
+            showNotification(`مرحباً ${name}، أنت في الغرفة الآن!`);
+            
+            if (gameState.phase === 'playing') {
+                updateTimerDisplay();
+            }
+        }
 
-            const timer = setInterval(() => {
-                timeLeft--;
-                numSpan.innerText = timeLeft;
-
-                if (timeLeft <= 0) {
-                    clearInterval(timer);
-                    overlay.style.display = 'none';
-
-                    if(type === 'c') { 
-                        sub = true; 
-                        document.getElementById('tk1').classList.remove('active');
-                        document.getElementById('tk1').classList.add('done'); 
-                        document.getElementById('tk1').querySelector('.step-num span').innerText = '✓';
-                        document.getElementById('tk2').classList.add('active'); 
-                    } else { 
-                        vid = true; 
-                        document.getElementById('tk2').classList.remove('active');
-                        document.getElementById('tk2').classList.add('done'); 
-                        document.getElementById('tk2').querySelector('.step-num span').innerText = '✓';
-                    }
+        // ---------- بدء اللعبة ----------
+        function startGame() {
+            if (!gameState.isHost) return;
+            
+            const randomIndex = Math.floor(Math.random() * gameState.players.length);
+            gameState.spyPlayerId = gameState.players[randomIndex].id;
+            gameState.phase = 'playing';
+            gameState.timer = 600;
+            
+            updateTimerDisplay();
+            if (gameState.timerInterval) clearInterval(gameState.timerInterval);
+            gameState.timerInterval = setInterval(() => {
+                gameState.timer--;
+                updateTimerDisplay();
+                
+                if (gameState.timer <= 0) {
+                    clearInterval(gameState.timerInterval);
+                    moveToVotingPhase();
                 }
             }, 1000);
-        };
-
-        window.verifyStrict = function() {
-            if(!sub || !vid) return alert("يرجى إكمال المهام أولاً!");
             
-            document.getElementById('error-msg').style.display = 'none';
-            const ld = document.getElementById('loader');
-            ld.style.display = 'flex';
+            showNotification('بدأت اللعبة! الكلمة السرية معروفة للجميع ما عدا الجاسوس.');
+        }
+
+        // ---------- اسكب الوقت ----------
+        function skipTime() {
+            if (!gameState.isHost) return;
+            if (gameState.timerInterval) {
+                clearInterval(gameState.timerInterval);
+            }
+            moveToVotingPhase();
+        }
+
+        // ---------- مرحلة التصويت ----------
+        function moveToVotingPhase() {
+            gameState.phase = 'voting';
+            gameState.timer = 0;
+            updateTimerDisplay();
             
-            setTimeout(() => {
-                fetchRealLikes((currentLikes) => {
-                    ld.style.display = 'none';
-                    
-                    if (currentLikes !== -1) {
-                        document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
-                    }
+            document.getElementById('vote-section').style.display = 'block';
+            document.getElementById('host-controls').style.display = 'none';
+            
+            let voteButtonsHtml = '';
+            gameState.players.forEach(player => {
+                if (player.id !== gameState.currentPlayerId) {
+                    voteButtonsHtml += `<button onclick="voteFor('${player.id}')">${player.name}</button>`;
+                }
+            });
+            document.getElementById('vote-buttons').innerHTML = voteButtonsHtml;
+            showNotification('وقت التصويت! اختر من تظن أنه الجاسوس.');
+        }
 
-                    if (currentLikes > initialLikes) {
-                        document.getElementById('tasks-container').style.display = 'none';
-                        document.getElementById('top-logo').style.display = 'none';
-                        document.getElementById('top-title').style.display = 'none';
-                        document.getElementById('success-container').style.display = 'block';
-                        
-                        var duration = 3 * 1000;
-                        var end = Date.now() + duration;
+        // ---------- تسجيل الصوت ----------
+        function voteFor(playerId) {
+            if (gameState.phase !== 'voting') return;
+            gameState.voteResults[gameState.currentPlayerId] = playerId;
+            
+            document.getElementById('vote-section').style.display = 'none';
+            showNotification('تم تسجيل صوتك.');
+            
+            setTimeout(calculateVoteResult, 2000);
+        }
 
-                        (function frame() {
-                            confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#ff0000', '#22c55e', '#ffffff'] });
-                            confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ff0000', '#22c55e', '#ffffff'] });
-                            if (Date.now() < end) { requestAnimationFrame(frame); }
-                        }());
-                    } else {
-                        failedAttempts++; 
-                        let errMsg = document.getElementById('error-msg');
-                        errMsg.innerHTML = "❌ فشل التحقق: لم نكتشف زيادة في اللايكات! (قد يأخذ يوتيوب بعض الثواني، جرب مرة أخرى).";
-                        errMsg.style.display = 'block';
-                        document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
-                        
-                        if (currentLikes !== -1 && currentLikes < initialLikes) {
-                            initialLikes = currentLikes; 
-                        }
-                    }
-                });
-            }, 3000);
-        };
+        // ---------- نتيجة التصويت ----------
+        function calculateVoteResult() {
+            const mostVotedId = gameState.voteResults[gameState.currentPlayerId];
+            const isCorrect = (mostVotedId === gameState.spyPlayerId);
+            
+            const resultDiv = document.getElementById('vote-result');
+            resultDiv.style.display = 'block';
+            
+            if (isCorrect) {
+                resultDiv.innerHTML = `✅ صحيح! الجاسوس هو ${getPlayerName(mostVotedId)}. عليه الآن تخمين الكلمة.`;
+                if (gameState.currentPlayerId === gameState.spyPlayerId) {
+                    document.getElementById('spy-guess-section').style.display = 'block';
+                }
+            } else {
+                const spyName = getPlayerName(gameState.spyPlayerId);
+                resultDiv.innerHTML = `❌ غلط! ده مش الجاسوس. الجاسوس هو ${spyName}. في انتظار تخمين الكلمة.`;
+                if (gameState.currentPlayerId === gameState.spyPlayerId) {
+                    document.getElementById('spy-guess-section').style.display = 'block';
+                }
+            }
+            
+            gameState.phase = 'spyGuess';
+        }
 
-    } else {
-        app.innerHTML = `
-            <div class="task-box" style="display:block; text-align:center; cursor:default;">
-                <h2 style="color:var(--accent); margin-top:0;">MX_SASUKE VIP Generator</h2>
-                <input type="text" id="it" class="gen-input" value="لازم تعمل اشتراك ولايك وتعليق للحصول على السكربت">
-                <input type="url" id="ic" class="gen-input" placeholder="👇 رابط قناتك (اشتراك)">
-                <input type="url" id="iv" class="gen-input" placeholder="👇 رابط فيديو اليوتيوب (اللايك والصورة)">
-                <input type="url" id="if" class="gen-input" placeholder="👇 الرابط النهائي (ميديا فاير)">
-                <button class="verify-btn" onclick="gen()">إنشاء الصفحة</button>
-            </div>
-        `;
-        window.gen = function() {
-            const d = [
-                safeEncode(document.getElementById('it').value),
-                safeEncode(document.getElementById('ic').value),
-                safeEncode(document.getElementById('iv').value),
-                safeEncode(document.getElementById('if').value)
-            ].join('|');
-            window.location.href = "?data=" + encodeURIComponent(d);
-        };
-    }
-} catch (error) {
-    document.getElementById('app').innerHTML = `<h3 style="color:red; margin-top:50px;">يوجد خطأ: تأكد من نسخ الكود بالكامل</h3>`;
-}
-</script>
+        // ---------- تخمين الجاسوس ----------
+        function submitSpyGuess() {
+            if (gameState.currentPlayerId !== gameState.spyPlayerId) return;
+            
+            const guessInput = document.getElementById('spy-guess-input');
+            const guess = guessInput.value.trim();
+            if (!guess) {
+                alert('اكتب تخمينك!');
+                return;
+            }
+            
+            const isCorrect = (guess === gameState.secretWord);
+            const finalResultDiv = document.getElementById('final-result');
+            finalResultDiv.style.display = 'block';
+            finalResultDiv.innerHTML = isCorrect 
+                ? `🎉 مبروك! التخمين صحيح! الكلمة كانت: ${gameState.secretWord}` 
+                : `😞 للأسف تخمين خاطئ. الكلمة كانت: ${gameState.secretWord}`;
+            
+            document.getElementById('spy-guess-section').style.display = 'none';
+            gameState.phase = 'finished';
+        }
+
+        // ---------- دوال مساعدة ----------
+        function updatePlayerList() {
+            const list = document.getElementById('player-list');
+            list.innerHTML = gameState.players.map(p => `<li>${p.name} ${p.id === gameState.hostId ? '(هوست)' : ''}</li>`).join('');
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(gameState.timer / 60);
+            const seconds = gameState.timer % 60;
+            document.getElementById('timer-display').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function getPlayerName(id) {
+            const player = gameState.players.find(p => p.id === id);
+            return player ? player.name : 'لاعب غير معروف';
+        }
+
+        function showNotification(message) {
+            const notification = document.createElement('div');
+            notification.className = 'notification';
+            notification.textContent = message;
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #333;
+                color: white;
+                padding: 10px 20px;
+                border-radius: 8px;
+                z-index: 1000;
+            `;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        function leaveRoom() {
+            if (gameState.timerInterval) clearInterval(gameState.timerInterval);
+            location.reload();
+        }
+    </script>
 </body>
 </html>
