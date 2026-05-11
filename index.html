@@ -144,7 +144,7 @@
             
             <div class="warning-box">
                 <h4>تنبيه مهم ⚠️</h4>
-                <p>يوتيوب يحتاج إلى ثوانٍ لتسجيل اللايك. النظام الآن يتتبع الوقت الذي تقضيه في المشاهدة لضمان حقك.</p>
+                <p>يوتيوب يحتاج إلى ثوانٍ لتسجيل اللايك. يجب أن تقضي وقتاً كافياً في مشاهدة الفيديو وعمل اللايك لتتمكن من العبور.</p>
             </div>
         </div>
     </div>
@@ -165,7 +165,6 @@
 </div>
 
 <script>
-// إنشاء النجوم في الخلفية
 function createStars() {
     const container = document.getElementById('stars');
     if(!container) return;
@@ -192,25 +191,8 @@ let tutLink = "#";
 let cLink = "#";
 let vLink = "#";
 
-// --- نظام التتبع الذكي ---
-let timeSpentAway = 0; 
-let awayTimestamp = 0;
-let isTabAway = false;
-
-// لما المستخدم يخرج من الموقع يروح لليوتيوب
-window.addEventListener('blur', function() {
-    isTabAway = true;
-    awayTimestamp = Date.now();
-});
-
-// لما يرجع للموقع تاني
-window.addEventListener('focus', function() {
-    if (isTabAway && awayTimestamp > 0) {
-        timeSpentAway += (Date.now() - awayTimestamp);
-        isTabAway = false;
-    }
-});
-// -----------------------
+// المتغير ده هيسجل اللحظة اللي الشخص داس فيها على زرار اللايك
+let vidClickTime = 0;
 
 function safeEncode(str) { return btoa(encodeURIComponent(str || "")); }
 function safeDecode(str) { try { return decodeURIComponent(atob(str.replace(/ /g, '+'))); } catch(e) { return "خطأ_في_الرابط"; } }
@@ -277,6 +259,11 @@ function processTask(type, url) {
     if (type === 'c' && sub) return;
     if (type === 'v' && vid) return;
 
+    // تسجيل وقت الضغط على زرار مشاهدة الفيديو واللايك
+    if (type === 'v') {
+        vidClickTime = Date.now();
+    }
+
     window.open(url, '_blank');
 
     const overlay = document.getElementById('countdown-overlay');
@@ -315,6 +302,7 @@ function processTask(type, url) {
     }, 1000);
 }
 
+// نظام التحقق الصارم الجديد المعتمد على وقت المشاهدة
 window.verifyStrict = function() {
     if(!sub || !vid) return alert("يرجى إكمال المهام أولاً!");
 
@@ -322,7 +310,6 @@ window.verifyStrict = function() {
     const ld = document.getElementById('loader');
     ld.style.display = 'flex';
     
-    // رجعت وقت التحميل لـ 3 ثواني عشان ميزهقش، لأننا هنعتمد على نظام التتبع الجديد
     setTimeout(() => {
         fetchRealLikes((currentLikes) => {
             ld.style.display = 'none';
@@ -331,8 +318,12 @@ window.verifyStrict = function() {
                 document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
             }
 
-            // هنا السحر: لو يوتيوب حدث اللايك هيعديه (أو) لو قضى 12 ثانية برا الموقع عشان يعمل الشروط هيعديه برضه
-            if (currentLikes > initialLikes || timeSpentAway >= 12000) {
+            // حساب الوقت اللي مر من ساعة ما داس على زرار الفيديو لحد دلوقتي
+            let timeSinceVideoClick = vidClickTime > 0 ? (Date.now() - vidClickTime) : 0;
+
+            // لو اللايك زاد عند يوتيوب (خير وبركة)
+            // لو يوتيوب لسه معلق، بس الراجل قضى على الأقل 12 ثانية (12000 ملي ثانية) من وقت الضغطة هيعديه!
+            if (currentLikes > initialLikes || timeSinceVideoClick >= 12000) {
                 document.getElementById('tasks-container').style.display = 'none';
                 document.getElementById('top-logo').style.display = 'none';
                 document.getElementById('top-title').style.display = 'none';
@@ -349,8 +340,9 @@ window.verifyStrict = function() {
                     }());
                 }
             } else {
+                // لو رجع بسرعة قبل الـ 12 ثانية ومفيش لايكات زادت، هيقفشه
                 let errMsg = document.getElementById('error-msg');
-                errMsg.innerHTML = "❌ فشل التحقق: أنت لم تقضِ وقتاً كافياً في يوتيوب لعمل اللايك والتعليق! لا تحاول الغش.";
+                errMsg.innerHTML = "❌ فشل التحقق: أنت لم تقضِ وقتاً كافياً في يوتيوب لعمل اللايك والتعليق! يرجى مشاهدة الفيديو لثوانٍ إضافية.";
                 errMsg.style.display = 'block';
                 document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
             }
