@@ -26,7 +26,7 @@
         .star { position: absolute; background: white; border-radius: 50%; opacity: 0.5; animation: fall linear infinite; }
         @keyframes fall { from { transform: translateY(-10vh); } to { transform: translateY(110vh); } }
 
-        /* شلنا الإخفاء الافتراضي من الحاوية عشان الشاشة متجيش سودة أبداً */
+        /* لاحظ إني شلت display: none عشان ميعملش شاشة بيضاء أبداً */
         .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; position: relative; z-index: 10; }
         
         .yt-logo { width: 50px; margin-bottom: 10px; transition: 0.3s; }
@@ -117,7 +117,7 @@
         <span id="countdown-number" class="countdown-num">5</span>
     </div>
     <h2 style="margin-top: 10px; font-size: 24px;">انتظر قليلاً... ⏳</h2>
-    <p style="color: #888; font-size: 14px; text-align: center; width: 80%;">انتظر فقط، النظام يتحقق من إتمامك للشرط<br>بعد الانتهاء ستكتمل المهمة 👍</p>
+    <p style="color: #888; font-size: 14px; text-align: center; width: 80%;">انتظر فقط، النظام يتحقق من إتمامك للشرط</p>
 </div>
 
 <div id="loader">
@@ -126,7 +126,7 @@
     <p>بنتأكد من اللايك في سيرفر يوتيوب... ⏳</p>
 </div>
 
-<div id="generator-view" class="container">
+<div id="generator-view" class="container" style="display: none;">
     <div class="task-box" style="display:block; text-align:center; cursor:default;">
         <h2 style="color:var(--accent); margin-top:0;">MX_SASUKE VIP Generator</h2>
         <input type="text" id="it" class="gen-input" value="لازم تعمل اشتراك ولايك وتعليق للحصول على السكربت">
@@ -134,7 +134,17 @@
         <input type="url" id="iv" class="gen-input" placeholder="👇 رابط فيديو اليوتيوب (اللايك والصورة)">
         <input type="url" id="itut" class="gen-input" placeholder="👇 رابط فيديو طريقة التخطي (مهم جداً)">
         <input type="url" id="if" class="gen-input" placeholder="👇 الرابط النهائي (ميديا فاير)">
-        <button class="verify-btn" onclick="gen()">إنشاء الصفحة</button>
+        
+        <button class="verify-btn" onclick="genLink()">إنشاء الرابط 🔗</button>
+
+        <div id="res-box" style="display:none; margin-top:20px; background:#111; padding:15px; border-radius:10px; border:1px solid var(--accent);">
+            <p style="color:var(--accent); font-weight:bold; margin:0 0 10px 0;">تم إنشاء الرابط بنجاح! 🎉</p>
+            <input type="text" id="final-url" class="gen-input" style="direction:ltr; text-align:center; color:#3b82f6; font-weight:bold;" readonly>
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button onclick="copyLink()" class="verify-btn" style="background:var(--accent); margin-top:0; flex:1;">نسخ الرابط 📋</button>
+                <button onclick="testLink()" class="verify-btn" style="background:#3b82f6; margin-top:0; flex:1;">تجربة الرابط 🚀</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -182,7 +192,7 @@
     </div>
 
     <div id="success-container" style="display:none; background: rgba(21, 21, 23, 0.8); backdrop-filter: blur(10px); border-radius: 15px; padding: 35px 20px; text-align: center; border: 1px solid #333; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
-        <div style="font-size: 70px; margin-bottom: 10px;">🎉</div>
+        <div style="font-size: 70px; margin-bottom: 10px; animation: bounce-icon 2s infinite;">🎉</div>
         <h2 style="margin: 0 0 15px; font-size: 28px; color: white;">احسنت يا بطل 😎</h2>
         
         <p style="color: #fbbf24; font-family: 'Cairo', sans-serif; font-weight: 900; font-size: 17px; margin-bottom: 25px; line-height: 1.7; border: 2px dashed #fbbf24; padding: 12px; border-radius: 10px; background: rgba(251, 191, 36, 0.08);">
@@ -197,7 +207,7 @@
 </div>
 
 <script>
-// أكواد الجافاسكريبت مكتوبة بنظام ES5 عشان تشتغل على أي متصفح مهما كان قديم
+// دوال فتح وإغلاق قائمة الإعدادات
 function openMenu() { document.getElementById('about-modal').style.display = 'flex'; }
 function closeMenu(event) { if(event) event.stopPropagation(); document.getElementById('about-modal').style.display = 'none'; }
 
@@ -231,10 +241,10 @@ function fixUrl(url) {
     return url;
 }
 
-try {
+// الكود ده بيحدد هيعرض صفحة المصنع ولا صفحة الشروط
+window.onload = function() {
     var urlParams = window.location.search;
     if (urlParams.indexOf('data=') !== -1) {
-        // إخفاء المصنع وإظهار المهام
         document.getElementById('generator-view').style.display = 'none';
         document.getElementById('task-view').style.display = 'block';
         
@@ -254,7 +264,7 @@ try {
         document.getElementById('top-title').innerText = titleText;
         document.getElementById('vid-thumb').src = thumb;
 
-        fetchRealLikes(function(likes) {
+        fetchRealLikes(vId, function(likes) {
             if (likes !== -1) {
                 initialLikes = likes;
                 document.getElementById('count-num').innerText = initialLikes.toLocaleString('en-US');
@@ -262,14 +272,16 @@ try {
                 document.getElementById('count-num').innerText = "حدث خطأ";
             }
         });
+    } else {
+        // لو مفيش روابط في الـ URL هيظهر المصنع
+        document.getElementById('generator-view').style.display = 'block';
+        document.getElementById('task-view').style.display = 'none';
     }
-} catch (error) {
-    // لو حصل خطأ، صفحة الإنشاء هتفضل ظاهرة
-}
+};
 
-function fetchRealLikes(callback) {
-    if (!vId) { callback(-1); return; }
-    fetch('https://www.googleapis.com/youtube/v3/videos?part=statistics&id=' + vId + '&key=' + YOUTUBE_API_KEY + '&t=' + Date.now())
+function fetchRealLikes(videoId, callback) {
+    if (!videoId) { callback(-1); return; }
+    fetch('https://www.googleapis.com/youtube/v3/videos?part=statistics&id=' + videoId + '&key=' + YOUTUBE_API_KEY + '&t=' + Date.now())
     .then(function(res) { return res.json(); })
     .then(function(data) {
         if(data.items && data.items.length > 0) {
@@ -313,24 +325,4 @@ function processTask(type, url) {
                 sub = true; 
                 document.getElementById('tk1').classList.remove('active');
                 document.getElementById('tk1').classList.add('done'); 
-                document.getElementById('tk1').querySelector('.step-icon').innerHTML = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
-                document.getElementById('tk2').classList.add('active'); 
-            } else { 
-                vid = true; 
-                document.getElementById('tk2').classList.remove('active');
-                document.getElementById('tk2').classList.add('done'); 
-                document.getElementById('tk2').querySelector('.step-icon').innerHTML = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
-            }
-        }
-    }, 1000);
-}
-
-window.verifyStrict = function() {
-    if(!sub || !vid) return alert("يرجى إكمال المهام أولاً!");
-
-    document.getElementById('error-msg').style.display = 'none';
-    var ld = document.getElementById('loader');
-    ld.style.display = 'flex';
-    
-    setTimeout(function() {
-        fe
+             
