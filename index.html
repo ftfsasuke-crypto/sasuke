@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MX_SASUKE | VIP Unlocker</title>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" async></script>
     <style>
         :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; }
         body { background: var(--bg); color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; min-height: 100vh; overflow-x: hidden; position: relative; }
@@ -35,6 +35,7 @@
         .task-box.done .step-num { background: var(--accent); color: white; border-color: var(--accent); }
         
         .checker-card { background: #0f0f10; border: 1px solid #222; border-radius: 15px; padding: 15px; margin-top: 20px; }
+        #count-num { font-size: 32px; font-weight: bold; display: block; margin: 5px 0; }
         
         .verify-btn { background: var(--main); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; transition: 0.3s; }
         .verify-btn:disabled { background: #1a1a1c; color: #555; cursor: not-allowed; }
@@ -56,6 +57,8 @@
         #progress-circle { stroke-dasharray: 264; stroke-dashoffset: 0; stroke-linecap: round; }
         @keyframes circle-deplete { 0% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 264; } }
         
+        @keyframes bounce-icon { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-15px); } 60% { transform: translateY(-7px); } }
+
         .gen-input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #333; background: #111; color: white; box-sizing: border-box; text-align: right; font-family: 'Cairo', sans-serif; }
     </style>
 </head>
@@ -77,19 +80,19 @@
 
 <div id="loader">
     <div class="circle-timer"></div>
-    <h2 id="timer-text" style="font-size: 26px; margin: 20px 0;">جاري التحقق...</h2>
+    <h2 id="timer-text" style="font-size: 24px; margin: 20px 0; text-align: center;">جاري التحقق...</h2>
 </div>
 
 <div id="app" class="container"></div>
 
 <script>
 function createStars() {
-    const container = document.getElementById('stars');
+    var container = document.getElementById('stars');
     if(!container) return;
-    for (let i = 0; i < 50; i++) {
-        const star = document.createElement('div');
+    for (var i = 0; i < 50; i++) {
+        var star = document.createElement('div');
         star.className = 'star';
-        const size = Math.random() * 3 + 1 + 'px';
+        var size = Math.random() * 3 + 1 + 'px';
         star.style.width = size;
         star.style.height = size;
         star.style.left = Math.random() * 100 + '%';
@@ -100,27 +103,22 @@ function createStars() {
 }
 createStars();
 
-// --- نظام تتبع الوقت الصارم (يستحيل غشه) ---
-let timeAwayFromSite = 0;
-let timeLeftSite = 0;
-
-document.addEventListener("visibilitychange", function() {
-    if (document.hidden) {
-        timeLeftSite = Date.now(); // المتابع طلع لتطبيق يوتيوب
-    } else {
-        if (timeLeftSite > 0) {
-            timeAwayFromSite += (Date.now() - timeLeftSite); // بيجمع الثواني اللي قضاها برا
-            timeLeftSite = 0;
+function fireConfetti() {
+    try {
+        if (typeof confetti !== 'undefined') {
+            confetti({ particleCount: 50, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#ff0000', '#22c55e', '#ffffff'] });
+            confetti({ particleCount: 50, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ff0000', '#22c55e', '#ffffff'] });
         }
-    }
-});
-// ------------------------------------------
+    } catch(e){}
+}
 
 try {
-    const app = document.getElementById('app');
-    const urlParams = new URLSearchParams(window.location.search);
+    var YOUTUBE_API_KEY = "AIzaSyA6NebhJLqT8ZEG56cmMEm4xsRR5byisPI"; 
 
-    function safeEncode(str) { return btoa(encodeURIComponent(str)); }
+    var app = document.getElementById('app');
+    var urlParams = window.location.search;
+
+    function safeEncode(str) { try { return btoa(encodeURIComponent(str || "")); } catch(e){ return ""; } }
     function safeDecode(str) { try { return decodeURIComponent(atob(str.replace(/ /g, '+'))); } catch(e) { return ""; } }
     function fixUrl(url) {
         if (!url || url === 'undefined') return "#";
@@ -129,9 +127,11 @@ try {
         return url;
     }
 
-    if (urlParams.has('data') && urlParams.get('data').length > 5) {
-        const raw = urlParams.get('data').split('|');
-        let config = {
+    if (urlParams.indexOf('data=') !== -1) {
+        var rawData = urlParams.split('data=')[1];
+        var raw = decodeURIComponent(rawData).split('|');
+        
+        var config = {
             t: safeDecode(raw[0]),
             c: fixUrl(safeDecode(raw[1] || raw[0])),
             v: fixUrl(safeDecode(raw[2] || raw[1])),
@@ -139,11 +139,12 @@ try {
             tut: raw[4] ? fixUrl(safeDecode(raw[4])) : "" 
         };
 
-        let vIdMatch = config.v.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([^#\&\?]*)/);
-        let vId = vIdMatch && vIdMatch[1].length === 11 ? vIdMatch[1] : null;
-        let thumb = vId ? \`https://img.youtube.com/vi/\${vId}/maxresdefault.jpg\` : 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png';
+        var vIdMatch = config.v.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([^#\&\?]*)/);
+        var vId = vIdMatch && vIdMatch[1].length === 11 ? vIdMatch[1] : null;
+        var thumb = vId ? 'https://img.youtube.com/vi/' + vId + '/maxresdefault.jpg' : 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png';
 
-        let sub = false, vidLike = false, vidComment = false;
+        var sub = false, vidLike = false, vidComment = false;
+        var initialLikes = -1; 
 
         app.innerHTML = `
             <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" class="yt-logo" id="top-logo">
@@ -179,12 +180,14 @@ try {
                 </div>
 
                 <div class="checker-card">
+                    <span style="color:#888; font-size:12px;">عدد اللايكات الفعلي (مباشر)</span>
+                    <span id="count-num">جاري الاتصال...</span>
                     <button class="verify-btn" id="vBtn" onclick="verifyStrict()">تحقق من الشروط 🔍</button>
-                    <div id="error-msg">❌ فشل التحقق: لم تقضِ وقتاً كافياً في يوتيوب!</div>
+                    <div id="error-msg">❌ فشل التحقق: لم نكتشف زيادة في اللايكات! تأكد من وضع لايك.</div>
                     
                     <div class="warning-box">
                         <h4>تنبيه مهم ⚠️</h4>
-                        <p>النظام يتتبع الوقت الذي تقضيه في المقطع. يجب أن تفتح الرابط وتأخذ الوقت الكافي لتسجيل اللايك والتعليق بصدق لكي يكتمل التحقق بنجاح.</p>
+                        <p>تأكد من إتمام الشروط. إذا كنت قد وضعت لايك بالفعل وقال لك فشل، شيل اللايك وحطه تاني واضغط تحقق. يوتيوب يتأخر ثواني في التسجيل.</p>
                     </div>
                 </div>
             </div>
@@ -210,6 +213,33 @@ try {
             document.getElementById('btn-tut').style.display = 'block';
         }
 
+        function fetchRealLikes(callback) {
+            if (!vId) { callback(-1); return; }
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "https://www.googleapis.com/youtube/v3/videos?part=statistics&id=" + vId + "&key=" + YOUTUBE_API_KEY + "&t=" + new Date().getTime(), true);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    try {
+                        var data = JSON.parse(xhr.responseText);
+                        if(data.items && data.items.length > 0) {
+                            callback(parseInt(data.items[0].statistics.likeCount));
+                        } else { callback(-1); }
+                    } catch(e) { callback(-1); }
+                } else { callback(-1); }
+            };
+            xhr.onerror = function() { callback(-1); };
+            xhr.send();
+        }
+
+        fetchRealLikes(function(likes) {
+            if (likes !== -1) {
+                initialLikes = likes;
+                document.getElementById('count-num').innerText = initialLikes.toLocaleString('en-US');
+            } else {
+                document.getElementById('count-num').innerText = "حدث خطأ";
+            }
+        });
+
         window.openT = function(type) {
             if (type === 'c' && sub) return;
             if (type === 'vl' && vidLike) return;
@@ -217,19 +247,19 @@ try {
 
             window.open(type === 'c' ? config.c : config.v, '_blank');
 
-            const overlay = document.getElementById('countdown-overlay');
-            const numSpan = document.getElementById('countdown-number');
-            const progCircle = document.getElementById('progress-circle');
+            var overlay = document.getElementById('countdown-overlay');
+            var numSpan = document.getElementById('countdown-number');
+            var progCircle = document.getElementById('progress-circle');
             
             overlay.style.display = 'flex';
             progCircle.style.animation = 'none';
             void progCircle.offsetWidth; 
             progCircle.style.animation = 'circle-deplete 5s linear forwards';
             
-            let timeLeft = 5;
+            var timeLeft = 5;
             numSpan.innerText = timeLeft;
 
-            const timer = setInterval(() => {
+            var timer = setInterval(function() {
                 timeLeft--;
                 numSpan.innerText = timeLeft;
 
@@ -259,42 +289,57 @@ try {
             }, 1000);
         };
 
-        // التحقق السريع والصارم بناءً على وقت التنفيذ الفعلي
+        // ==========================================
+        // نظام الرادار الصارم اللي بيلف يسأل يوتيوب
+        // ==========================================
         window.verifyStrict = function() {
             if(!sub || !vidLike || !vidComment) return alert("يرجى إكمال جميع المهام الثلاثة أولاً!");
             
             document.getElementById('error-msg').style.display = 'none';
-            const ld = document.getElementById('loader');
-            
+            var ld = document.getElementById('loader');
+            var timerText = document.getElementById('timer-text');
             ld.style.display = 'flex';
             
-            setTimeout(() => {
-                ld.style.display = 'none';
-                
-                // الشرط: لازم المتابع يكون قضى على الأقل 12 ثانية وهو برا الموقع (في تطبيق يوتيوب)
-                // ده وقت منطقي عشان يلحق يعمل لايك ويكتب كومنت حقيقي.
-                if (timeAwayFromSite >= 12000) {
-                    document.getElementById('tasks-container').style.display = 'none';
-                    document.getElementById('top-logo').style.display = 'none';
-                    document.getElementById('top-title').style.display = 'none';
-                    document.getElementById('success-container').style.display = 'block';
-                    
-                    var duration = 3 * 1000;
-                    var end = Date.now() + duration;
+            var attempts = 0;
+            var maxAttempts = 6; 
 
-                    (function frame() {
-                        confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#ff0000', '#22c55e', '#ffffff'] });
-                        confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ff0000', '#22c55e', '#ffffff'] });
-                        if (Date.now() < end) { requestAnimationFrame(frame); }
-                    }());
-                } else {
-                    // لو رجع بسرعة (نصاب) هيقوله فشل
-                    let errMsg = document.getElementById('error-msg');
-                    errMsg.innerHTML = "❌ فشل التحقق: النظام يكتشف محاولة تخطي سريعة!<br>يرجى فتح الفيديو وأخذ الوقت الكافي لعمل اللايك والتعليق بصدق، ثم أعد المحاولة.";
-                    errMsg.style.display = 'block';
-                    document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
-                }
-            }, 2000); // تحميل سريع جداً (ثانيتين)
+            function radarCheck() {
+                attempts++;
+                timerText.innerHTML = "جاري التحقق (" + attempts + "/6)<br><span style='font-size:14px; color:#aaa'>نبحث عن اللايك في سيرفرات يوتيوب...</span>";
+
+                fetchRealLikes(function(currentLikes) {
+                    if (currentLikes !== -1) {
+                        document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
+                    }
+
+                    // لا يوجد استثناءات للوقت: الشرط الوحيد هو ارتفاع رقم اللايكات.
+                    if (currentLikes > initialLikes) {
+                        ld.style.display = 'none';
+                        document.getElementById('tasks-container').style.display = 'none';
+                        document.getElementById('top-logo').style.display = 'none';
+                        document.getElementById('top-title').style.display = 'none';
+                        document.getElementById('success-container').style.display = 'block';
+                        fireConfetti();
+                    } else {
+                        // لو لسه مفيش لايك اتسجل، هيلف تاني لو المحاولات مخلصتش
+                        if (attempts < maxAttempts) {
+                            setTimeout(radarCheck, 4000); // يستنى 4 ثواني ويسأل يوتيوب تاني
+                        } else {
+                            ld.style.display = 'none';
+                            var errMsg = document.getElementById('error-msg');
+                            errMsg.innerHTML = "❌ فشل التحقق: لم نكتشف زيادة في اللايكات!<br>الرقم في سيرفرات يوتيوب لم يتغير. إذا كنت متأكداً، اضغط <b>أعد التحقق</b>.";
+                            errMsg.style.display = 'block';
+                            document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
+                            
+                            if (currentLikes !== -1 && currentLikes < initialLikes) {
+                                initialLikes = currentLikes; 
+                            }
+                        }
+                    }
+                });
+            }
+
+            radarCheck(); // تشغيل الرادار
         };
 
     } else {
@@ -310,7 +355,7 @@ try {
             </div>
         `;
         window.gen = function() {
-            const d = [
+            var d = [
                 safeEncode(document.getElementById('it').value),
                 safeEncode(document.getElementById('ic').value),
                 safeEncode(document.getElementById('iv').value),
