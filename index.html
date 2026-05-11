@@ -26,7 +26,7 @@
         .star { position: absolute; background: white; border-radius: 50%; opacity: 0.5; animation: fall linear infinite; }
         @keyframes fall { from { transform: translateY(-10vh); } to { transform: translateY(110vh); } }
 
-        .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; position: relative; z-index: 10; display: none; /* مخفي افتراضياً حتى يقرر الكود أيهما يظهر */ }
+        .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; position: relative; z-index: 10; display: none; }
         
         .yt-logo { width: 50px; margin-bottom: 10px; transition: 0.3s; }
         .page-title { font-size: 24px; font-weight: bold; margin-bottom: 25px; word-wrap: break-word; line-height: 1.4; transition: 0.3s; }
@@ -51,6 +51,7 @@
         #count-num { font-size: 32px; font-weight: bold; display: block; margin: 5px 0; }
         
         .verify-btn { background: var(--main); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; transition: 0.3s; }
+        .verify-btn:disabled { background: #333; cursor: not-allowed; }
         
         #error-msg { display: none; color: var(--fail); font-size: 13px; margin-top: 10px; font-weight: bold; line-height: 1.5; }
 
@@ -104,7 +105,16 @@
         <input type="url" id="iv" class="gen-input" placeholder="👇 رابط فيديو اليوتيوب (اللايك والصورة)">
         <input type="url" id="itut" class="gen-input" placeholder="👇 رابط فيديو طريقة التخطي (مهم جداً)">
         <input type="url" id="if" class="gen-input" placeholder="👇 الرابط النهائي (ميديا فاير)">
-        <button class="verify-btn" onclick="gen()">إنشاء الصفحة</button>
+        <button id="gen-btn" class="verify-btn" onclick="gen()">إنشاء رابط قصير ✨</button>
+
+        <div id="result-box" style="display:none; margin-top: 15px; background: #111; padding: 15px; border-radius: 10px; border: 1px solid var(--accent);">
+            <p style="color: var(--accent); margin: 0 0 10px; font-weight: bold;">تم إنشاء الرابط بنجاح! 🎉</p>
+            <input type="text" id="short-link-input" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #333; background: #000; color: #3b82f6; text-align: center; margin-bottom: 10px; direction: ltr; font-weight: bold;" readonly>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="copyLink()" style="flex: 1; background: var(--accent); color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold;">نسخ الرابط 📋</button>
+                <button onclick="testLink()" style="flex: 1; background: #3b82f6; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold;">تجربة 🔗</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -167,7 +177,6 @@
 </div>
 
 <script>
-// إنشاء النجوم في الخلفية
 function createStars() {
     const container = document.getElementById('stars');
     if(!container) return;
@@ -185,31 +194,22 @@ function createStars() {
 }
 createStars();
 
-// إعدادات المتغيرات الأساسية
 const YOUTUBE_API_KEY = "AIzaSyA6NebhJLqT8ZEG56cmMEm4xsRR5byisPI"; 
-let sub = false, vid = false;
-let initialLikes = -1;
-let vId = null;
-let finalLink = "#";
-let tutLink = "#";
-let cLink = "#";
-let vLink = "#";
+let sub = false, vid = false, initialLikes = -1, vId = null, finalLink = "#", tutLink = "#", cLink = "#", vLink = "#";
 
 function safeEncode(str) { return btoa(encodeURIComponent(str || "")); }
-function safeDecode(str) { try { return decodeURIComponent(atob(str.replace(/ /g, '+'))); } catch(e) { return "خطأ_في_الرابط"; } }
+function safeDecode(str) { try { return decodeURIComponent(atob(str.replace(/ /g, '+'))); } catch(e) { return "خطأ"; } }
 function fixUrl(url) {
-    if (!url || url === 'undefined' || url === "" || url === "خطأ_في_الرابط") return "#";
+    if (!url || url === 'undefined' || url === "" || url === "خطأ") return "#";
     url = url.trim();
     if (!/^https?:\/\//i.test(url) && url !== "#") return 'https://' + url;
     return url;
 }
 
-// تنفيذ الكود مباشرة (بدون شاشة انتظار)
 try {
     const urlParams = new URLSearchParams(window.location.search);
 
     if (urlParams.has('data') && urlParams.get('data').length > 5) {
-        // إظهار صفحة التخطي فوراً
         document.getElementById('task-view').style.display = 'block';
         
         const raw = urlParams.get('data').split('|');
@@ -236,15 +236,12 @@ try {
         });
 
     } else {
-        // إظهار صفحة الإنشاء فوراً
         document.getElementById('generator-view').style.display = 'block';
     }
 } catch (error) {
-    // لو حصل خطأ جبار، هنظهر صفحة الإنشاء كاحتياطي
     document.getElementById('generator-view').style.display = 'block';
 }
 
-// جلب اللايكات
 function fetchRealLikes(callback) {
     if (!vId) { callback(-1); return; }
     fetch('https://www.googleapis.com/youtube/v3/videos?part=statistics&id=' + vId + '&key=' + YOUTUBE_API_KEY + '&t=' + Date.now())
@@ -256,7 +253,6 @@ function fetchRealLikes(callback) {
     }).catch(e => callback(-1));
 }
 
-// فتح الروابط والأزرار
 window.openC = function() { processTask('c', cLink); };
 window.openV = function() { processTask('v', vLink); };
 window.openTut = function() { window.open(tutLink, '_blank'); };
@@ -304,7 +300,6 @@ function processTask(type, url) {
     }, 1000);
 }
 
-// فحص الشروط وإظهار واجهة النجاح
 window.verifyStrict = function() {
     if(!sub || !vid) return alert("يرجى إكمال المهام أولاً!");
     
@@ -341,27 +336,3 @@ window.verifyStrict = function() {
                 errMsg.innerHTML = "❌ فشل التحقق: لم نكتشف زيادة في اللايكات! إذا كنت متأكداً من وضع اللايك، اضغط على <b>أعد التحقق</b> مجدداً بعد ثوانٍ.";
                 errMsg.style.display = 'block';
                 document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
-                
-                if (currentLikes !== -1 && currentLikes < initialLikes) {
-                    initialLikes = currentLikes; 
-                }
-            }
-        });
-    }, 3000);
-};
-
-// إنشاء رابط جديد
-window.gen = function() {
-    const elId = id => document.getElementById(id) ? document.getElementById(id).value : "";
-    const d = [
-        safeEncode(elId('it')),
-        safeEncode(elId('ic')),
-        safeEncode(elId('iv')),
-        safeEncode(elId('if')),
-        safeEncode(elId('itut'))
-    ].join('|');
-    window.location.href = "?data=" + encodeURIComponent(d);
-};
-</script>
-</body>
-</html>
