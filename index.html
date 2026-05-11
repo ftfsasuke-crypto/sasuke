@@ -101,6 +101,21 @@ function createStars() {
 }
 createStars();
 
+// --- التتبع الدقيق لخروج المتابع (للتغلب على بطء يوتيوب) ---
+var timeAwayFromSite = 0;
+var awayTimestamp = 0;
+
+document.addEventListener("visibilitychange", function() {
+    if (document.hidden) {
+        awayTimestamp = Date.now(); // المتابع ساب موقعنا وراح يوتيوب
+    } else {
+        if (awayTimestamp > 0) {
+            timeAwayFromSite += (Date.now() - awayTimestamp); // نحسب قضى وقت قد إيه بيكتب كومنت ويعمل لايك
+            awayTimestamp = 0;
+        }
+    }
+});
+
 try {
     var YOUTUBE_API_KEY = "AIzaSyA6NebhJLqT8ZEG56cmMEm4xsRR5byisPI"; 
 
@@ -176,7 +191,7 @@ try {
                     
                     <div class="warning-box">
                         <h4>تنبيه مهم ⚠️</h4>
-                        <p>تأكد من إتمام الشروط. إذا كنت قد وضعت لايك بالفعل وقال لك فشل، يرجى الانتظار ثواني واضغط تحقق، يوتيوب يتأخر أحياناً في التسجيل.</p>
+                        <p>يوتيوب يتأخر أحياناً في تسجيل اللايك. يرجى أخذ وقتك الكافي في تطبيق يوتيوب لكتابة التعليق وعمل اللايك بصدق، وسيقوم النظام بتمريرك فوراً.</p>
                     </div>
                 </div>
             </div>
@@ -279,7 +294,7 @@ try {
         };
 
         // ==========================================
-        // التحقق السريع والطلقة (3 ثواني فقط)
+        // التحقق الهجين (سريع جداً ومستحيل يظلم المتابع)
         // ==========================================
         window.verifyStrict = function() {
             if(!sub || !vidLike || !vidComment) return alert("يرجى إكمال جميع المهام الثلاثة أولاً!");
@@ -288,7 +303,7 @@ try {
             var ld = document.getElementById('loader');
             ld.style.display = 'flex';
             
-            // 3 ثواني تحميل بس عشان ميبقاش ممل
+            // 3 ثواني تحميل بس
             setTimeout(function() {
                 fetchRealLikes(function(currentLikes) {
                     ld.style.display = 'none';
@@ -297,8 +312,8 @@ try {
                         document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
                     }
 
-                    // الشرط الوحيد للعبور: اللايك زاد
-                    if (currentLikes > initialLikes) {
+                    // الشرط الهجين: إما يوتيوب حدث اللايك، إما المتابع قضى 12 ثانية في تطبيق يوتيوب (وقت كافي لعمل لايك وكومنت)
+                    if (currentLikes > initialLikes || timeAwayFromSite >= 12000) {
                         document.getElementById('tasks-container').style.display = 'none';
                         document.getElementById('top-logo').style.display = 'none';
                         document.getElementById('top-title').style.display = 'none';
@@ -311,13 +326,12 @@ try {
                             }
                         } catch(e){}
                     } else {
-                        // لو الرقم لسه مزادش (أو المتابع معملش لايك)، يقفل في وشه فوراً
+                        // لو داس زراير المهام ومرجعش يوتيوب (أو رجع في أقل من 12 ثانية) واللايك مزادش، يطرده
                         var errMsg = document.getElementById('error-msg');
-                        errMsg.innerHTML = "❌ فشل التحقق: لم يكتشف النظام اللايك الخاص بك بعد!<br>سيرفرات يوتيوب تتأخر بضع ثوانٍ في التحديث. إذا كنت قد وضعت لايك، فقط انتظر قليلاً واضغط <b>(أعد التحقق)</b>.";
+                        errMsg.innerHTML = "❌ فشل التحقق: أنت لم تقض وقتاً كافياً خارج الموقع لتنفيذ الشروط بصدق! افتح الفيديو واكتب تعليقاً حقيقياً وضع لايك.";
                         errMsg.style.display = 'block';
                         document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
                         
-                        // لو شال اللايك نحدث الرقم
                         if (currentLikes !== -1 && currentLikes < initialLikes) {
                             initialLikes = currentLikes; 
                         }
