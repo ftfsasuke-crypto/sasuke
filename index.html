@@ -74,7 +74,7 @@
 
 <div id="loader">
     <div class="circle-timer"></div>
-    <h2 id="timer-text" style="font-size: 26px; margin: 20px 0; text-align: center;">جاري التحقق...</h2>
+    <h2 id="timer-text" style="font-size: 26px; margin: 20px 0; text-align: center;">جاري التحقق... ⏳</h2>
 </div>
 
 <div id="app" class="container"></div>
@@ -96,20 +96,6 @@ function createStars() {
     }
 }
 createStars();
-
-var timeAwayFromSite = 0;
-var awayTimestamp = 0;
-
-document.addEventListener("visibilitychange", function() {
-    if (document.hidden) {
-        awayTimestamp = Date.now(); 
-    } else {
-        if (awayTimestamp > 0) {
-            timeAwayFromSite += (Date.now() - awayTimestamp); 
-            awayTimestamp = 0;
-        }
-    }
-});
 
 try {
     var YOUTUBE_API_KEY = "AIzaSyA6NebhJLqT8ZEG56cmMEm4xsRR5byisPI"; 
@@ -144,9 +130,7 @@ try {
 
         var sub = false, vidLike = false, vidComment = false;
         var initialLikes = -1; 
-        var lastTaskClickTime = 0; 
 
-        // جزء فيديو الشرح في الصفحة الرئيسية (مكان صندوق التنبيه القديم)
         var tutSection = "";
         if(config.tut && config.tut !== "#") {
             tutSection = `
@@ -193,10 +177,10 @@ try {
                 </div>
 
                 <div class="checker-card">
-                    <span style="color:#888; font-size:12px;">عدد اللايكات الفعلي (مباشر)</span>
-                    <span id="count-num">جاري الاتصال...</span>
+                    <span style="color:#888; font-size:12px;">اللايكات الحالية:</span>
+                    <span id="count-num">...</span>
                     <button class="verify-btn" id="vBtn" onclick="verifyStrict()">تحقق من الشروط 🔍</button>
-                    <div id="error-msg">❌ فشل التحقق: تأكد من إنهاء جميع الشروط بشكل صحيح.</div>
+                    <div id="error-msg">❌ فشل التحقق: تأكد من إتمام الشروط.</div>
                     
                     ${tutSection}
                 </div>
@@ -231,6 +215,7 @@ try {
             xhr.send();
         }
 
+        // جلب اللايكات أول مرة زي السكربت المصغر
         fetchRealLikes(function(likes) {
             if (likes !== -1) {
                 initialLikes = likes;
@@ -244,8 +229,6 @@ try {
             if (type === 'c' && sub) return;
             if (type === 'vl' && vidLike) return;
             if (type === 'vc' && vidComment) return;
-
-            lastTaskClickTime = Date.now();
 
             window.open(type === 'c' ? config.c : config.v, '_blank');
 
@@ -291,13 +274,17 @@ try {
             }, 1000);
         };
 
+        // دالة التحقق المنسوخة بالمللي من السكربت المصغر
         window.verifyStrict = function() {
             if(!sub || !vidLike || !vidComment) return alert("يرجى إكمال جميع المهام الثلاثة أولاً!");
             
-            document.getElementById('error-msg').style.display = 'none';
+            var errMsg = document.getElementById('error-msg');
+            errMsg.style.display = 'none';
+            
             var ld = document.getElementById('loader');
             ld.style.display = 'flex';
             
+            // تأخير 2.5 ثانية زي السكربت المصغر بالظبط
             setTimeout(function() {
                 fetchRealLikes(function(currentLikes) {
                     ld.style.display = 'none';
@@ -306,9 +293,8 @@ try {
                         document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
                     }
 
-                    var timePassedSinceLastClick = Date.now() - lastTaskClickTime;
-
-                    if (currentLikes > initialLikes || timePassedSinceLastClick >= 15000) {
+                    // التحقق الصارم: لازم الرقم يكون أكبر من الرقم الابتدائي
+                    if (currentLikes > initialLikes) {
                         document.getElementById('tasks-container').style.display = 'none';
                         document.getElementById('top-logo').style.display = 'none';
                         document.getElementById('top-title').style.display = 'none';
@@ -321,17 +307,18 @@ try {
                             }
                         } catch(e){}
                     } else {
-                        var errMsg = document.getElementById('error-msg');
-                        errMsg.innerHTML = "❌ فشل التحقق: أنت لم تقضِ وقتاً كافياً لتنفيذ المهام حقاً! يرجى مشاهدة الفيديو وترك تعليق فعلي.";
+                        // لو الرقم مزادش زي السكربت المصغر بالظبط
+                        errMsg.innerHTML = "❌ يوتيوب لسه مراجعش اللايك أو أنك لم تضغط لايك!<br>دوس <b>أعد التحقق</b> مرة كمان.";
                         errMsg.style.display = 'block';
                         document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
                         
+                        // تحديث العدد الابتدائي في حال سحب شخص آخر لايكه
                         if (currentLikes !== -1 && currentLikes < initialLikes) {
                             initialLikes = currentLikes; 
                         }
                     }
                 });
-            }, 3000); 
+            }, 2500); // 2500 مللي ثانية (2.5 ثانية)
         };
 
     } else {
