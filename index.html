@@ -26,7 +26,8 @@
         .star { position: absolute; background: white; border-radius: 50%; opacity: 0.5; animation: fall linear infinite; }
         @keyframes fall { from { transform: translateY(-10vh); } to { transform: translateY(110vh); } }
 
-        .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; position: relative; z-index: 10; display: none; }
+        /* شلنا الإخفاء الافتراضي من الحاوية عشان الشاشة متجيش سودة أبداً */
+        .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; position: relative; z-index: 10; }
         
         .yt-logo { width: 50px; margin-bottom: 10px; transition: 0.3s; }
         .page-title { font-size: 24px; font-weight: bold; margin-bottom: 25px; word-wrap: break-word; line-height: 1.4; transition: 0.3s; }
@@ -71,7 +72,6 @@
         
         .gen-input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #333; background: #111; color: white; box-sizing: border-box; text-align: right; font-family: 'Cairo', sans-serif; }
 
-        /* ستايل زر الإعدادات والمربع المنبثق */
         .menu-btn { position: fixed; top: 20px; left: 20px; z-index: 999; background: rgba(21, 21, 23, 0.8); backdrop-filter: blur(5px); border: 1px solid #333; padding: 10px; border-radius: 10px; color: white; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         .menu-btn:hover { border-color: var(--main); color: var(--main); }
         .menu-btn svg { width: 28px; height: 28px; fill: currentColor; }
@@ -123,7 +123,7 @@
 <div id="loader">
     <div class="circle-timer"></div>
     <h2 style="font-size: 30px; margin: 20px 0;">جاري التحقق</h2>
-    <p style="text-align: center; font-size: 14px; color:#aaa;">يتم الاتصال بسيرفر يوتيوب<br>نرجو الانتظار ثواني ⏳</p>
+    <p>بنتأكد من اللايك في سيرفر يوتيوب... ⏳</p>
 </div>
 
 <div id="generator-view" class="container">
@@ -138,7 +138,7 @@
     </div>
 </div>
 
-<div id="task-view" class="container">
+<div id="task-view" class="container" style="display: none;">
     <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" class="yt-logo" id="top-logo">
     <div class="page-title" id="top-title"></div>
 
@@ -176,13 +176,13 @@
             
             <div class="warning-box">
                 <h4>تنبيه مهم ⚠️</h4>
-                <p>يوتيوب يحتاج إلى ثوانٍ لتسجيل اللايك. إذا قمت بعمل لايك وظهر لك فشل، جرب الضغط على (أعد التحقق) مرة أخرى.</p>
+                <p>يوتيوب يحتاج إلى ثوانٍ لتسجيل اللايك. إذا قمت بعمل لايك وظهر لك فشل، يرجى الانتظار قليلاً ثم إعادة التحقق.</p>
             </div>
         </div>
     </div>
 
     <div id="success-container" style="display:none; background: rgba(21, 21, 23, 0.8); backdrop-filter: blur(10px); border-radius: 15px; padding: 35px 20px; text-align: center; border: 1px solid #333; margin-top: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
-        <div style="font-size: 70px; margin-bottom: 10px; animation: bounce-icon 2s infinite;">🎉</div>
+        <div style="font-size: 70px; margin-bottom: 10px;">🎉</div>
         <h2 style="margin: 0 0 15px; font-size: 28px; color: white;">احسنت يا بطل 😎</h2>
         
         <p style="color: #fbbf24; font-family: 'Cairo', sans-serif; font-weight: 900; font-size: 17px; margin-bottom: 25px; line-height: 1.7; border: 2px dashed #fbbf24; padding: 12px; border-radius: 10px; background: rgba(251, 191, 36, 0.08);">
@@ -197,23 +197,17 @@
 </div>
 
 <script>
-// دوال فتح وإغلاق قائمة الإعدادات
-function openMenu() {
-    document.getElementById('about-modal').style.display = 'flex';
-}
-function closeMenu(event) {
-    if(event) event.stopPropagation();
-    document.getElementById('about-modal').style.display = 'none';
-}
+// أكواد الجافاسكريبت مكتوبة بنظام ES5 عشان تشتغل على أي متصفح مهما كان قديم
+function openMenu() { document.getElementById('about-modal').style.display = 'flex'; }
+function closeMenu(event) { if(event) event.stopPropagation(); document.getElementById('about-modal').style.display = 'none'; }
 
-// إنشاء النجوم في الخلفية
 function createStars() {
-    const container = document.getElementById('stars');
+    var container = document.getElementById('stars');
     if(!container) return;
-    for (let i = 0; i < 80; i++) {
-        const star = document.createElement('div');
+    for (var i = 0; i < 80; i++) {
+        var star = document.createElement('div');
         star.className = 'star';
-        const size = Math.random() * 3 + 'px';
+        var size = Math.random() * 3 + 'px';
         star.style.width = size; star.style.height = size;
         star.style.left = Math.random() * 100 + '%';
         star.style.animationDuration = (Math.random() * 3 + 2) + 's';
@@ -224,45 +218,43 @@ function createStars() {
 }
 createStars();
 
-const YOUTUBE_API_KEY = "AIzaSyA6NebhJLqT8ZEG56cmMEm4xsRR5byisPI"; 
-let sub = false, vid = false;
-let initialLikes = -1;
-let vId = null;
-let finalLink = "#";
-let tutLink = "#";
-let cLink = "#";
-let vLink = "#";
+var YOUTUBE_API_KEY = "AIzaSyA6NebhJLqT8ZEG56cmMEm4xsRR5byisPI"; 
+var sub = false, vid = false, initialLikes = -1, vId = null;
+var finalLink = "#", tutLink = "#", cLink = "#", vLink = "#";
 
-function safeEncode(str) { return btoa(encodeURIComponent(str || "")); }
-function safeDecode(str) { try { return decodeURIComponent(atob(str.replace(/ /g, '+'))); } catch(e) { return "خطأ_في_الرابط"; } }
+function safeEncode(str) { try { return btoa(encodeURIComponent(str || "")); } catch(e) { return ""; } }
+function safeDecode(str) { try { return decodeURIComponent(atob(str.replace(/ /g, '+'))); } catch(e) { return ""; } }
 function fixUrl(url) {
-    if (!url || url === 'undefined' || url === "" || url === "خطأ_في_الرابط") return "#";
+    if (!url || url === 'undefined' || url === "") return "#";
     url = url.trim();
     if (!/^https?:\/\//i.test(url) && url !== "#") return 'https://' + url;
     return url;
 }
 
 try {
-    const urlParams = new URLSearchParams(window.location.search);
-
-    if (urlParams.has('data') && urlParams.get('data').length > 5) {
+    var urlParams = window.location.search;
+    if (urlParams.indexOf('data=') !== -1) {
+        // إخفاء المصنع وإظهار المهام
+        document.getElementById('generator-view').style.display = 'none';
         document.getElementById('task-view').style.display = 'block';
         
-        const raw = urlParams.get('data').split('|');
-        const titleText = safeDecode(raw[0]);
+        var rawData = urlParams.split('data=')[1];
+        var raw = decodeURIComponent(rawData).split('|');
+        
+        var titleText = safeDecode(raw[0]);
         cLink = fixUrl(safeDecode(raw[1]));
         vLink = fixUrl(safeDecode(raw[2]));
         finalLink = fixUrl(safeDecode(raw[3]));
         tutLink = raw[4] ? fixUrl(safeDecode(raw[4])) : "#";
 
-        let vIdMatch = vLink.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/ytscreeningroom\?v=|\/sandayat\?v=|\/condition_video_id\/|\/watch\?feature=player_embedded&v=))([^#\&\?]*)/);
+        var vIdMatch = vLink.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/ytscreeningroom\?v=|\/sandayat\?v=|\/condition_video_id\/|\/watch\?feature=player_embedded&v=))([^#\&\?]*)/);
         vId = vIdMatch && vIdMatch[1].length === 11 ? vIdMatch[1] : null;
-        let thumb = vId ? `https://img.youtube.com/vi/${vId}/maxresdefault.jpg` : 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png';
+        var thumb = vId ? 'https://img.youtube.com/vi/' + vId + '/maxresdefault.jpg' : 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png';
 
         document.getElementById('top-title').innerText = titleText;
         document.getElementById('vid-thumb').src = thumb;
 
-        fetchRealLikes((likes) => {
+        fetchRealLikes(function(likes) {
             if (likes !== -1) {
                 initialLikes = likes;
                 document.getElementById('count-num').innerText = initialLikes.toLocaleString('en-US');
@@ -270,23 +262,20 @@ try {
                 document.getElementById('count-num').innerText = "حدث خطأ";
             }
         });
-
-    } else {
-        document.getElementById('generator-view').style.display = 'block';
     }
 } catch (error) {
-    document.getElementById('generator-view').style.display = 'block';
+    // لو حصل خطأ، صفحة الإنشاء هتفضل ظاهرة
 }
 
 function fetchRealLikes(callback) {
     if (!vId) { callback(-1); return; }
     fetch('https://www.googleapis.com/youtube/v3/videos?part=statistics&id=' + vId + '&key=' + YOUTUBE_API_KEY + '&t=' + Date.now())
-    .then(res => res.json())
-    .then(data => {
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
         if(data.items && data.items.length > 0) {
             callback(parseInt(data.items[0].statistics.likeCount));
         } else { callback(-1); }
-    }).catch(e => callback(-1));
+    }).catch(function(e) { callback(-1); });
 }
 
 window.openC = function() { processTask('c', cLink); };
@@ -300,19 +289,19 @@ function processTask(type, url) {
 
     window.open(url, '_blank');
 
-    const overlay = document.getElementById('countdown-overlay');
-    const numSpan = document.getElementById('countdown-number');
-    const progCircle = document.getElementById('progress-circle');
+    var overlay = document.getElementById('countdown-overlay');
+    var numSpan = document.getElementById('countdown-number');
+    var progCircle = document.getElementById('progress-circle');
     
     overlay.style.display = 'flex';
     progCircle.style.animation = 'none';
     void progCircle.offsetWidth; 
     progCircle.style.animation = 'circle-deplete 5s linear forwards';
     
-    let timeLeft = 5;
+    var timeLeft = 5;
     numSpan.innerText = timeLeft;
 
-    const timer = setInterval(() => {
+    var timer = setInterval(function() {
         timeLeft--;
         numSpan.innerText = timeLeft;
 
@@ -336,8 +325,12 @@ function processTask(type, url) {
     }, 1000);
 }
 
-// -------------------------------------------------------------
-// النظام الصارم 100%: مفيش مرور إلا لما اللايك يزيد فقط!
-// -------------------------------------------------------------
 window.verifyStrict = function() {
-    if(!sub || !
+    if(!sub || !vid) return alert("يرجى إكمال المهام أولاً!");
+
+    document.getElementById('error-msg').style.display = 'none';
+    var ld = document.getElementById('loader');
+    ld.style.display = 'flex';
+    
+    setTimeout(function() {
+        fe
