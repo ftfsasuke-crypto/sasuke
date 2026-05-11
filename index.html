@@ -26,7 +26,8 @@
         .star { position: absolute; background: white; border-radius: 50%; opacity: 0.5; animation: fall linear infinite; }
         @keyframes fall { from { transform: translateY(-10vh); } to { transform: translateY(110vh); } }
 
-        .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; position: relative; z-index: 10; display: none; }
+        /* تم إزالة الإخفاء الافتراضي لمنع الشاشة السوداء نهائياً */
+        .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; position: relative; z-index: 10; }
         
         .yt-logo { width: 50px; margin-bottom: 10px; transition: 0.3s; }
         .page-title { font-size: 24px; font-weight: bold; margin-bottom: 25px; word-wrap: break-word; line-height: 1.4; transition: 0.3s; }
@@ -97,7 +98,7 @@
     <p>بنتأكد من اللايك في سيرفر يوتيوب... ⏳</p>
 </div>
 
-<div id="generator-view" class="container">
+<div id="generator-view" class="container" style="display: block;">
     <div class="task-box" style="display:block; text-align:center; cursor:default;">
         <h2 style="color:var(--accent); margin-top:0;">MX_SASUKE VIP Generator</h2>
         <input type="text" id="it" class="gen-input" value="لازم تعمل اشتراك ولايك وتعليق للحصول على السكربت">
@@ -118,7 +119,7 @@
     </div>
 </div>
 
-<div id="task-view" class="container">
+<div id="task-view" class="container" style="display: none;">
     <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" class="yt-logo" id="top-logo">
     <div class="page-title" id="top-title"></div>
 
@@ -206,10 +207,11 @@ function fixUrl(url) {
     return url;
 }
 
+// تبديل الواجهة إذا كان هناك رابط تخطي
 try {
     const urlParams = new URLSearchParams(window.location.search);
-
     if (urlParams.has('data') && urlParams.get('data').length > 5) {
+        document.getElementById('generator-view').style.display = 'none';
         document.getElementById('task-view').style.display = 'block';
         
         const raw = urlParams.get('data').split('|');
@@ -234,12 +236,9 @@ try {
                 document.getElementById('count-num').innerText = "حدث خطأ";
             }
         });
-
-    } else {
-        document.getElementById('generator-view').style.display = 'block';
     }
 } catch (error) {
-    document.getElementById('generator-view').style.display = 'block';
+    // لو حصل خطأ مش هيعمل حاجة، وهيخلي لوحة الإنشاء شغالة ومفيش شاشة سودة
 }
 
 function fetchRealLikes(callback) {
@@ -333,6 +332,4 @@ window.verifyStrict = function() {
                 }
             } else {
                 let errMsg = document.getElementById('error-msg');
-                errMsg.innerHTML = "❌ فشل التحقق: لم نكتشف زيادة في اللايكات! إذا كنت متأكداً من وضع اللايك، اضغط على <b>أعد التحقق</b> مجدداً بعد ثوانٍ.";
-                errMsg.style.display = 'block';
-                document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
+                errMsg.innerHTML = "❌ فشل التحقق: لم نكتشف زيادة في اللايكات! إذا كنت متأكداً من وضع اللايك، اضغط على <b>أعد التحقق</b> مجدداً بعد ثوان
