@@ -70,43 +70,11 @@
         @keyframes circle-deplete { 0% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 264; } }
         
         .gen-input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #333; background: #111; color: white; box-sizing: border-box; text-align: right; font-family: 'Cairo', sans-serif; }
-
-        /* ستايل زر الإعدادات والمربع المنبثق */
-        .menu-btn { position: fixed; top: 20px; left: 20px; z-index: 999; background: rgba(21, 21, 23, 0.8); backdrop-filter: blur(5px); border: 1px solid #333; padding: 10px; border-radius: 10px; color: white; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-        .menu-btn:hover { border-color: var(--main); color: var(--main); }
-        .menu-btn svg { width: 28px; height: 28px; fill: currentColor; }
-
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
-        .modal-box { background: #151517; border: 2px solid #333; border-radius: 20px; padding: 30px 20px; width: 85%; max-width: 350px; text-align: center; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.8); animation: bounce-icon 0.5s ease; border-top: 3px solid var(--accent); }
-        .close-btn { position: absolute; top: 10px; right: 15px; color: #888; font-size: 28px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .close-btn:hover { color: var(--fail); }
-        
-        @keyframes bounce-icon { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-15px); } 60% { transform: translateY(-7px); } }
     </style>
 </head>
 <body>
 
 <div class="stars-container" id="stars"></div>
-
-<div class="menu-btn" onclick="openMenu()">
-    <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
-</div>
-
-<div id="about-modal" class="modal-overlay" onclick="closeMenu(event)">
-    <div class="modal-box" onclick="event.stopPropagation()">
-        <span class="close-btn" onclick="closeMenu(event)">&times;</span>
-        <div style="font-size: 50px; margin-bottom: 15px;">👑</div>
-        <h3 style="color: white; margin-top: 0; font-family: 'Cairo', sans-serif; font-size: 22px;">معلومات النظام</h3>
-        <div style="background: rgba(255,255,255,0.05); border-radius: 10px; padding: 15px; margin-top: 15px;">
-            <p style="color: #cbd5e1; font-size: 15px; line-height: 1.8; font-weight: bold; margin: 0;">
-                تم صنع الموقع هذا بالكامل من خلال مبرمج 
-                <span style="color: var(--fail); font-size: 17px;">MX_SASUKE</span> 
-                وهو غير صالح للاستخدام العام انه مجرد اداه لـ 
-                <span style="color: var(--accent); font-size: 17px;">SASUKE</span> فقط.
-            </p>
-        </div>
-    </div>
-</div>
 
 <div id="countdown-overlay">
     <div class="countdown-wrapper">
@@ -114,7 +82,8 @@
             <circle stroke="#333" stroke-width="6" fill="transparent" r="42" cx="50" cy="50"/>
             <circle id="progress-circle" stroke="var(--main)" stroke-width="6" fill="transparent" r="42" cx="50" cy="50"/>
         </svg>
-        <span id="countdown-number" class="countdown-num">5</span> </div>
+        <span id="countdown-number" class="countdown-num">7</span>
+    </div>
     <h2 style="margin-top: 10px; font-size: 24px;">انتظر قليلاً... ⏳</h2>
     <p style="color: #888; font-size: 14px; text-align: center; width: 80%;">انتظر فقط، النظام يتحقق من إتمامك للشرط<br>بعد الانتهاء ستكتمل المهمة 👍</p>
 </div>
@@ -175,7 +144,7 @@
             
             <div class="warning-box">
                 <h4>تنبيه مهم ⚠️</h4>
-                <p>يوتيوب يحتاج إلى ثوانٍ لتسجيل اللايك. إذا قمت بعمل لايك وظهر لك فشل، جرب الضغط على (أعد التحقق) مرة أخرى.</p>
+                <p>يوتيوب يحتاج إلى ثوانٍ لتسجيل اللايك. النظام الآن يتتبع الوقت الذي تقضيه في المشاهدة لضمان حقك.</p>
             </div>
         </div>
     </div>
@@ -196,15 +165,6 @@
 </div>
 
 <script>
-// دوال فتح وإغلاق قائمة الإعدادات
-function openMenu() {
-    document.getElementById('about-modal').style.display = 'flex';
-}
-function closeMenu(event) {
-    if(event) event.stopPropagation();
-    document.getElementById('about-modal').style.display = 'none';
-}
-
 // إنشاء النجوم في الخلفية
 function createStars() {
     const container = document.getElementById('stars');
@@ -231,6 +191,26 @@ let finalLink = "#";
 let tutLink = "#";
 let cLink = "#";
 let vLink = "#";
+
+// --- نظام التتبع الذكي ---
+let timeSpentAway = 0; 
+let awayTimestamp = 0;
+let isTabAway = false;
+
+// لما المستخدم يخرج من الموقع يروح لليوتيوب
+window.addEventListener('blur', function() {
+    isTabAway = true;
+    awayTimestamp = Date.now();
+});
+
+// لما يرجع للموقع تاني
+window.addEventListener('focus', function() {
+    if (isTabAway && awayTimestamp > 0) {
+        timeSpentAway += (Date.now() - awayTimestamp);
+        isTabAway = false;
+    }
+});
+// -----------------------
 
 function safeEncode(str) { return btoa(encodeURIComponent(str || "")); }
 function safeDecode(str) { try { return decodeURIComponent(atob(str.replace(/ /g, '+'))); } catch(e) { return "خطأ_في_الرابط"; } }
@@ -306,11 +286,9 @@ function processTask(type, url) {
     overlay.style.display = 'flex';
     progCircle.style.animation = 'none';
     void progCircle.offsetWidth; 
-    // تم تعديل الأنيميشن هنا لـ 5 ثواني
-    progCircle.style.animation = 'circle-deplete 5s linear forwards';
+    progCircle.style.animation = 'circle-deplete 7s linear forwards';
     
-    // تم التعديل هنا لـ 5 ثواني
-    let timeLeft = 5;
+    let timeLeft = 7;
     numSpan.innerText = timeLeft;
 
     const timer = setInterval(() => {
@@ -337,7 +315,6 @@ function processTask(type, url) {
     }, 1000);
 }
 
-// التحقق الصارم والانتظار 7 ثواني 
 window.verifyStrict = function() {
     if(!sub || !vid) return alert("يرجى إكمال المهام أولاً!");
 
@@ -345,6 +322,7 @@ window.verifyStrict = function() {
     const ld = document.getElementById('loader');
     ld.style.display = 'flex';
     
+    // رجعت وقت التحميل لـ 3 ثواني عشان ميزهقش، لأننا هنعتمد على نظام التتبع الجديد
     setTimeout(() => {
         fetchRealLikes((currentLikes) => {
             ld.style.display = 'none';
@@ -353,7 +331,8 @@ window.verifyStrict = function() {
                 document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
             }
 
-            if (currentLikes > initialLikes) {
+            // هنا السحر: لو يوتيوب حدث اللايك هيعديه (أو) لو قضى 12 ثانية برا الموقع عشان يعمل الشروط هيعديه برضه
+            if (currentLikes > initialLikes || timeSpentAway >= 12000) {
                 document.getElementById('tasks-container').style.display = 'none';
                 document.getElementById('top-logo').style.display = 'none';
                 document.getElementById('top-title').style.display = 'none';
@@ -371,16 +350,12 @@ window.verifyStrict = function() {
                 }
             } else {
                 let errMsg = document.getElementById('error-msg');
-                errMsg.innerHTML = "❌ فشل التحقق: لم نكتشف زيادة في اللايكات! إذا كنت متأكداً من وضع اللايك، انتظر 10 ثوانٍ (لأن يوتيوب يتأخر في التحديث) ثم اضغط <b>أعد التحقق</b>.";
+                errMsg.innerHTML = "❌ فشل التحقق: أنت لم تقضِ وقتاً كافياً في يوتيوب لعمل اللايك والتعليق! لا تحاول الغش.";
                 errMsg.style.display = 'block';
                 document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
-                
-                if (currentLikes !== -1 && currentLikes < initialLikes) {
-                    initialLikes = currentLikes; 
-                }
             }
         });
-    }, 7000); 
+    }, 3000);
 };
 
 window.gen = function() {
