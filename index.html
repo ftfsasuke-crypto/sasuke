@@ -194,18 +194,17 @@ let finalLink = "#";
 let tutLink = "#";
 let cLink = "#";
 let vLink = "#";
-let verifyAttempts = 0; // متغير لحساب عدد المحاولات عشان نعديه لو يوتيوب معلق
 
 function safeEncode(str) { return btoa(encodeURIComponent(str || "")); }
-function safeDecode(str) { try { return decodeURIComponent(atob(str.replace(/ /g, '+'))); } catch(e) { return ""; } }
+function safeDecode(str) { try { return decodeURIComponent(atob(str.replace(/ /g, '+'))); } catch(e) { return "خطأ_في_الرابط"; } }
 function fixUrl(url) {
-    if (!url || url === 'undefined' || url === "") return "#";
+    if (!url || url === 'undefined' || url === "" || url === "خطأ_في_الرابط") return "#";
     url = url.trim();
     if (!/^https?:\/\//i.test(url) && url !== "#") return 'https://' + url;
     return url;
 }
 
-// تنفيذ الكود مباشرة 
+// تنفيذ الكود مباشرة (بدون شاشة انتظار)
 try {
     const urlParams = new URLSearchParams(window.location.search);
 
@@ -214,7 +213,6 @@ try {
         
         const raw = urlParams.get('data').split('|');
         const titleText = safeDecode(raw[0]);
-        // تم إصلاح سحب الروابط عشان متوديش لمكان غلط أبداً
         cLink = fixUrl(safeDecode(raw[1]));
         vLink = fixUrl(safeDecode(raw[2]));
         finalLink = fixUrl(safeDecode(raw[3]));
@@ -301,10 +299,9 @@ function processTask(type, url) {
     }, 1000);
 }
 
+// فحص الشروط وإظهار واجهة النجاح بصياغة صارمة بدون أي استثناءات
 window.verifyStrict = function() {
     if(!sub || !vid) return alert("يرجى إكمال المهام أولاً!");
-    
-    verifyAttempts++; // بنزود عدد المحاولات هنا
 
     document.getElementById('error-msg').style.display = 'none';
     const ld = document.getElementById('loader');
@@ -318,8 +315,8 @@ window.verifyStrict = function() {
                 document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
             }
 
-            // لو اللايك زاد، أو لو المستخدم جرب مرتين (عشان يوتيوب بيتأخر) هيعديه فوراً!
-            if (currentLikes > initialLikes || verifyAttempts >= 2) {
+            // شرط وحيد وصارم: لازم الرقم يكون أكبر من الرقم المبدئي
+            if (currentLikes > initialLikes) {
                 document.getElementById('tasks-container').style.display = 'none';
                 document.getElementById('top-logo').style.display = 'none';
                 document.getElementById('top-title').style.display = 'none';
@@ -337,10 +334,11 @@ window.verifyStrict = function() {
                 }
             } else {
                 let errMsg = document.getElementById('error-msg');
-                errMsg.innerHTML = "❌ يوتيوب يحتاج لبعض الوقت لتحديث اللايكات! بما أنك متأكد، اضغط على <b>أعد التحقق</b> مجدداً وسيتم الفتح.";
+                errMsg.innerHTML = "❌ فشل التحقق: لم نكتشف زيادة في اللايكات! إذا كنت متأكداً من وضع اللايك، انتظر 10 ثوانٍ (لأن يوتيوب يتأخر في التحديث) ثم اضغط <b>أعد التحقق</b>.";
                 errMsg.style.display = 'block';
                 document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
                 
+                // تحديث الرقم في حالة النقصان
                 if (currentLikes !== -1 && currentLikes < initialLikes) {
                     initialLikes = currentLikes; 
                 }
@@ -349,7 +347,7 @@ window.verifyStrict = function() {
     }, 3000);
 };
 
-// إنشاء رابط جديد (بنفس الطريقة اللي طلبتها بالظبط)
+// إنشاء رابط جديد
 window.gen = function() {
     const elId = id => document.getElementById(id) ? document.getElementById(id).value : "";
     const d = [
