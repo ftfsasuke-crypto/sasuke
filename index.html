@@ -25,8 +25,7 @@
         .star { position: absolute; background: white; border-radius: 50%; opacity: 0.5; animation: fall linear infinite; }
         @keyframes fall { from { transform: translateY(-10vh); } to { transform: translateY(110vh); } }
 
-        /* الكلاس ده ظاهر دايماً، مفيش إخفاء */
-        .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; position: relative; z-index: 10; }
+        .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; position: relative; z-index: 10; display: none; }
         
         .yt-logo { width: 50px; margin-bottom: 10px; transition: 0.3s; }
         .page-title { font-size: 24px; font-weight: bold; margin-bottom: 25px; word-wrap: break-word; line-height: 1.4; transition: 0.3s; }
@@ -51,7 +50,6 @@
         #count-num { font-size: 32px; font-weight: bold; display: block; margin: 5px 0; }
         
         .verify-btn { background: var(--main); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; transition: 0.3s; }
-        .verify-btn:disabled { background: #333; cursor: not-allowed; }
         
         #error-msg { display: none; color: var(--fail); font-size: 13px; margin-top: 10px; font-weight: bold; line-height: 1.5; }
 
@@ -100,36 +98,36 @@
     <div class="task-box" style="display:block; text-align:center; cursor:default; background: #151517;">
         <h2 style="color:var(--accent); margin-top:0;">MX_SASUKE VIP Generator</h2>
         
-        <input type="text" id="it" class="gen-input" value="لازم تعمل اشتراك ولايك وتعليق للحصول على السكربت">
-        <input type="url" id="ic" class="gen-input" placeholder="👇 رابط قناتك (اشتراك)">
-        <input type="url" id="iv" class="gen-input" placeholder="👇 رابط فيديو اليوتيوب (اللايك والصورة)">
-        <input type="url" id="itut" class="gen-input" placeholder="👇 رابط فيديو طريقة التخطي (مهم جداً)">
-        <input type="url" id="if" class="gen-input" placeholder="👇 الرابط النهائي (ميديا فاير)">
+        <input type="text" id="inp-title" class="gen-input" value="لازم تعمل اشتراك ولايك وتعليق للحصول على السكربت">
+        <input type="url" id="inp-channel" class="gen-input" placeholder="👇 رابط قناتك (اشتراك)">
+        <input type="url" id="inp-video" class="gen-input" placeholder="👇 رابط فيديو اليوتيوب (اللايك والصورة)">
+        <input type="url" id="inp-tutorial" class="gen-input" placeholder="👇 رابط فيديو طريقة التخطي (مهم جداً)">
+        <input type="url" id="inp-final" class="gen-input" placeholder="👇 الرابط النهائي (ميديا فاير)">
         
-        <button class="verify-btn" style="background: red;" onclick="makeMyLink()">إنشاء الرابط الآن ✨</button>
+        <button type="button" id="btn-generate" class="verify-btn" style="background: red;">إنشاء الرابط الآن ✨</button>
 
         <div id="result-box" style="display:none; margin-top: 15px; background: #111; padding: 15px; border-radius: 10px; border: 1px solid var(--accent);">
             <p style="color: var(--accent); margin: 0 0 10px; font-weight: bold;">تم إنشاء الرابط بنجاح! 🎉</p>
             <input type="text" id="short-link-input" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #333; background: #000; color: #3b82f6; text-align: center; margin-bottom: 10px; direction: ltr; font-weight: bold;" readonly>
             
             <div style="display: flex; gap: 10px;">
-                <button onclick="copyMyLink()" style="flex: 1; background: var(--accent); color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold;">نسخ 📋</button>
-                <button onclick="goToTinyURL()" style="flex: 1; background: #f59e0b; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold;">قَصّر الرابط ✂️</button>
+                <button type="button" id="btn-copy" style="flex: 1; background: var(--accent); color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold;">نسخ 📋</button>
+                <button type="button" id="btn-tinyurl" style="flex: 1; background: #f59e0b; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold;">قَصّر الرابط ✂️</button>
             </div>
         </div>
     </div>
 </div>
 
-<div id="task-view" class="container" style="display: none;">
+<div id="task-view" class="container">
     <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" class="yt-logo" id="top-logo">
     <div class="page-title" id="top-title"></div>
 
     <div id="tasks-container">
-        <div class="video-card" onclick="openV()">
+        <div class="video-card" id="vid-card">
             <img id="vid-thumb" src="">
         </div>
 
-        <div class="task-box active" id="tk1" onclick="openC()">
+        <div class="task-box active" id="tk1">
             <div class="task-info">
                 <h4>Subscribe to channel</h4>
                 <p>اضغط هنا للاشتراك في القناة</p>
@@ -139,7 +137,7 @@
             </div>
         </div>
 
-        <div class="task-box" id="tk2" onclick="openV()">
+        <div class="task-box" id="tk2">
             <div class="task-info">
                 <h4>Like & comment on video</h4>
                 <p>اعمل لايك وكومنت على الفيديو</p>
@@ -153,7 +151,7 @@
         <div class="checker-card">
             <span style="color:#888; font-size:12px;">عدد اللايكات الفعلي (مباشر)</span>
             <span id="count-num">جاري الاتصال...</span>
-            <button class="verify-btn" id="vBtn" onclick="verifyStrict()">تحقق من الشروط 🔍</button>
+            <button type="button" class="verify-btn" id="vBtn">تحقق من الشروط 🔍</button>
             <div id="error-msg">❌ فشل التحقق: لم نكتشف زيادة في اللايكات!</div>
             <div class="warning-box">
                 <h4>تنبيه مهم ⚠️</h4>
@@ -168,17 +166,14 @@
         <p style="color: #fbbf24; font-family: 'Cairo', sans-serif; font-weight: 900; font-size: 17px; margin-bottom: 25px; line-height: 1.7; border: 2px dashed #fbbf24; padding: 12px; border-radius: 10px; background: rgba(251, 191, 36, 0.08);">
             قبل ما تعمل فتح للرابط شوف فيديو طريقة تخطي الروابط لكي تفهم كيفية تخطي الروابط 
         </p>
-        <button style="display: block; width: 100%; background: #ef4444; padding: 15px; border-radius: 12px; color: white; border: none; font-weight: bold; font-size: 16px; cursor: margin-bottom: 12px;" onclick="window.open('https://youtu.be/wOaEuyXW9H0?si=mbRgaIvBA3HeUvsJ', '_blank')">🛠️ حل مشكلة يرجى تعطيل مانع الاعلانات</button>
-        <button style="display: block; width: 100%; background: #3b82f6; padding: 15px; border-radius: 12px; color: white; border: none; font-weight: bold; font-size: 16px; margin-top: 12px; margin-bottom: 12px; cursor: pointer;" onclick="openTut()">📺 فيديو طريقة التخطي</button>
-        <button style="display: block; width: 100%; background: var(--accent); padding: 18px; border-radius: 12px; color: white; border: none; font-weight: bold; font-size: 18px; cursor: pointer;" onclick="openFinal()">🔓 افتح الرابط</button>
+        <button type="button" id="btn-fix" style="display: block; width: 100%; background: #ef4444; padding: 15px; border-radius: 12px; color: white; border: none; font-weight: bold; font-size: 16px; cursor: pointer; margin-bottom: 12px;">🛠️ حل مشكلة يرجى تعطيل مانع الاعلانات</button>
+        <button type="button" id="btn-tut" style="display: block; width: 100%; background: #3b82f6; padding: 15px; border-radius: 12px; color: white; border: none; font-weight: bold; font-size: 16px; cursor: pointer; margin-bottom: 12px;">📺 فيديو طريقة التخطي</button>
+        <button type="button" id="btn-final" style="display: block; width: 100%; background: var(--accent); padding: 18px; border-radius: 12px; color: white; border: none; font-weight: bold; font-size: 18px; cursor: pointer;">🔓 افتح الرابط</button>
     </div>
 </div>
 
 <script>
-// أكواد التشغيل الأساسية مبسطة لأقصى درجة عشان الموبايل ميوقفهاش
-var YOUTUBE_API_KEY = "AIzaSyA6NebhJLqT8ZEG56cmMEm4xsRR5byisPI"; 
-var sub = false, vid = false, initialLikes = -1, vId = null, finalLink = "#", tutLink = "#", cLink = "#", vLink = "#";
-
+// الكود مكتوب بالطريقة القديمة المضمونة عشان يشتغل على كل موبايلات الدنيا بدون توقف
 function safeEncode(str) { try { return btoa(encodeURIComponent(str || "")); } catch(e) { return ""; } }
 function safeDecode(str) { try { return decodeURIComponent(atob(str.replace(/ /g, '+'))); } catch(e) { return ""; } }
 function fixUrl(url) {
@@ -188,15 +183,107 @@ function fixUrl(url) {
     return url;
 }
 
-// دالة التحقق من الرابط (بتشتغل أوتوماتيك)
-function initPage() {
-    var urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has('data') && urlParams.get('data').length > 5) {
-        // لو في داتا، إخفي المصنع واظهر المهام
+var YOUTUBE_API_KEY = "AIzaSyA6NebhJLqT8ZEG56cmMEm4xsRR5byisPI"; 
+var sub = false, vid = false, initialLikes = -1, vId = null;
+var finalLink = "#", tutLink = "#", cLink = "#", vLink = "#";
+
+function fetchRealLikes(videoId, callback) {
+    if (!videoId) { callback(-1); return; }
+    // استخدمنا XHR لأنه مدعوم في أقدم المتصفحات ومستحيل يجيب إيرور
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', 'https://www.googleapis.com/youtube/v3/videos?part=statistics&id=' + videoId + '&key=' + YOUTUBE_API_KEY + '&t=' + new Date().getTime(), true);
+    xhr.onload = function() {
+        if (xhr.status >= 200 && xhr.status < 400) {
+            try {
+                var data = JSON.parse(xhr.responseText);
+                if(data.items && data.items.length > 0) {
+                    callback(parseInt(data.items[0].statistics.likeCount));
+                } else { callback(-1); }
+            } catch(e) { callback(-1); }
+        } else { callback(-1); }
+    };
+    xhr.onerror = function() { callback(-1); };
+    xhr.send();
+}
+
+function processTask(type, url) {
+    if (type === 'c' && sub) return;
+    if (type === 'v' && vid) return;
+
+    window.open(url, '_blank');
+
+    var overlay = document.getElementById('countdown-overlay');
+    var numSpan = document.getElementById('countdown-number');
+    var progCircle = document.getElementById('progress-circle');
+    
+    if(overlay) overlay.style.display = 'flex';
+    if(progCircle) {
+        progCircle.style.animation = 'none';
+        void progCircle.offsetWidth; 
+        progCircle.style.animation = 'circle-deplete 7s linear forwards';
+    }
+    
+    var timeLeft = 7;
+    if(numSpan) numSpan.innerText = timeLeft;
+
+    var timer = setInterval(function() {
+        timeLeft--;
+        if(numSpan) numSpan.innerText = timeLeft;
+
+        if (timeLeft <= 0) {
+            clearInterval(timer);
+            if(overlay) overlay.style.display = 'none';
+
+            if(type === 'c') { 
+                sub = true; 
+                var tk1 = document.getElementById('tk1');
+                if(tk1) {
+                    tk1.className = 'task-box done';
+                    tk1.querySelector('.step-icon').innerHTML = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
+                }
+                var tk2 = document.getElementById('tk2');
+                if(tk2) tk2.className = 'task-box active'; 
+            } else { 
+                vid = true; 
+                var tk2 = document.getElementById('tk2');
+                if(tk2) {
+                    tk2.className = 'task-box done';
+                    tk2.querySelector('.step-icon').innerHTML = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
+                }
+            }
+        }
+    }, 1000);
+}
+
+// هنا العقل المدبر بيربط الأزرار بعد ما الصفحة تحمل عشان المتصفح ميزعلش
+window.onload = function() {
+    
+    // 1. رسم النجوم 
+    var starsContainer = document.getElementById('stars');
+    if(starsContainer) {
+        for (var i = 0; i < 80; i++) {
+            var star = document.createElement('div');
+            star.className = 'star';
+            var size = Math.random() * 3 + 'px';
+            star.style.width = size; star.style.height = size;
+            star.style.left = Math.random() * 100 + '%';
+            star.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            star.style.animationDelay = (Math.random() * 5) + 's';
+            star.style.opacity = Math.random();
+            starsContainer.appendChild(star);
+        }
+    }
+
+    // 2. فحص الرابط 
+    var urlString = window.location.search;
+    if (urlString.indexOf('data=') !== -1 && urlString.length > 20) {
+        // صفحة المهام
         document.getElementById('generator-view').style.display = 'none';
         document.getElementById('task-view').style.display = 'block';
         
-        var raw = urlParams.get('data').split('|');
+        var rawData = urlString.split('data=')[1];
+        var raw = decodeURIComponent(rawData).split('|');
+        
         var titleText = safeDecode(raw[0]);
         cLink = fixUrl(safeDecode(raw[1] || raw[0]));
         vLink = fixUrl(safeDecode(raw[2] || raw[1]));
@@ -210,126 +297,49 @@ function initPage() {
         document.getElementById('top-title').innerText = titleText;
         document.getElementById('vid-thumb').src = thumb;
 
-        if(vId) {
-            fetch('https://www.googleapis.com/youtube/v3/videos?part=statistics&id=' + vId + '&key=' + YOUTUBE_API_KEY + '&t=' + Date.now())
-            .then(function(res) { return res.json(); })
-            .then(function(data) {
-                if(data.items && data.items.length > 0) {
-                    initialLikes = parseInt(data.items[0].statistics.likeCount);
-                    document.getElementById('count-num').innerText = initialLikes.toLocaleString('en-US');
-                } else {
-                    document.getElementById('count-num').innerText = "حدث خطأ";
-                }
-            }).catch(function() { document.getElementById('count-num').innerText = "حدث خطأ"; });
-        }
-    }
-}
-// تشغيل الدالة فوراً
-initPage();
-
-window.openC = function() { processTask('c', cLink); };
-window.openV = function() { processTask('v', vLink); };
-window.openTut = function() { window.open(tutLink, '_blank'); };
-window.openFinal = function() { window.location.href = finalLink; };
-
-function processTask(type, url) {
-    if (type === 'c' && sub) return;
-    if (type === 'v' && vid) return;
-
-    window.open(url, '_blank');
-
-    var overlay = document.getElementById('countdown-overlay');
-    var numSpan = document.getElementById('countdown-number');
-    var progCircle = document.getElementById('progress-circle');
-    
-    overlay.style.display = 'flex';
-    progCircle.style.animation = 'none';
-    void progCircle.offsetWidth; 
-    progCircle.style.animation = 'circle-deplete 7s linear forwards';
-    
-    var timeLeft = 7;
-    numSpan.innerText = timeLeft;
-
-    var timer = setInterval(function() {
-        timeLeft--;
-        numSpan.innerText = timeLeft;
-
-        if (timeLeft <= 0) {
-            clearInterval(timer);
-            overlay.style.display = 'none';
-
-            if(type === 'c') { 
-                sub = true; 
-                document.getElementById('tk1').classList.remove('active');
-                document.getElementById('tk1').classList.add('done'); 
-                document.getElementById('tk1').querySelector('.step-icon').innerHTML = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
-                document.getElementById('tk2').classList.add('active'); 
-            } else { 
-                vid = true; 
-                document.getElementById('tk2').classList.remove('active');
-                document.getElementById('tk2').classList.add('done'); 
-                document.getElementById('tk2').querySelector('.step-icon').innerHTML = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>';
+        fetchRealLikes(vId, function(likes) {
+            if (likes !== -1) {
+                initialLikes = likes;
+                document.getElementById('count-num').innerText = initialLikes.toLocaleString('en-US');
+            } else {
+                document.getElementById('count-num').innerText = "حدث خطأ";
             }
-        }
-    }, 1000);
-}
-
-window.verifyStrict = function() {
-    if(!sub || !vid) { alert("يرجى إكمال المهام أولاً!"); return; }
-    
-    document.getElementById('error-msg').style.display = 'none';
-    var ld = document.getElementById('loader');
-    ld.style.display = 'flex';
-    
-    setTimeout(function() {
-        fetch('https://www.googleapis.com/youtube/v3/videos?part=statistics&id=' + vId + '&key=' + YOUTUBE_API_KEY + '&t=' + Date.now())
-        .then(function(res) { return res.json(); })
-        .then(function(data) {
-            ld.style.display = 'none';
-            if(data.items && data.items.length > 0) {
-                var currentLikes = parseInt(data.items[0].statistics.likeCount);
-                document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
-                
-                if (currentLikes > initialLikes) {
-                    document.getElementById('tasks-container').style.display = 'none';
-                    document.getElementById('top-logo').style.display = 'none';
-                    document.getElementById('top-title').style.display = 'none';
-                    document.getElementById('success-container').style.display = 'block';
-                } else {
-                    document.getElementById('error-msg').innerHTML = "❌ فشل التحقق: لم نكتشف زيادة في اللايكات!";
-                    document.getElementById('error-msg').style.display = 'block';
-                    document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
-                    initialLikes = currentLikes; // تحديث الرقم
-                }
-            }
-        }).catch(function() {
-            ld.style.display = 'none';
-            alert("حدث خطأ في الاتصال بيوتيوب!");
         });
-    }, 3000);
-};
 
-// ==========================================
-// الزرار الأسطوري الجديد (لا يقهر)
-// ==========================================
-window.makeMyLink = function() {
-    var it = document.getElementById('it').value;
-    var ic = document.getElementById('ic').value;
-    var iv = document.getElementById('iv').value;
-    var itut = document.getElementById('itut').value;
-    var iff = document.getElementById('if').value;
+        // ربط أزرار المهام
+        var tk1 = document.getElementById('tk1');
+        if(tk1) tk1.onclick = function() { processTask('c', cLink); };
+        
+        var tk2 = document.getElementById('tk2');
+        if(tk2) tk2.onclick = function() { processTask('v', vLink); };
+        
+        var vidCard = document.getElementById('vid-card');
+        if(vidCard) vidCard.onclick = function() { processTask('v', vLink); };
 
-    if (ic === "" || iv === "" || iff === "") {
-        alert("⚠️ يرجى ملء رابط القناة ورابط الفيديو والرابط النهائي!");
-        return;
-    }
+        var btnVerify = document.getElementById('vBtn');
+        if(btnVerify) {
+            btnVerify.onclick = function() {
+                if(!sub || !vid) { alert("يرجى إكمال المهام أولاً!"); return; }
+                
+                var errMsg = document.getElementById('error-msg');
+                if(errMsg) errMsg.style.display = 'none';
+                
+                var ld = document.getElementById('loader');
+                if(ld) ld.style.display = 'flex';
+                
+                setTimeout(function() {
+                    fetchRealLikes(vId, function(currentLikes) {
+                        if(ld) ld.style.display = 'none';
+                        
+                        if (currentLikes !== -1) {
+                            var cNum = document.getElementById('count-num');
+                            if(cNum) cNum.innerText = currentLikes.toLocaleString('en-US');
 
-    var dataStr = safeEncode(it) + "|" + safeEncode(ic) + "|" + safeEncode(iv) + "|" + safeEncode(iff) + "|" + safeEncode(itut);
-    var fullUrl = window.location.href.split('?')[0] + "?data=" + encodeURIComponent(dataStr);
-
-    document.getElementById('result-box').style.display = 'block';
-    document.getElementById('short-link-input').value = fullUrl;
-};
-
-window.copyMyLink = function() {
-    var copyText = document.getElementById("short-lin
+                            if (currentLikes > initialLikes) {
+                                document.getElementById('tasks-container').style.display = 'none';
+                                document.getElementById('top-logo').style.display = 'none';
+                                document.getElementById('top-title').style.display = 'none';
+                                document.getElementById('success-container').style.display = 'block';
+                                
+                                try {
+                                   
