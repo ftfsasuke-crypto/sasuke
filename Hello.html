@@ -84,7 +84,13 @@
             font-size: 14px;
         }
         .copy-btn { padding: 6px 16px; font-size: 14px; margin: 5px; }
-        #vote-buttons button { display: block; width: 80%; margin: 8px auto; }
+        #vote-buttons button {
+            display: block;
+            width: 80%;
+            margin: 8px auto;
+            font-size: 18px;
+            padding: 14px;
+        }
         .notification {
             position: fixed;
             top: 20px;
@@ -110,6 +116,36 @@
             margin: 15px 0;
             font-size: 20px;
         }
+        .wrong-box {
+            background: #4a1a1a;
+            border: 2px solid #e94560;
+            color: #ff6b6b;
+            padding: 15px;
+            border-radius: 15px;
+            margin: 10px 0;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .spy-reveal-box {
+            background: #1a1a4a;
+            border: 2px solid #f1c40f;
+            color: #f1c40f;
+            padding: 15px;
+            border-radius: 15px;
+            margin: 10px 0;
+            font-size: 22px;
+            font-weight: bold;
+        }
+        .correct-box {
+            background: #1a472a;
+            border: 2px solid #2ecc71;
+            color: #2ecc71;
+            padding: 15px;
+            border-radius: 15px;
+            margin: 10px 0;
+            font-size: 28px;
+            font-weight: bold;
+        }
         .word-box {
             background: #1a472a;
             border: 2px solid #2ecc71;
@@ -130,6 +166,14 @@
             margin: 15px 0;
             font-size: 24px;
             font-weight: bold;
+        }
+        .vote-log {
+            background: #2c2c54;
+            padding: 12px;
+            border-radius: 10px;
+            margin: 8px 0;
+            font-size: 16px;
+            color: #ddd;
         }
         .waiting-votes {
             background: #2c2c54;
@@ -186,12 +230,10 @@
         <div id="start-screen">
             <h1><span class="title-spy">🕵️ لعبة الجاسوس</span></h1>
             
-            <!-- رسالة انتهاء الصلاحية -->
             <div id="expired-message" style="display:none;" class="expired-box">
                 ⚠️ انتهت صلاحية الرابط!<br><small>الغرفة لم تعد موجودة، اطلب رابط جديد من الهوست.</small>
             </div>
             
-            <!-- قسم الهوست -->
             <div id="create-section">
                 <div class="host-box">
                     <p style="color:#aaa; margin-bottom:5px;">👑 أنت الهوست</p>
@@ -200,7 +242,6 @@
                 <button onclick="createRoom()" style="font-size:18px; padding:14px 30px;">🎮 إنشاء غرفة جديدة</button>
             </div>
             
-            <!-- قسم اللاعب -->
             <div id="join-section" style="display:none;">
                 <p style="color:#aaa;">ادخل غرفة صديقك:</p>
                 <input type="text" id="player-name" placeholder="اكتب اسمك">
@@ -236,6 +277,12 @@
             
             <div id="kick-section" style="display:none;"></div>
 
+            <!-- سجل التصويتات -->
+            <div id="vote-log-section" style="display:none;">
+                <h3>📋 سجل التصويتات:</h3>
+                <div id="vote-log"></div>
+            </div>
+
             <div id="vote-section" style="display:none;">
                 <h3>🗳️ صوّت على الجاسوس:</h3>
                 <div id="vote-buttons"></div>
@@ -243,6 +290,19 @@
 
             <div id="waiting-votes" style="display:none;" class="waiting-votes">
                 ⏳ في انتظار باقي اللاعبين للتصويت...
+            </div>
+
+            <!-- نتيجة التصويت - غلط -->
+            <div id="vote-result-wrong" style="display:none;" class="wrong-box">
+                ❌ مش هو الجاسوس!
+            </div>
+            <div id="spy-reveal" style="display:none;" class="spy-reveal-box">
+                🕵️ الجاسوس كان: <span id="spy-reveal-name"></span>
+            </div>
+            
+            <!-- نتيجة التصويت - صح -->
+            <div id="vote-result-correct" style="display:none;" class="correct-box">
+                ✅ صحيح! الجاسوس هو <span id="correct-spy-name"></span>
             </div>
 
             <div id="vote-result" style="display:none;" class="result-box"></div>
@@ -288,6 +348,7 @@
         let timerInterval = null;
         let localTimer = 600;
         let totalPlayerCount = 0;
+        let allPlayersData = {};
 
         const params = new URLSearchParams(window.location.search);
         const ridFromUrl = params.get('room');
@@ -300,23 +361,19 @@
             document.getElementById('join-section').style.display = 'none';
         }
 
-        // التحقق من وجود الغرفة وصلاحيتها
         function checkRoomExists(rid) {
             const roomRef = ref(db, 'rooms/' + rid);
             get(roomRef).then(snapshot => {
                 if (snapshot.exists()) {
                     const roomData = snapshot.val();
-                    // الغرفة موجودة وفي مرحلة الانتظار
                     if (roomData.phase === 'waiting') {
                         document.getElementById('create-section').style.display = 'none';
                         document.getElementById('join-section').style.display = 'block';
                         document.getElementById('expired-message').style.display = 'none';
                     } else {
-                        // الغرفة بدأت أو خلصت
                         showExpiredMessage();
                     }
                 } else {
-                    // الغرفة مش موجودة (تم حذفها)
                     showExpiredMessage();
                 }
             }).catch(() => {
@@ -349,6 +406,8 @@
                 spyPlayerId: null,
                 secretWord: null,
                 voteResults: {},
+                voteLogs: {},
+                voteResultPhase: 'waiting',
                 createdAt: Date.now()
             };
             
@@ -363,6 +422,7 @@
                 listenToPlayers();
                 listenToGameState();
                 listenToVotes();
+                listenToVoteLogs();
                 showNotification('✅ تم إنشاء الغرفة! انسخ الرابط وابعته لأصحابك');
             });
         };
@@ -394,6 +454,7 @@
                     listenToPlayers();
                     listenToGameState();
                     listenToVotes();
+                    listenToVoteLogs();
                     showNotification(`👋 مرحباً ${name}، أنت في الغرفة!`);
                 } else {
                     showExpiredMessage();
@@ -418,6 +479,7 @@
             const playersRef = ref(db, 'rooms/' + roomId + '/players');
             onValue(playersRef, snapshot => {
                 const players = snapshot.val() || {};
+                allPlayersData = players;
                 totalPlayerCount = Object.keys(players).length;
                 updatePlayerListUI(players);
             });
@@ -466,7 +528,6 @@
             const roomRef = ref(db, 'rooms/' + roomId);
             onValue(roomRef, snapshot => {
                 if (!snapshot.exists()) {
-                    // الغرفة اتمسحت
                     showNotification('⚠️ الغرفة لم تعد موجودة!');
                     leaveRoom();
                     return;
@@ -500,6 +561,23 @@
             });
         }
 
+        function listenToVoteLogs() {
+            const logsRef = ref(db, 'rooms/' + roomId + '/voteLogs');
+            onValue(logsRef, snapshot => {
+                const logs = snapshot.val() || {};
+                updateVoteLogUI(logs);
+            });
+        }
+
+        function updateVoteLogUI(logs) {
+            const logDiv = document.getElementById('vote-log');
+            let html = '';
+            Object.values(logs).forEach(log => {
+                html += `<div class="vote-log">🗳️ ${log.voterName} ➡️ ${log.targetName}</div>`;
+            });
+            logDiv.innerHTML = html || '<div class="vote-log" style="color:#888;">لا يوجد تصويتات بعد...</div>';
+        }
+
         function listenToVotes() {
             const votesRef = ref(db, 'rooms/' + roomId + '/voteResults');
             onValue(votesRef, snapshot => {
@@ -515,15 +593,17 @@
                 
                 if (voteCount >= totalPlayerCount && totalPlayerCount > 0) {
                     document.getElementById('waiting-votes').style.display = 'none';
-                    calculateVoteResult(votes);
+                    finalizeVotes(votes);
                 }
             });
         }
 
         function handlePhaseChange(data) {
             document.getElementById('vote-section').style.display = 'none';
-            document.getElementById('vote-result').style.display = 'none';
-            document.getElementById('vote-result').innerHTML = '';
+            document.getElementById('vote-log-section').style.display = 'none';
+            document.getElementById('vote-result-wrong').style.display = 'none';
+            document.getElementById('spy-reveal').style.display = 'none';
+            document.getElementById('vote-result-correct').style.display = 'none';
             document.getElementById('spy-guess-section').style.display = 'none';
             document.getElementById('final-result').style.display = 'none';
             document.getElementById('final-result').innerHTML = '';
@@ -536,11 +616,32 @@
                     break;
                 case 'voting':
                     document.getElementById('word-display').style.display = 'none';
+                    document.getElementById('vote-log-section').style.display = 'block';
                     showVotingUI(data);
                     break;
                 case 'spyGuess':
                     document.getElementById('word-display').style.display = 'none';
+                    document.getElementById('vote-log-section').style.display = 'block';
+                    // إظهار النتيجة المخزنة
+                    showStoredResult(data);
                     break;
+            }
+        }
+
+        function showStoredResult(data) {
+            if (data.voteResultPhase === 'correct') {
+                const spyName = allPlayersData[data.spyPlayerId] ? allPlayersData[data.spyPlayerId].name : '???';
+                document.getElementById('vote-result-correct').style.display = 'block';
+                document.getElementById('correct-spy-name').textContent = spyName;
+            } else if (data.voteResultPhase === 'wrong') {
+                const spyName = allPlayersData[data.spyPlayerId] ? allPlayersData[data.spyPlayerId].name : '???';
+                document.getElementById('vote-result-wrong').style.display = 'block';
+                document.getElementById('spy-reveal').style.display = 'block';
+                document.getElementById('spy-reveal-name').textContent = spyName;
+            }
+            
+            if (myPlayerId === data.spyPlayerId) {
+                document.getElementById('spy-guess-section').style.display = 'block';
             }
         }
 
@@ -584,7 +685,9 @@
                     timer: 600,
                     timerRunning: true,
                     timerEndAt: now + 600000,
-                    voteResults: {}
+                    voteResults: {},
+                    voteLogs: {},
+                    voteResultPhase: 'waiting'
                 });
                 
                 document.getElementById('kick-section').style.display = 'none';
@@ -619,15 +722,27 @@
         }
 
         window.voteFor = function(targetId) {
+            // حفظ الصوت
             const voteRef = ref(db, 'rooms/' + roomId + '/voteResults/' + myPlayerId);
             set(voteRef, targetId);
+            
+            // حفظ في السجل
+            const targetName = allPlayersData[targetId] ? allPlayersData[targetId].name : '???';
+            const logRef = ref(db, 'rooms/' + roomId + '/voteLogs/' + myPlayerId);
+            set(logRef, {
+                voterName: myPlayerName,
+                targetName: targetName,
+                time: Date.now()
+            });
+            
             document.getElementById('vote-section').style.display = 'none';
             document.getElementById('waiting-votes').style.display = 'block';
             document.getElementById('waiting-votes').textContent = '⏳ في انتظار باقي اللاعبين للتصويت...';
             showNotification('✅ تم تسجيل صوتك! في انتظار باقي اللاعبين...');
         };
 
-        function calculateVoteResult(votes) {
+        function finalizeVotes(votes) {
+            // حساب الأصوات
             const voteCount = {};
             Object.values(votes).forEach(v => {
                 voteCount[v] = (voteCount[v] || 0) + 1;
@@ -640,27 +755,29 @@
             });
             
             const isCorrect = (mostVoted === spyPlayerId);
-            const resultDiv = document.getElementById('vote-result');
-            resultDiv.style.display = 'block';
+            const spyName = allPlayersData[spyPlayerId] ? allPlayersData[spyPlayerId].name : '???';
             
-            const playersRef = ref(db, 'rooms/' + roomId + '/players');
-            get(playersRef).then(snapshot => {
-                const players = snapshot.val();
-                const votedName = players[mostVoted] ? players[mostVoted].name : '???';
-                const spyName = players[spyPlayerId] ? players[spyPlayerId].name : '???';
-                
-                if (isCorrect) {
-                    resultDiv.innerHTML = `✅ صحيح! الجاسوس هو ${votedName}.<br>في انتظار تخمينه للكلمة...`;
-                } else {
-                    resultDiv.innerHTML = `❌ غلط! ${votedName} مش الجاسوس.<br>الجاسوس الحقيقي هو ${spyName}.<br>في انتظار تخمينه للكلمة...`;
-                }
-                
-                if (myPlayerId === spyPlayerId) {
-                    document.getElementById('spy-guess-section').style.display = 'block';
-                }
-                
-                const roomRef = ref(db, 'rooms/' + roomId);
-                update(roomRef, { phase: 'spyGuess' });
+            // عرض النتيجة لكل لاعب
+            document.getElementById('waiting-votes').style.display = 'none';
+            
+            if (isCorrect) {
+                document.getElementById('vote-result-correct').style.display = 'block';
+                document.getElementById('correct-spy-name').textContent = spyName;
+            } else {
+                document.getElementById('vote-result-wrong').style.display = 'block';
+                document.getElementById('spy-reveal').style.display = 'block';
+                document.getElementById('spy-reveal-name').textContent = spyName;
+            }
+            
+            if (myPlayerId === spyPlayerId) {
+                document.getElementById('spy-guess-section').style.display = 'block';
+            }
+            
+            // تحديث الغرفة
+            const roomRef = ref(db, 'rooms/' + roomId);
+            update(roomRef, {
+                phase: 'spyGuess',
+                voteResultPhase: isCorrect ? 'correct' : 'wrong'
             });
         }
 
@@ -682,6 +799,14 @@
             
             const roomRef = ref(db, 'rooms/' + roomId);
             update(roomRef, { phase: 'finished', timerRunning: false, active: false });
+            
+            // إظهار التخمين للكل عن طريق حفظه في قاعدة البيانات
+            const guessRef = ref(db, 'rooms/' + roomId + '/spyGuessResult');
+            set(guessRef, {
+                guess: guess,
+                correct: guess === secretWord,
+                secretWord: secretWord
+            });
         };
 
         function startLocalTimer(endAt) {
