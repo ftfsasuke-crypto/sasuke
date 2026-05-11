@@ -26,7 +26,8 @@
         .star { position: absolute; background: white; border-radius: 50%; opacity: 0.5; animation: fall linear infinite; }
         @keyframes fall { from { transform: translateY(-10vh); } to { transform: translateY(110vh); } }
 
-        .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; position: relative; z-index: 10; display: none; }
+        /* هنا كان العيب! مسحت display:none عشان الموقع يظهر غصب عن أي متصفح */
+        .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; position: relative; z-index: 10; }
         
         .yt-logo { width: 50px; margin-bottom: 10px; transition: 0.3s; }
         .page-title { font-size: 24px; font-weight: bold; margin-bottom: 25px; word-wrap: break-word; line-height: 1.4; transition: 0.3s; }
@@ -71,7 +72,6 @@
         
         .gen-input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #333; background: #111; color: white; box-sizing: border-box; text-align: right; font-family: 'Cairo', sans-serif; }
 
-        /* ستايل زر الإعدادات والمربع المنبثق */
         .menu-btn { position: fixed; top: 20px; left: 20px; z-index: 999; background: rgba(21, 21, 23, 0.8); backdrop-filter: blur(5px); border: 1px solid #333; padding: 10px; border-radius: 10px; color: white; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
         .menu-btn:hover { border-color: var(--main); color: var(--main); }
         .menu-btn svg { width: 28px; height: 28px; fill: currentColor; }
@@ -105,7 +105,6 @@
                 <span style="color: var(--accent); font-size: 17px;">SASUKE</span> فقط.
             </p>
         </div>
-        
         <button class="verify-btn" style="background: #3b82f6; margin-top: 5px; box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);" onclick="copyCurrentUrl()">نسخ الرابط للمتابعين 📋</button>
     </div>
 </div>
@@ -200,6 +199,7 @@
 </div>
 
 <script>
+// أكواد جافاسكريبت نقية 100% عشان الموبايلات القديمة والجديدة
 function openMenu() { document.getElementById('about-modal').style.display = 'flex'; }
 function closeMenu(event) { if(event) event.stopPropagation(); document.getElementById('about-modal').style.display = 'none'; }
 
@@ -233,42 +233,39 @@ function fixUrl(url) {
     return url;
 }
 
-// السكربت بيقرر مين هيظهر هنا
-var urlParams = window.location.search;
-if (urlParams.indexOf('data=') !== -1) {
-    // إخفاء صفحة الإنشاء وإظهار المهام
-    document.getElementById('generator-view').style.display = 'none';
-    document.getElementById('task-view').style.display = 'block';
-    
-    var rawData = urlParams.split('data=')[1];
-    var raw = decodeURIComponent(rawData).split('|');
-    
-    var titleText = safeDecode(raw[0]);
-    cLink = fixUrl(safeDecode(raw[1]));
-    vLink = fixUrl(safeDecode(raw[2]));
-    finalLink = fixUrl(safeDecode(raw[3]));
-    tutLink = raw[4] ? fixUrl(safeDecode(raw[4])) : "#";
+try {
+    var urlParams = window.location.search;
+    if (urlParams.indexOf('data=') !== -1) {
+        // إخفاء المصنع وإظهار المهام
+        document.getElementById('generator-view').style.display = 'none';
+        document.getElementById('task-view').style.display = 'block';
+        
+        var rawData = urlParams.split('data=')[1];
+        var raw = decodeURIComponent(rawData).split('|');
+        
+        var titleText = safeDecode(raw[0]);
+        cLink = fixUrl(safeDecode(raw[1]));
+        vLink = fixUrl(safeDecode(raw[2]));
+        finalLink = fixUrl(safeDecode(raw[3]));
+        tutLink = raw[4] ? fixUrl(safeDecode(raw[4])) : "#";
 
-    var vIdMatch = vLink.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/ytscreeningroom\?v=|\/sandayat\?v=|\/condition_video_id\/|\/watch\?feature=player_embedded&v=))([^#\&\?]*)/);
-    vId = vIdMatch && vIdMatch[1].length === 11 ? vIdMatch[1] : null;
-    var thumb = vId ? 'https://img.youtube.com/vi/' + vId + '/maxresdefault.jpg' : 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png';
+        var vIdMatch = vLink.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/user\/\S+|\/ytscreeningroom\?v=|\/sandayat\?v=|\/condition_video_id\/|\/watch\?feature=player_embedded&v=))([^#\&\?]*)/);
+        vId = vIdMatch && vIdMatch[1].length === 11 ? vIdMatch[1] : null;
+        var thumb = vId ? 'https://img.youtube.com/vi/' + vId + '/maxresdefault.jpg' : 'https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png';
 
-    document.getElementById('top-title').innerText = titleText;
-    document.getElementById('vid-thumb').src = thumb;
+        document.getElementById('top-title').innerText = titleText;
+        document.getElementById('vid-thumb').src = thumb;
 
-    fetchRealLikes(vId, function(likes) {
-        if (likes !== -1) {
-            initialLikes = likes;
-            document.getElementById('count-num').innerText = initialLikes.toLocaleString('en-US');
-        } else {
-            document.getElementById('count-num').innerText = "حدث خطأ";
-        }
-    });
-} else {
-    // لو مفيش داتا، أظهر الإنشاء وأخفي المهام
-    document.getElementById('generator-view').style.display = 'block';
-    document.getElementById('task-view').style.display = 'none';
-}
+        fetchRealLikes(vId, function(likes) {
+            if (likes !== -1) {
+                initialLikes = likes;
+                document.getElementById('count-num').innerText = initialLikes.toLocaleString('en-US');
+            } else {
+                document.getElementById('count-num').innerText = "حدث خطأ";
+            }
+        });
+    }
+} catch (error) {}
 
 function fetchRealLikes(videoId, callback) {
     if (!videoId) { callback(-1); return; }
@@ -329,4 +326,4 @@ function processTask(type, url) {
                 vid = true; 
                 document.getElementById('tk2').classList.remove('active');
                 document.getElementById('tk2').classList.add('done'); 
-                document.getElementById('tk2').querySelector('
+                document.getElementById('tk2').querySelector('.step-icon').innerHTML
