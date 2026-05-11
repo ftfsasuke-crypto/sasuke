@@ -10,7 +10,6 @@
         :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; }
         body { background: var(--bg); color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; min-height: 100vh; overflow-x: hidden; position: relative; }
         
-        /* تأثير النجوم المتساقطة */
         .stars-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; }
         .star { position: absolute; background: white; border-radius: 50%; opacity: 0.5; animation: fall linear infinite; }
         @keyframes fall { from { transform: translateY(-10vh); } to { transform: translateY(110vh); } }
@@ -80,13 +79,12 @@
 <div id="loader">
     <div class="circle-timer"></div>
     <h2 id="timer-text" style="font-size: 30px; margin: 20px 0;">جاري التحقق</h2>
-    <p>بنتأكد من اللايك في سيرفر يوتيوب... ⏳</p>
+    <p>بنتأكد من إتمامك للشروط... ⏳</p>
 </div>
 
 <div id="app" class="container"></div>
 
 <script>
-// كود النجوم المتساقطة
 function createStars() {
     const container = document.getElementById('stars');
     if(!container) return;
@@ -103,33 +101,6 @@ function createStars() {
     }
 }
 createStars();
-
-// --- نظام تتبع الخروج من الموقع لمنع الغش ---
-let totalTimeAway = 0;
-let awayTimestamp = 0;
-
-document.addEventListener("visibilitychange", function() {
-    if (document.hidden) {
-        awayTimestamp = Date.now(); // المستخدم خرج ليوتيوب
-    } else {
-        if (awayTimestamp > 0) {
-            totalTimeAway += (Date.now() - awayTimestamp); // حساب الوقت اللي قضاه برا
-            awayTimestamp = 0;
-        }
-    }
-});
-
-// احتياطي للمتصفحات القديمة
-window.addEventListener("blur", function() {
-    if (awayTimestamp === 0) awayTimestamp = Date.now();
-});
-window.addEventListener("focus", function() {
-    if (awayTimestamp > 0) {
-        totalTimeAway += (Date.now() - awayTimestamp);
-        awayTimestamp = 0;
-    }
-});
-// ---------------------------------------------
 
 try {
     const YOUTUBE_API_KEY = "AIzaSyA6NebhJLqT8ZEG56cmMEm4xsRR5byisPI"; 
@@ -161,6 +132,9 @@ try {
 
         let sub = false, vidLike = false, vidComment = false;
         let initialLikes = -1; 
+        
+        // المتغير السحري: بيسجل ساعة الموبايل الفعلية لحظة الضغط
+        let lastTaskClickTime = 0; 
 
         app.innerHTML = `
             <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" class="yt-logo" id="top-logo">
@@ -199,11 +173,11 @@ try {
                     <span style="color:#888; font-size:12px;">عدد اللايكات الفعلي (مباشر)</span>
                     <span id="count-num">جاري الاتصال...</span>
                     <button class="verify-btn" id="vBtn" onclick="verifyStrict()">تحقق من الشروط 🔍</button>
-                    <div id="error-msg">❌ فشل التحقق: لم نكتشف زيادة في اللايكات! تأكد من وضع لايك.</div>
+                    <div id="error-msg">❌ فشل التحقق: تأكد من إنهاء جميع الشروط بشكل صحيح.</div>
                     
                     <div class="warning-box">
                         <h4>تنبيه مهم ⚠️</h4>
-                        <p>تأكد من إتمام الشروط الثلاثة. النظام يكتشف ما إذا كنت قد فتحت المقطع وأمضيت الوقت الكافي لعمل اللايك والتعليق أم لا!</p>
+                        <p>يجب أن تفتح المقطع وتأخذ الوقت الكافي لعمل اللايك والتعليق بصدق. النظام الآن يتتبع الوقت الفعلي لضمان حقوقك حتى إن تأخر يوتيوب في التسجيل!</p>
                     </div>
                 </div>
             </div>
@@ -243,6 +217,9 @@ try {
             if (type === 'c' && sub) return;
             if (type === 'vl' && vidLike) return;
             if (type === 'vc' && vidComment) return;
+
+            // تسجيل وقت ساعة التليفون الفعلي عند الضغط
+            lastTaskClickTime = Date.now();
 
             window.open(type === 'c' ? config.c : config.v, '_blank');
 
@@ -303,8 +280,12 @@ try {
                         document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
                     }
 
-                    // النظام الذكي: (اللايك زاد في يوتيوب) أو (المستخدم قضى 15 ثانية على الأقل خارج الموقع ينفذ المهام)
-                    if (currentLikes > initialLikes || totalTimeAway >= 15000) {
+                    // هنا مربط الفرس: نحسب الوقت الحقيقي من ساعة التليفون من وقت ما داس
+                    let timePassedSinceLastClick = Date.now() - lastTaskClickTime;
+
+                    // لو يوتيوب حدث اللايك هيعديه فوراً.
+                    // أو لو يوتيوب معلق، بس المتابع قضى أكتر من 15 ثانية فعلياً بيكتب الكومنت هيعديه وميظلمهوش.
+                    if (currentLikes > initialLikes || timePassedSinceLastClick >= 15000) {
                         document.getElementById('tasks-container').style.display = 'none';
                         document.getElementById('top-logo').style.display = 'none';
                         document.getElementById('top-title').style.display = 'none';
@@ -319,9 +300,9 @@ try {
                             if (Date.now() < end) { requestAnimationFrame(frame); }
                         }());
                     } else {
-                        // لو مرجعش بعد 15 ثانية واللايك مزادش، يبقى بيغش
+                        // لو ضغط بسرعة ومقعدش 15 ثانية واللايك مزادش، يرفضه
                         let errMsg = document.getElementById('error-msg');
-                        errMsg.innerHTML = "❌ فشل التحقق: أنت لم تقضِ وقتاً كافياً خارج الموقع لعمل اللايك والتعليق! يرجى تنفيذ الشروط بصدق.";
+                        errMsg.innerHTML = "❌ فشل التحقق: أنت لم تقضِ وقتاً كافياً لتنفيذ المهام حقاً! يرجى مشاهدة الفيديو وترك تعليق فعلي.";
                         errMsg.style.display = 'block';
                         document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
                         
