@@ -92,8 +92,8 @@
 
 <div id="loader">
     <div class="circle-timer"></div>
-    <h2 style="font-size: 30px; margin: 20px 0;">جاري التحقق</h2>
-    <p>بنتأكد من اللايك في سيرفر يوتيوب... ⏳</p>
+    <h2 style="font-size: 30px; margin: 20px 0;">جاري التحقق...</h2>
+    <p style="color: #888; text-align: center; font-size: 14px;">يتم الآن الاتصال بسيرفرات يوتيوب<br>قد يستغرق الأمر بضع ثوانٍ ⏳</p>
 </div>
 
 <div id="generator-view" class="container">
@@ -167,7 +167,6 @@
 </div>
 
 <script>
-// إنشاء النجوم في الخلفية
 function createStars() {
     const container = document.getElementById('stars');
     if(!container) return;
@@ -185,7 +184,6 @@ function createStars() {
 }
 createStars();
 
-// إعدادات المتغيرات الأساسية
 const YOUTUBE_API_KEY = "AIzaSyA6NebhJLqT8ZEG56cmMEm4xsRR5byisPI"; 
 let sub = false, vid = false;
 let initialLikes = -1;
@@ -204,7 +202,6 @@ function fixUrl(url) {
     return url;
 }
 
-// تنفيذ الكود مباشرة (بدون شاشة انتظار)
 try {
     const urlParams = new URLSearchParams(window.location.search);
 
@@ -299,7 +296,6 @@ function processTask(type, url) {
     }, 1000);
 }
 
-// فحص الشروط وإظهار واجهة النجاح بصياغة صارمة بدون أي استثناءات
 window.verifyStrict = function() {
     if(!sub || !vid) return alert("يرجى إكمال المهام أولاً!");
 
@@ -307,6 +303,7 @@ window.verifyStrict = function() {
     const ld = document.getElementById('loader');
     ld.style.display = 'flex';
     
+    // زودنا الوقت هنا لـ 7 ثواني (7000) عشان ندي ليوتيوب وقته براحته
     setTimeout(() => {
         fetchRealLikes((currentLikes) => {
             ld.style.display = 'none';
@@ -315,7 +312,6 @@ window.verifyStrict = function() {
                 document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
             }
 
-            // شرط وحيد وصارم: لازم الرقم يكون أكبر من الرقم المبدئي
             if (currentLikes > initialLikes) {
                 document.getElementById('tasks-container').style.display = 'none';
                 document.getElementById('top-logo').style.display = 'none';
@@ -338,16 +334,14 @@ window.verifyStrict = function() {
                 errMsg.style.display = 'block';
                 document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
                 
-                // تحديث الرقم في حالة النقصان
                 if (currentLikes !== -1 && currentLikes < initialLikes) {
                     initialLikes = currentLikes; 
                 }
             }
         });
-    }, 3000);
+    }, 7000); // 7 ثواني انتظار 
 };
 
-// إنشاء رابط جديد
 window.gen = function() {
     const elId = id => document.getElementById(id) ? document.getElementById(id).value : "";
     const d = [
