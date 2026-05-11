@@ -8,8 +8,52 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root { --main: #ff0000; --bg: #0a0a0b; --card: #151517; --accent: #22c55e; --fail: #ef4444; }
-        body { background: var(--bg); color: white; font-family: 'Cairo', sans-serif; margin: 0; display: flex; justify-content: center; min-height: 100vh; overflow-x: hidden; }
-        .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; }
+        
+        /* تأثير النجوم المتساقطة في الخلفية */
+        body { 
+            background: var(--bg); 
+            color: white; 
+            font-family: 'Cairo', sans-serif; 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            min-height: 100vh; 
+            overflow-x: hidden; 
+            position: relative;
+        }
+
+        /* حاوية النجوم */
+        .stars-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* عشان متوقفش الضغط على الزراير */
+            z-index: 0; /* خلف المحتوى الأساسي */
+        }
+
+        /* شكل النجمة الواحدة */
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.6; /* شفافية خفيفة عشان متكنش مزعجة */
+            animation: fall linear infinite;
+        }
+
+        /* حركة التساقط من الأعلى للأسفل */
+        @keyframes fall {
+            from {
+                transform: translateY(-10vh); /* تبدأ من فوق الشاشة */
+            }
+            to {
+                transform: translateY(110vh); /* تنتهي تحت الشاشة */
+            }
+        }
+
+        /* المحتوى الأساسي فوق النجوم */
+        .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; position: relative; z-index: 1; }
         
         .yt-logo { width: 50px; margin-bottom: 10px; transition: 0.3s; }
         .page-title { font-size: 24px; font-weight: bold; margin-bottom: 25px; word-wrap: break-word; line-height: 1.4; transition: 0.3s; }
@@ -29,7 +73,7 @@
         .task-box.active .step-num { border-color: var(--main); background: rgba(255,0,0,0.1); }
         .task-box.done .step-num { background: var(--accent); color: white; border-color: var(--accent); }
         
-        .checker-card { background: #0f0f10; border: 1px solid #222; border-radius: 15px; padding: 15px; margin-top: 20px; }
+        .checker-card { background: #0f0f10; border: 1px solid #222; border-radius: 15px; padding: 15px; margin-top: 20px; position: relative; z-index: 2;}
         #count-num { font-size: 32px; font-weight: bold; display: block; margin: 5px 0; }
         
         .verify-btn { background: var(--main); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; transition: 0.3s; }
@@ -41,11 +85,11 @@
         .warning-box h4 { color: var(--fail); margin: 0 0 5px; font-size: 14px; }
         .warning-box p { color: #94a3b8; font-size: 12px; margin: 0; line-height: 1.6; }
 
-        #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+        #loader { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
         .circle-timer { width: 60px; height: 60px; border: 5px solid #222; border-top: 5px solid var(--main); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         
-        #countdown-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 999; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+        #countdown-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 1001; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
         .countdown-wrapper { position: relative; width: 100px; height: 100px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
         .countdown-num { position: absolute; font-size: 40px; font-weight: bold; color: white; }
         .progress-ring { transform: rotate(-90deg); }
@@ -58,6 +102,8 @@
     </style>
 </head>
 <body>
+
+<div class="stars-container" id="stars"></div>
 
 <div id="countdown-overlay">
     <div class="countdown-wrapper">
@@ -80,6 +126,34 @@
 <div id="app" class="container"></div>
 
 <script>
+// --- كود إنشاء النجوم المتساقطة جافاسكريبت ---
+function createStars() {
+    const container = document.getElementById('stars');
+    const starCount = 50; // عدد النجوم في الشاشة
+
+    for (let i = 0; i < starCount; i++) {
+        const star = document.createElement('div');
+        star.className = 'star';
+        
+        // إعدادات عشوائية لكل نجمة عشان الشكل يطلع طبيعي
+        const size = Math.random() * 3 + 1 + 'px'; // حجم عشوائي بين 1px و 4px
+        const left = Math.random() * 100 + '%'; // مكان أفقي عشوائي
+        const duration = Math.random() * 5 + 3 + 's'; // سرعة سقوط عشوائية بين 3s و 8s
+        const delay = Math.random() * 5 + 's'; // تأخير عشوائي لبدء السقوط
+
+        star.style.width = size;
+        star.style.height = size;
+        star.style.left = left;
+        star.style.animationDuration = duration;
+        star.style.animationDelay = delay;
+
+        container.appendChild(star);
+    }
+}
+// تشغيل النجوم فوراً
+createStars();
+// ------------------------------------------
+
 try {
     const YOUTUBE_API_KEY = "AIzaSyA6NebhJLqT8ZEG56cmMEm4xsRR5byisPI"; 
 
@@ -232,9 +306,6 @@ try {
             }, 1000);
         };
 
-        // ===============================================
-        // زر التحقق الصارم 100% 
-        // ===============================================
         window.verifyStrict = function() {
             if(!sub || !vid) return alert("يرجى إكمال المهام أولاً!");
             
@@ -242,7 +313,6 @@ try {
             const ld = document.getElementById('loader');
             ld.style.display = 'flex';
             
-            // تم زيادة وقت الانتظار لـ 5 ثواني عشان ندي يوتيوب فرصة يحدّث الرقم المباشر
             setTimeout(() => {
                 fetchRealLikes((currentLikes) => {
                     ld.style.display = 'none';
@@ -251,7 +321,6 @@ try {
                         document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
                     }
 
-                    // الشرط الصارم والوحيد للعبور: لازم اللايكات المباشرة تكون أعلى من القديمة
                     if (currentLikes > initialLikes) {
                         document.getElementById('tasks-container').style.display = 'none';
                         document.getElementById('top-logo').style.display = 'none';
@@ -267,19 +336,18 @@ try {
                             if (Date.now() < end) { requestAnimationFrame(frame); }
                         }());
                     } else {
-                        // لو داس ومفيش لايك اتسجل في يوتيوب هيفشل
+                        failedAttempts++; 
                         let errMsg = document.getElementById('error-msg');
-                        errMsg.innerHTML = "❌ فشل التحقق: لم نكتشف زيادة في اللايكات!<br>يوتيوب يحتاج لبعض الثواني لتسجيل اللايك، انتظر قليلاً واضغط <b>أعد التحقق</b>.";
+                        errMsg.innerHTML = "❌ فشل التحقق: لم نكتشف زيادة في اللايكات! (قد يأخذ يوتيوب بعض الثواني، جرب مرة أخرى).";
                         errMsg.style.display = 'block';
                         document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
                         
-                        // لو المستخدم شال اللايك، هنحدث الرقم عشان ميعلقش
                         if (currentLikes !== -1 && currentLikes < initialLikes) {
                             initialLikes = currentLikes; 
                         }
                     }
                 });
-            }, 5000); // 5000 يعني 5 ثواني انتظار
+            }, 3000);
         };
 
     } else {
