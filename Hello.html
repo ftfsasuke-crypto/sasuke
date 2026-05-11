@@ -109,13 +109,6 @@
             from { opacity: 0; top: 10px; }
             to { opacity: 1; top: 20px; }
         }
-        .result-box {
-            background: #0f3460;
-            padding: 20px;
-            border-radius: 15px;
-            margin: 15px 0;
-            font-size: 20px;
-        }
         .wrong-box {
             background: #4a1a1a;
             border: 2px solid #e94560;
@@ -198,6 +191,14 @@
             font-size: 22px;
             font-weight: bold;
         }
+        .final-guess-box {
+            background: #0f3460;
+            padding: 20px;
+            border-radius: 15px;
+            margin: 15px 0;
+            font-size: 20px;
+            border: 2px solid #f1c40f;
+        }
         #kick-section { margin-top: 15px; }
         #kick-section button {
             background: #ff6b6b;
@@ -277,7 +278,6 @@
             
             <div id="kick-section" style="display:none;"></div>
 
-            <!-- سجل التصويتات -->
             <div id="vote-log-section" style="display:none;">
                 <h3>📋 سجل التصويتات:</h3>
                 <div id="vote-log"></div>
@@ -292,7 +292,6 @@
                 ⏳ في انتظار باقي اللاعبين للتصويت...
             </div>
 
-            <!-- نتيجة التصويت - غلط -->
             <div id="vote-result-wrong" style="display:none;" class="wrong-box">
                 ❌ مش هو الجاسوس!
             </div>
@@ -300,12 +299,9 @@
                 🕵️ الجاسوس كان: <span id="spy-reveal-name"></span>
             </div>
             
-            <!-- نتيجة التصويت - صح -->
             <div id="vote-result-correct" style="display:none;" class="correct-box">
                 ✅ صحيح! الجاسوس هو <span id="correct-spy-name"></span>
             </div>
-
-            <div id="vote-result" style="display:none;" class="result-box"></div>
             
             <div id="spy-guess-section" style="display:none;">
                 <h3>🤔 أنت الجاسوس! خمّن الكلمة السرية:</h3>
@@ -314,7 +310,8 @@
                 <button onclick="submitSpyGuess()">📨 إرسال التخمين</button>
             </div>
 
-            <div id="final-result" style="display:none;" class="result-box"></div>
+            <!-- نتيجة التخمين تظهر للكل -->
+            <div id="spy-guess-result" style="display:none;" class="final-guess-box"></div>
             
             <br>
             <button onclick="leaveRoom()" style="background:#555;">🚪 مغادرة الغرفة</button>
@@ -349,6 +346,7 @@
         let localTimer = 600;
         let totalPlayerCount = 0;
         let allPlayersData = {};
+        let gameFinished = false;
 
         const params = new URLSearchParams(window.location.search);
         const ridFromUrl = params.get('room');
@@ -393,6 +391,7 @@
             roomId = 'room-' + Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
             myPlayerId = 'host-' + Date.now().toString(36);
             isHost = true;
+            gameFinished = false;
             
             const roomRef = ref(db, 'rooms/' + roomId);
             const roomData = {
@@ -408,6 +407,7 @@
                 voteResults: {},
                 voteLogs: {},
                 voteResultPhase: 'waiting',
+                spyGuessResult: null,
                 createdAt: Date.now()
             };
             
@@ -423,6 +423,7 @@
                 listenToGameState();
                 listenToVotes();
                 listenToVoteLogs();
+                listenToSpyGuess();
                 showNotification('✅ تم إنشاء الغرفة! انسخ الرابط وابعته لأصحابك');
             });
         };
@@ -437,6 +438,7 @@
             myPlayerName = name;
             myPlayerId = 'player-' + Date.now().toString(36);
             isHost = false;
+            gameFinished = false;
             
             const roomRef = ref(db, 'rooms/' + roomId);
             get(roomRef).then(snapshot => {
@@ -455,6 +457,7 @@
                     listenToGameState();
                     listenToVotes();
                     listenToVoteLogs();
+                    listenToSpyGuess();
                     showNotification(`👋 مرحباً ${name}، أنت في الغرفة!`);
                 } else {
                     showExpiredMessage();
@@ -527,18 +530,8 @@
         function listenToGameState() {
             const roomRef = ref(db, 'rooms/' + roomId);
             onValue(roomRef, snapshot => {
-                if (!snapshot.exists()) {
-                    showNotification('⚠️ الغرفة لم تعد موجودة!');
-                    leaveRoom();
-                    return;
-                }
+                if (!snapshot.exists()) return;
                 const data = snapshot.val();
-                
-                if (!data.active && !isHost) {
-                    showNotification('⚠️ انتهت صلاحية الغرفة!');
-                    leaveRoom();
-                    return;
-                }
                 
                 if (data.phase !== gamePhase) {
                     gamePhase = data.phase;
@@ -556,6 +549,26 @@
                     if (data.timer !== undefined) {
                         localTimer = data.timer;
                         updateTimerDisplay();
+                    }
+                }
+            });
+        }
+
+        function listenToSpyGuess() {
+            const guessRef = ref(db, 'rooms/' + roomId + '/spyGuessResult');
+            onValue(guessRef, snapshot => {
+                const data = snapshot.val();
+                if (data) {
+                    const guessDiv = document.getElementById('spy-guess-result');
+                    guessDiv.style.display = 'block';
+                    if (data.correct) {
+                        guessDiv.innerHTML = `🎉 الجاسوس خمن صح! الكلمة كانت: <strong>${data.secretWord}</strong><br>التخمين: ${data.guess}`;
+                        guessDiv.style.borderColor = '#2ecc71';
+                        guessDiv.style.color = '#2ecc71';
+                    } else {
+                        guessDiv.innerHTML = `😞 تخمين خاطئ! الكلمة كانت: <strong>${data.secretWord}</strong><br>التخمين: ${data.guess}`;
+                        guessDiv.style.borderColor = '#e94560';
+                        guessDiv.style.color = '#e94560';
                     }
                 }
             });
@@ -591,7 +604,8 @@
                         `⏳ في انتظار باقي اللاعبين للتصويت... (${voteCount} من ${totalPlayerCount})`;
                 }
                 
-                if (voteCount >= totalPlayerCount && totalPlayerCount > 0) {
+                if (voteCount >= totalPlayerCount && totalPlayerCount > 0 && !gameFinished) {
+                    gameFinished = true;
                     document.getElementById('waiting-votes').style.display = 'none';
                     finalizeVotes(votes);
                 }
@@ -605,8 +619,7 @@
             document.getElementById('spy-reveal').style.display = 'none';
             document.getElementById('vote-result-correct').style.display = 'none';
             document.getElementById('spy-guess-section').style.display = 'none';
-            document.getElementById('final-result').style.display = 'none';
-            document.getElementById('final-result').innerHTML = '';
+            document.getElementById('spy-guess-result').style.display = 'none';
             document.getElementById('waiting-votes').style.display = 'none';
             
             switch(data.phase) {
@@ -622,9 +635,34 @@
                 case 'spyGuess':
                     document.getElementById('word-display').style.display = 'none';
                     document.getElementById('vote-log-section').style.display = 'block';
-                    // إظهار النتيجة المخزنة
                     showStoredResult(data);
+                    // إظهار نتيجة التخمين لو موجودة
+                    if (data.spyGuessResult) {
+                        showSpyGuessToAll(data.spyGuessResult);
+                    }
                     break;
+                case 'finished':
+                    document.getElementById('word-display').style.display = 'none';
+                    document.getElementById('vote-log-section').style.display = 'block';
+                    showStoredResult(data);
+                    if (data.spyGuessResult) {
+                        showSpyGuessToAll(data.spyGuessResult);
+                    }
+                    break;
+            }
+        }
+
+        function showSpyGuessToAll(guessData) {
+            const guessDiv = document.getElementById('spy-guess-result');
+            guessDiv.style.display = 'block';
+            if (guessData.correct) {
+                guessDiv.innerHTML = `🎉 الجاسوس خمن صح! الكلمة كانت: <strong>${guessData.secretWord}</strong><br>التخمين: ${guessData.guess}`;
+                guessDiv.style.borderColor = '#2ecc71';
+                guessDiv.style.color = '#2ecc71';
+            } else {
+                guessDiv.innerHTML = `😞 تخمين خاطئ! الكلمة كانت: <strong>${guessData.secretWord}</strong><br>التخمين: ${guessData.guess}`;
+                guessDiv.style.borderColor = '#e94560';
+                guessDiv.style.color = '#e94560';
             }
         }
 
@@ -660,6 +698,7 @@
 
         window.startGame = function() {
             if (!isHost) return;
+            gameFinished = false;
             
             const playersRef = ref(db, 'rooms/' + roomId + '/players');
             get(playersRef).then(snapshot => {
@@ -687,7 +726,8 @@
                     timerEndAt: now + 600000,
                     voteResults: {},
                     voteLogs: {},
-                    voteResultPhase: 'waiting'
+                    voteResultPhase: 'waiting',
+                    spyGuessResult: null
                 });
                 
                 document.getElementById('kick-section').style.display = 'none';
@@ -696,6 +736,7 @@
 
         window.skipTime = function() {
             if (!isHost) return;
+            gameFinished = false;
             const roomRef = ref(db, 'rooms/' + roomId);
             update(roomRef, {
                 timerRunning: false,
@@ -722,11 +763,9 @@
         }
 
         window.voteFor = function(targetId) {
-            // حفظ الصوت
             const voteRef = ref(db, 'rooms/' + roomId + '/voteResults/' + myPlayerId);
             set(voteRef, targetId);
             
-            // حفظ في السجل
             const targetName = allPlayersData[targetId] ? allPlayersData[targetId].name : '???';
             const logRef = ref(db, 'rooms/' + roomId + '/voteLogs/' + myPlayerId);
             set(logRef, {
@@ -742,7 +781,6 @@
         };
 
         function finalizeVotes(votes) {
-            // حساب الأصوات
             const voteCount = {};
             Object.values(votes).forEach(v => {
                 voteCount[v] = (voteCount[v] || 0) + 1;
@@ -757,7 +795,6 @@
             const isCorrect = (mostVoted === spyPlayerId);
             const spyName = allPlayersData[spyPlayerId] ? allPlayersData[spyPlayerId].name : '???';
             
-            // عرض النتيجة لكل لاعب
             document.getElementById('waiting-votes').style.display = 'none';
             
             if (isCorrect) {
@@ -773,7 +810,6 @@
                 document.getElementById('spy-guess-section').style.display = 'block';
             }
             
-            // تحديث الغرفة
             const roomRef = ref(db, 'rooms/' + roomId);
             update(roomRef, {
                 phase: 'spyGuess',
@@ -786,26 +822,40 @@
             const guess = guessInput.value.trim();
             if (!guess) return showNotification('⚠️ اكتب تخمينك!');
             
-            const finalResultDiv = document.getElementById('final-result');
-            finalResultDiv.style.display = 'block';
+            const isCorrectGuess = (guess === secretWord);
             
-            if (guess === secretWord) {
-                finalResultDiv.innerHTML = `🎉 مبروك! التخمين صحيح! الكلمة كانت: ${secretWord}`;
+            // حفظ التخمين في قاعدة البيانات عشان يظهر للكل
+            const guessRef = ref(db, 'rooms/' + roomId + '/spyGuessResult');
+            const guessData = {
+                guess: guess,
+                correct: isCorrectGuess,
+                secretWord: secretWord,
+                time: Date.now()
+            };
+            set(guessRef, guessData);
+            
+            // إظهار النتيجة للجاسوس
+            const guessDiv = document.getElementById('spy-guess-result');
+            guessDiv.style.display = 'block';
+            if (isCorrectGuess) {
+                guessDiv.innerHTML = `🎉 مبروك! التخمين صحيح! الكلمة كانت: <strong>${secretWord}</strong>`;
+                guessDiv.style.borderColor = '#2ecc71';
+                guessDiv.style.color = '#2ecc71';
             } else {
-                finalResultDiv.innerHTML = `😞 للأسف تخمين خاطئ! الكلمة كانت: ${secretWord}`;
+                guessDiv.innerHTML = `😞 للأسف تخمين خاطئ! الكلمة كانت: <strong>${secretWord}</strong>`;
+                guessDiv.style.borderColor = '#e94560';
+                guessDiv.style.color = '#e94560';
             }
             
             document.getElementById('spy-guess-section').style.display = 'none';
             
+            // تغيير المرحلة للكل - بس بدون ماحد يخرج
             const roomRef = ref(db, 'rooms/' + roomId);
-            update(roomRef, { phase: 'finished', timerRunning: false, active: false });
-            
-            // إظهار التخمين للكل عن طريق حفظه في قاعدة البيانات
-            const guessRef = ref(db, 'rooms/' + roomId + '/spyGuessResult');
-            set(guessRef, {
-                guess: guess,
-                correct: guess === secretWord,
-                secretWord: secretWord
+            update(roomRef, { 
+                phase: 'finished', 
+                timerRunning: false, 
+                active: false,
+                spyGuessResult: guessData
             });
         };
 
@@ -813,52 +863,4 @@
             if (timerInterval) clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 const remaining = Math.max(0, Math.floor((endAt - Date.now()) / 1000));
-                localTimer = remaining;
-                updateTimerDisplay();
-                if (remaining <= 0) {
-                    clearInterval(timerInterval);
-                    timerInterval = null;
-                }
-            }, 200);
-        }
-
-        function stopLocalTimer() {
-            if (timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-            }
-        }
-
-        function updateTimerDisplay() {
-            const minutes = Math.floor(localTimer / 60);
-            const seconds = localTimer % 60;
-            document.getElementById('timer-display').textContent = 
-                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-        }
-
-        function showGameScreen() {
-            document.getElementById('start-screen').style.display = 'none';
-            document.getElementById('game-screen').style.display = 'block';
-        }
-
-        window.leaveRoom = function() {
-            if (myPlayerId && roomId) {
-                const playerRef = ref(db, 'rooms/' + roomId + '/players/' + myPlayerId);
-                remove(playerRef);
-            }
-            stopLocalTimer();
-            location.href = location.origin + location.pathname;
-        };
-
-        function showNotification(message) {
-            const old = document.querySelector('.notification');
-            if (old) old.remove();
-            const notification = document.createElement('div');
-            notification.className = 'notification';
-            notification.textContent = message;
-            document.body.appendChild(notification);
-            setTimeout(() => notification.remove(), 3000);
-        }
-    </script>
-</body>
-</html>
+               
