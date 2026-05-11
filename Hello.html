@@ -34,7 +34,11 @@
         <div id="start-screen">
             <h1><span class="title-spy">🕵️ لعبة الجاسوس</span></h1>
             <div id="expired-message" style="display:none;"><h2>⚠️ انتهت صلاحية الرابط!</h2></div>
-            <div id="host-left-message" style="display:none;"><h2>👑 لقد غادر الهوست SASUKE</h2><p>لذا تعطلت اللعبة</p></div>
+            <div id="host-left-message" style="display:none; padding:30px;">
+                <h2 style="color:#e94560;">👑 لقد غادر الهوست SASUKE</h2>
+                <p style="font-size:20px; margin-top:10px;">لذا تعطلت اللعبة</p>
+                <p style="color:#aaa; margin-top:20px;">جاري توجيهك للصفحة الرئيسية...</p>
+            </div>
             <div id="create-section">
                 <div class="host-box"><p>👑 أنت الهوست</p><p>اسمك: <span class="host-name-display">⚔️ S A S U K E ⚔️</span></p></div>
                 <button onclick="createRoom('normal')" class="game-select-btn">🎮 لعبة الجاسوس ١</button>
@@ -87,7 +91,19 @@
 
         function checkRoom(rid){get(ref(db,'rooms/'+rid)).then(s=>{if(s.exists()&&s.val().active&&s.val().phase!=='finished'){document.getElementById('create-section').style.display='none';document.getElementById('join-section').style.display='block'}else{showExpired()}})}
         function showExpired(){document.getElementById('create-section').style.display='none';document.getElementById('join-section').style.display='none';document.getElementById('expired-message').style.display='block'}
-        function showHostLeft(){document.getElementById('create-section').style.display='none';document.getElementById('join-section').style.display='none';document.getElementById('game-screen').style.display='none';document.getElementById('host-left-message').style.display='block';setTimeout(()=>{location.href=location.origin+location.pathname},4000);}
+        
+        // أهم دالة: لما الهوست يخرج
+        function showHostLeft(){
+            removeOverlay();
+            document.getElementById('game-screen').style.display='none';
+            document.getElementById('start-screen').style.display='block';
+            document.getElementById('create-section').style.display='none';
+            document.getElementById('join-section').style.display='none';
+            document.getElementById('expired-message').style.display='none';
+            document.getElementById('host-left-message').style.display='block';
+            stopTimer();
+            setTimeout(()=>{location.href=location.origin+location.pathname},4000);
+        }
 
         function showOverlay(html,autoRemove){removeOverlay();let ov=document.createElement('div');ov.className='overlay';ov.id='overlay';let box=document.createElement('div');box.className='overlay-box';box.innerHTML=html;ov.appendChild(box);document.body.appendChild(ov);if(autoRemove)setTimeout(removeOverlay,autoRemove);}
         function removeOverlay(){let ov=document.getElementById('overlay');if(ov)ov.remove();}
@@ -101,7 +117,10 @@
                 document.getElementById('btn-skip').style.display='none';
                 document.getElementById('room-link-box').style.display='block';
                 document.getElementById('room-link-text').textContent=location.origin+location.pathname+'?room='+roomId;
-                listenAll();notify('✅ تم');
+                listenAll();
+                // لما الهوست يخرج → الغرفة تتمسح
+                setupHostDisconnect();
+                notify('✅ تم');
             });
         };
 
@@ -115,14 +134,12 @@
 
         function addMe(){let r=ref(db,'rooms/'+roomId+'/players/'+myPlayerId);set(r,{id:myPlayerId,name:myPlayerName,isHost,eliminated:false});onDisconnect(r).remove();}
         
-        // لما الهوست يخرج → الغرفة تتمسح ويتقال للكل
         function setupHostDisconnect(){
             let hostRef=ref(db,'rooms/'+roomId);
             onDisconnect(hostRef).remove();
-            onValue(hostRef,s=>{if(!s.exists()&&!isHost){showHostLeft();stopTimer();}});
         }
 
-        function listenAll(){listenPlayers();listenGame();listenVotes();listenLogs();listenOverlay();listenOverlay2();if(isHost)setupHostDisconnect();}
+        function listenAll(){listenPlayers();listenGame();listenVotes();listenLogs();listenOverlay();listenOverlay2();}
         
         function listenPlayers(){onValue(ref(db,'rooms/'+roomId+'/players'),s=>{let p=s.val()||{};allPlayersData=p;let h='',sh='',ids=Object.keys(p);ids.forEach(i=>{let e=p[i].eliminated;h+=`<li class="${e?'eliminated':''}">${p[i].name} ${p[i].isHost?'👑':''} ${e?'👁️':''}</li>`;if(e)sh+=`<li>${p[i].name}</li>`});document.getElementById('player-list').innerHTML=h;document.getElementById('spectator-list').innerHTML=sh;document.getElementById('spectator-section').style.display=sh?'block':'none';if(isHost&&gamePhase==='waiting'){let k='';ids.forEach(i=>{if(i!==myPlayerId)k+=`<button onclick="kickPlayer('${i}')" style="background:#ff6b6b;font-size:12px;">❌ ${p[i].name}</button>`});document.getElementById('kick-section').innerHTML=k;}});}
         window.kickPlayer=function(id){remove(ref(db,'rooms/'+roomId+'/players/'+id));};
@@ -172,7 +189,7 @@
                         update(ref(db,'rooms/'+roomId+'/overlayMessage'),{html:'🛡️ طلع <strong>'+name+'</strong> مدني وليس جاسوس!',target:'all'});
                         setTimeout(()=>{
                             let active=Object.values(allPlayersData).filter(x=>!x.eliminated&&x.id!==mv);
-                            if(active.length<=2&&active.find(x=>x.id===spyPlayerId)){update(ref(db,'rooms/'+roomId),{phase:'finished',spyWon:true});update(ref(db,'rooms/'+roomId+'/overlayMessage'),{html:'🏆 الجاسوس كسب!',target:'all',autoRemove:5000});return}
+                            if(active.length<=2&&active.find(x=>x.id===spyPlayerId)){update(ref(db,'rooms/'+roomId),{phase:'finished',spyWon:true});update(ref(db,'rooms/'+roomId+'/overlayMessage'),{html:'🏆 الجاسوس كسب! فضل مخفي لآخر اتنين!',target:'all',autoRemove:5000});return}
                             update(ref(db,'rooms/'+roomId+'/overlayMessage'),{html:'⏳ في انتظار قرار الجاسوس...',target:'all'});
                             update(ref(db,'rooms/'+roomId+'/overlayMessage2'),{html:'🕵️ أنت الجاسوس! ماذا تريد؟<br><br><button onclick="spyChooseGuess()" style="font-size:18px;">🤔 أخمن الكلمة</button><br><button onclick="spyChooseContinue()" style="font-size:18px;background:#3498db;">🎮 أستمر في اللعب</button>',target:spyPlayerId});
                             gameFinished=false;update(ref(db,'rooms/'+roomId),{phase:'playing',voteResults:{},voteLogs:{},spyAction:null});
