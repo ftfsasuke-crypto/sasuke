@@ -70,16 +70,16 @@
             <circle stroke="#333" stroke-width="6" fill="transparent" r="42" cx="50" cy="50"/>
             <circle id="progress-circle" stroke="var(--main)" stroke-width="6" fill="transparent" r="42" cx="50" cy="50"/>
         </svg>
-        <span id="countdown-number" class="countdown-num">7</span>
+        <span id="countdown-number" class="countdown-num">5</span>
     </div>
     <h2 style="margin-top: 10px; font-size: 24px;">انتظر قليلاً... ⏳</h2>
-    <p style="color: #888; font-size: 14px; text-align: center; width: 80%;">انتظر فقط، النظام يتحقق من إتمامك للشرط<br>بعد الانتهاء ستكتمل المهمة 👍</p>
+    <p style="color: #888; font-size: 14px; text-align: center; width: 80%;">انتظر فقط، النظام يتحقق من إتمامك للشرط</p>
 </div>
 
 <div id="loader">
     <div class="circle-timer"></div>
     <h2 id="timer-text" style="font-size: 30px; margin: 20px 0;">جاري التحقق</h2>
-    <p>بنتأكد من إتمامك للشروط... ⏳</p>
+    <p>بنتأكد من اللايك في سيرفر يوتيوب... ⏳</p>
 </div>
 
 <div id="app" class="container"></div>
@@ -124,7 +124,7 @@ try {
             c: fixUrl(safeDecode(raw[1] || raw[0])),
             v: fixUrl(safeDecode(raw[2] || raw[1])),
             f: fixUrl(safeDecode(raw[3] || raw[2])),
-            tut: raw[4] ? fixUrl(safeDecode(raw[4])) : "" // رابط الشرح الاختياري
+            tut: raw[4] ? fixUrl(safeDecode(raw[4])) : "" 
         };
 
         let vIdMatch = config.v.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([^#\&\?]*)/);
@@ -133,7 +133,6 @@ try {
 
         let sub = false, vidLike = false, vidComment = false;
         let initialLikes = -1; 
-        let lastTaskClickTime = 0; 
 
         app.innerHTML = `
             <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" class="yt-logo" id="top-logo">
@@ -172,11 +171,11 @@ try {
                     <span style="color:#888; font-size:12px;">عدد اللايكات الفعلي (مباشر)</span>
                     <span id="count-num">جاري الاتصال...</span>
                     <button class="verify-btn" id="vBtn" onclick="verifyStrict()">تحقق من الشروط 🔍</button>
-                    <div id="error-msg">❌ فشل التحقق: تأكد من إنهاء جميع الشروط بشكل صحيح.</div>
+                    <div id="error-msg">❌ فشل التحقق: لم نكتشف زيادة في اللايكات! تأكد من وضع لايك.</div>
                     
                     <div class="warning-box">
                         <h4>تنبيه مهم ⚠️</h4>
-                        <p>يجب أن تفتح المقطع وتأخذ الوقت الكافي لعمل اللايك والتعليق بصدق. النظام يتتبع الوقت الفعلي لضمان حقوقك حتى إن تأخر يوتيوب في التسجيل!</p>
+                        <p>تأكد من إتمام الشروط. إذا كنت قد وضعت لايك بالفعل وقال لك فشل، شيل اللايك وحطه تاني واضغط تحقق. يوتيوب يتأخر ثواني في التسجيل.</p>
                     </div>
                 </div>
             </div>
@@ -198,7 +197,6 @@ try {
             </div>
         `;
 
-        // إظهار زر التخطي الاختياري إذا كان هناك رابط
         if(config.tut && config.tut !== "#") {
             document.getElementById('btn-tut').style.display = 'block';
         }
@@ -227,8 +225,6 @@ try {
             if (type === 'c' && sub) return;
             if (type === 'vl' && vidLike) return;
             if (type === 'vc' && vidComment) return;
-
-            lastTaskClickTime = Date.now();
 
             window.open(type === 'c' ? config.c : config.v, '_blank');
 
@@ -274,6 +270,7 @@ try {
             }, 1000);
         };
 
+        // التحقق الصارم 100% المعتمد على يوتيوب فقط
         window.verifyStrict = function() {
             if(!sub || !vidLike || !vidComment) return alert("يرجى إكمال جميع المهام الثلاثة أولاً!");
             
@@ -289,9 +286,8 @@ try {
                         document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
                     }
 
-                    let timePassedSinceLastClick = Date.now() - lastTaskClickTime;
-
-                    if (currentLikes > initialLikes || timePassedSinceLastClick >= 15000) {
+                    // لا يوجد أي استثناء للوقت! الشرط الوحيد للنجاح هو زيادة رقم اللايكات.
+                    if (currentLikes > initialLikes) {
                         document.getElementById('tasks-container').style.display = 'none';
                         document.getElementById('top-logo').style.display = 'none';
                         document.getElementById('top-title').style.display = 'none';
@@ -306,17 +302,19 @@ try {
                             if (Date.now() < end) { requestAnimationFrame(frame); }
                         }());
                     } else {
+                        // لو يوتيوب لسه بيحدث أو هو معملش لايك هيرفضه
                         let errMsg = document.getElementById('error-msg');
-                        errMsg.innerHTML = "❌ فشل التحقق: أنت لم تقضِ وقتاً كافياً لتنفيذ المهام حقاً! يرجى مشاهدة الفيديو وترك تعليق فعلي.";
+                        errMsg.innerHTML = "❌ فشل التحقق: لم نكتشف زيادة في اللايكات!<br>الرقم في سيرفرات يوتيوب لم يتغير. إذا كنت قد وضعت لايك بالفعل، يرجى الانتظار بضع ثوانٍ واضغط <b>أعد التحقق</b>.";
                         errMsg.style.display = 'block';
                         document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
                         
+                        // في حالة شال اللايك عشان منقعش في فخ إن الرقم نقص
                         if (currentLikes !== -1 && currentLikes < initialLikes) {
                             initialLikes = currentLikes; 
                         }
                     }
                 });
-            }, 3000); 
+            }, 5000); // إعطاء يوتيوب 5 ثواني إضافية لتحديث الرقم
         };
 
     } else {
@@ -343,8 +341,4 @@ try {
         };
     }
 } catch (error) {
-    document.getElementById('app').innerHTML = `<h3 style="color:red; margin-top:50px;">يوجد خطأ: تأكد من نسخ الكود بالكامل</h3>`;
-}
-</script>
-</body>
-</html>
+    document.getElementById('app').innerHTML = `<h3 style="color:red; margin-top:50px;">يوجد خطأ
