@@ -70,11 +70,43 @@
         @keyframes circle-deplete { 0% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: 264; } }
         
         .gen-input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #333; background: #111; color: white; box-sizing: border-box; text-align: right; font-family: 'Cairo', sans-serif; }
+
+        /* ستايل زر الإعدادات والمربع المنبثق */
+        .menu-btn { position: fixed; top: 20px; left: 20px; z-index: 999; background: rgba(21, 21, 23, 0.8); backdrop-filter: blur(5px); border: 1px solid #333; padding: 10px; border-radius: 10px; color: white; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .menu-btn:hover { border-color: var(--main); color: var(--main); }
+        .menu-btn svg { width: 28px; height: 28px; fill: currentColor; }
+
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
+        .modal-box { background: #151517; border: 2px solid #333; border-radius: 20px; padding: 30px 20px; width: 85%; max-width: 350px; text-align: center; position: relative; box-shadow: 0 10px 40px rgba(0,0,0,0.8); animation: bounce-icon 0.5s ease; border-top: 3px solid var(--accent); }
+        .close-btn { position: absolute; top: 10px; right: 15px; color: #888; font-size: 28px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .close-btn:hover { color: var(--fail); }
+        
+        @keyframes bounce-icon { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-15px); } 60% { transform: translateY(-7px); } }
     </style>
 </head>
 <body>
 
 <div class="stars-container" id="stars"></div>
+
+<div class="menu-btn" onclick="openMenu()">
+    <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+</div>
+
+<div id="about-modal" class="modal-overlay" onclick="closeMenu(event)">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <span class="close-btn" onclick="closeMenu(event)">&times;</span>
+        <div style="font-size: 50px; margin-bottom: 15px;">👑</div>
+        <h3 style="color: white; margin-top: 0; font-family: 'Cairo', sans-serif; font-size: 22px;">معلومات النظام</h3>
+        <div style="background: rgba(255,255,255,0.05); border-radius: 10px; padding: 15px; margin-top: 15px;">
+            <p style="color: #cbd5e1; font-size: 15px; line-height: 1.8; font-weight: bold; margin: 0;">
+                تم صنع الموقع هذا بالكامل من خلال مبرمج 
+                <span style="color: var(--fail); font-size: 17px;">MX_SASUKE</span> 
+                وهو غير صالح للاستخدام العام انه مجرد اداه لـ 
+                <span style="color: var(--accent); font-size: 17px;">SASUKE</span> فقط.
+            </p>
+        </div>
+    </div>
+</div>
 
 <div id="countdown-overlay">
     <div class="countdown-wrapper">
@@ -82,7 +114,7 @@
             <circle stroke="#333" stroke-width="6" fill="transparent" r="42" cx="50" cy="50"/>
             <circle id="progress-circle" stroke="var(--main)" stroke-width="6" fill="transparent" r="42" cx="50" cy="50"/>
         </svg>
-        <span id="countdown-number" class="countdown-num">7</span>
+        <span id="countdown-number" class="countdown-num">5</span>
     </div>
     <h2 style="margin-top: 10px; font-size: 24px;">انتظر قليلاً... ⏳</h2>
     <p style="color: #888; font-size: 14px; text-align: center; width: 80%;">انتظر فقط، النظام يتحقق من إتمامك للشرط<br>بعد الانتهاء ستكتمل المهمة 👍</p>
@@ -144,7 +176,7 @@
             
             <div class="warning-box">
                 <h4>تنبيه مهم ⚠️</h4>
-                <p>يوتيوب يحتاج إلى ثوانٍ لتسجيل اللايك. يجب أن تقضي وقتاً كافياً في مشاهدة الفيديو وعمل اللايك لتتمكن من العبور.</p>
+                <p>يوتيوب يحتاج إلى ثوانٍ لتسجيل اللايك. إذا قمت بعمل لايك وظهر لك فشل، يرجى الانتظار قليلاً ثم إعادة التحقق.</p>
             </div>
         </div>
     </div>
@@ -165,6 +197,16 @@
 </div>
 
 <script>
+// دوال فتح وإغلاق قائمة الإعدادات
+function openMenu() {
+    document.getElementById('about-modal').style.display = 'flex';
+}
+function closeMenu(event) {
+    if(event) event.stopPropagation();
+    document.getElementById('about-modal').style.display = 'none';
+}
+
+// إنشاء النجوم في الخلفية
 function createStars() {
     const container = document.getElementById('stars');
     if(!container) return;
@@ -190,9 +232,6 @@ let finalLink = "#";
 let tutLink = "#";
 let cLink = "#";
 let vLink = "#";
-
-// المتغير ده هيسجل اللحظة اللي الشخص داس فيها على زرار اللايك
-let vidClickTime = 0;
 
 function safeEncode(str) { return btoa(encodeURIComponent(str || "")); }
 function safeDecode(str) { try { return decodeURIComponent(atob(str.replace(/ /g, '+'))); } catch(e) { return "خطأ_في_الرابط"; } }
@@ -259,11 +298,6 @@ function processTask(type, url) {
     if (type === 'c' && sub) return;
     if (type === 'v' && vid) return;
 
-    // تسجيل وقت الضغط على زرار مشاهدة الفيديو واللايك
-    if (type === 'v') {
-        vidClickTime = Date.now();
-    }
-
     window.open(url, '_blank');
 
     const overlay = document.getElementById('countdown-overlay');
@@ -273,9 +307,9 @@ function processTask(type, url) {
     overlay.style.display = 'flex';
     progCircle.style.animation = 'none';
     void progCircle.offsetWidth; 
-    progCircle.style.animation = 'circle-deplete 7s linear forwards';
+    progCircle.style.animation = 'circle-deplete 5s linear forwards';
     
-    let timeLeft = 7;
+    let timeLeft = 5;
     numSpan.innerText = timeLeft;
 
     const timer = setInterval(() => {
@@ -302,7 +336,7 @@ function processTask(type, url) {
     }, 1000);
 }
 
-// نظام التحقق الصارم الجديد المعتمد على وقت المشاهدة
+// النظام الصارم 100%: مفيش مرور بالوقت ولا بالمحاولات
 window.verifyStrict = function() {
     if(!sub || !vid) return alert("يرجى إكمال المهام أولاً!");
 
@@ -310,57 +344,4 @@ window.verifyStrict = function() {
     const ld = document.getElementById('loader');
     ld.style.display = 'flex';
     
-    setTimeout(() => {
-        fetchRealLikes((currentLikes) => {
-            ld.style.display = 'none';
-            
-            if (currentLikes !== -1) {
-                document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
-            }
-
-            // حساب الوقت اللي مر من ساعة ما داس على زرار الفيديو لحد دلوقتي
-            let timeSinceVideoClick = vidClickTime > 0 ? (Date.now() - vidClickTime) : 0;
-
-            // لو اللايك زاد عند يوتيوب (خير وبركة)
-            // لو يوتيوب لسه معلق، بس الراجل قضى على الأقل 12 ثانية (12000 ملي ثانية) من وقت الضغطة هيعديه!
-            if (currentLikes > initialLikes || timeSinceVideoClick >= 12000) {
-                document.getElementById('tasks-container').style.display = 'none';
-                document.getElementById('top-logo').style.display = 'none';
-                document.getElementById('top-title').style.display = 'none';
-                document.getElementById('success-container').style.display = 'block';
-                
-                var duration = 3 * 1000;
-                var end = Date.now() + duration;
-
-                if (typeof confetti !== 'undefined') {
-                    (function frame() {
-                        confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#ff0000', '#22c55e', '#ffffff'] });
-                        confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ff0000', '#22c55e', '#ffffff'] });
-                        if (Date.now() < end) { requestAnimationFrame(frame); }
-                    }());
-                }
-            } else {
-                // لو رجع بسرعة قبل الـ 12 ثانية ومفيش لايكات زادت، هيقفشه
-                let errMsg = document.getElementById('error-msg');
-                errMsg.innerHTML = "❌ فشل التحقق: أنت لم تقضِ وقتاً كافياً في يوتيوب لعمل اللايك والتعليق! يرجى مشاهدة الفيديو لثوانٍ إضافية.";
-                errMsg.style.display = 'block';
-                document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
-            }
-        });
-    }, 3000);
-};
-
-window.gen = function() {
-    const elId = id => document.getElementById(id) ? document.getElementById(id).value : "";
-    const d = [
-        safeEncode(elId('it')),
-        safeEncode(elId('ic')),
-        safeEncode(elId('iv')),
-        safeEncode(elId('if')),
-        safeEncode(elId('itut'))
-    ].join('|');
-    window.location.href = "?data=" + encodeURIComponent(d);
-};
-</script>
-</body>
-</html>
+   
