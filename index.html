@@ -26,7 +26,7 @@
         .star { position: absolute; background: white; border-radius: 50%; opacity: 0.5; animation: fall linear infinite; }
         @keyframes fall { from { transform: translateY(-10vh); } to { transform: translateY(110vh); } }
 
-        .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; position: relative; z-index: 10; display: none; /* مخفي افتراضياً حتى يقرر الكود أيهما يظهر */ }
+        .container { width: 90%; max-width: 420px; text-align: center; padding: 20px 0; position: relative; z-index: 10; display: block; }
         
         .yt-logo { width: 50px; margin-bottom: 10px; transition: 0.3s; }
         .page-title { font-size: 24px; font-weight: bold; margin-bottom: 25px; word-wrap: break-word; line-height: 1.4; transition: 0.3s; }
@@ -51,6 +51,11 @@
         #count-num { font-size: 32px; font-weight: bold; display: block; margin: 5px 0; }
         
         .verify-btn { background: var(--main); color: white; border: none; width: 100%; padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; font-size: 16px; transition: 0.3s; }
+        .verify-btn:disabled { background: #333; cursor: not-allowed; }
+
+        /* ستايل مربع النتيجة */
+        #result-area { display: none; margin-top: 20px; background: #111; padding: 15px; border-radius: 12px; border: 1px solid var(--accent); animation: bounce-icon 0.5s ease; }
+        .short-url-input { width: 100%; padding: 10px; background: #000; border: 1px solid #333; color: #3b82f6; border-radius: 8px; text-align: center; margin: 10px 0; font-weight: bold; direction: ltr; }
         
         #error-msg { display: none; color: var(--fail); font-size: 13px; margin-top: 10px; font-weight: bold; line-height: 1.5; }
 
@@ -96,7 +101,7 @@
     <p>بنتأكد من اللايك في سيرفر يوتيوب... ⏳</p>
 </div>
 
-<div id="generator-view" class="container">
+<div id="generator-view" class="container" style="display:none;">
     <div class="task-box" style="display:block; text-align:center; cursor:default;">
         <h2 style="color:var(--accent); margin-top:0;">MX_SASUKE VIP Generator</h2>
         <input type="text" id="it" class="gen-input" value="لازم تعمل اشتراك ولايك وتعليق للحصول على السكربت">
@@ -104,11 +109,20 @@
         <input type="url" id="iv" class="gen-input" placeholder="👇 رابط فيديو اليوتيوب (اللايك والصورة)">
         <input type="url" id="itut" class="gen-input" placeholder="👇 رابط فيديو طريقة التخطي (مهم جداً)">
         <input type="url" id="if" class="gen-input" placeholder="👇 الرابط النهائي (ميديا فاير)">
-        <button class="verify-btn" onclick="gen()">إنشاء الصفحة</button>
+        <button id="main-gen-btn" class="verify-btn" onclick="genShort()">إنشاء الصفحة (رابط قصير) ✨</button>
+
+        <div id="result-area">
+            <p style="color: var(--accent); margin: 0; font-weight: bold;">تم إنشاء الرابط القصير! 🎉</p>
+            <input type="text" id="output-url" class="short-url-input" readonly>
+            <div style="display: flex; gap: 8px;">
+                <button onclick="copyLink()" class="verify-btn" style="flex: 1; background: var(--accent); padding: 10px; font-size: 14px;">نسخ الرابط 📋</button>
+                <button onclick="testLink()" class="verify-btn" style="flex: 1; background: #3b82f6; padding: 10px; font-size: 14px;">تجربة الرابط 🔗</button>
+            </div>
+        </div>
     </div>
 </div>
 
-<div id="task-view" class="container">
+<div id="task-view" class="container" style="display:none;">
     <img src="https://upload.wikimedia.org/wikipedia/commons/e/ef/Youtube_logo.png" class="yt-logo" id="top-logo">
     <div class="page-title" id="top-title"></div>
 
@@ -185,15 +199,8 @@ function createStars() {
 }
 createStars();
 
-// إعدادات المتغيرات الأساسية
 const YOUTUBE_API_KEY = "AIzaSyA6NebhJLqT8ZEG56cmMEm4xsRR5byisPI"; 
-let sub = false, vid = false;
-let initialLikes = -1;
-let vId = null;
-let finalLink = "#";
-let tutLink = "#";
-let cLink = "#";
-let vLink = "#";
+let sub = false, vid = false, initialLikes = -1, vId = null, finalLink = "#", tutLink = "#", cLink = "#", vLink = "#";
 
 function safeEncode(str) { return btoa(encodeURIComponent(str || "")); }
 function safeDecode(str) { try { return decodeURIComponent(atob(str.replace(/ /g, '+'))); } catch(e) { return "خطأ_في_الرابط"; } }
@@ -204,14 +211,11 @@ function fixUrl(url) {
     return url;
 }
 
-// تنفيذ الكود مباشرة (بدون شاشة انتظار)
-try {
+// تنفيذ الكود عند فتح الصفحة
+window.onload = function() {
     const urlParams = new URLSearchParams(window.location.search);
-
     if (urlParams.has('data') && urlParams.get('data').length > 5) {
-        // إظهار صفحة التخطي فوراً
         document.getElementById('task-view').style.display = 'block';
-        
         const raw = urlParams.get('data').split('|');
         const titleText = safeDecode(raw[0]);
         cLink = fixUrl(safeDecode(raw[1] || raw[0]));
@@ -234,17 +238,11 @@ try {
                 document.getElementById('count-num').innerText = "حدث خطأ";
             }
         });
-
     } else {
-        // إظهار صفحة الإنشاء فوراً
         document.getElementById('generator-view').style.display = 'block';
     }
-} catch (error) {
-    // لو حصل خطأ جبار، هنظهر صفحة الإنشاء كاحتياطي
-    document.getElementById('generator-view').style.display = 'block';
-}
+};
 
-// جلب اللايكات
 function fetchRealLikes(callback) {
     if (!vId) { callback(-1); return; }
     fetch('https://www.googleapis.com/youtube/v3/videos?part=statistics&id=' + vId + '&key=' + YOUTUBE_API_KEY + '&t=' + Date.now())
@@ -256,7 +254,6 @@ function fetchRealLikes(callback) {
     }).catch(e => callback(-1));
 }
 
-// فتح الروابط والأزرار
 window.openC = function() { processTask('c', cLink); };
 window.openV = function() { processTask('v', vLink); };
 window.openTut = function() { window.open(tutLink, '_blank'); };
@@ -265,29 +262,22 @@ window.openFinal = function() { window.location.href = finalLink; };
 function processTask(type, url) {
     if (type === 'c' && sub) return;
     if (type === 'v' && vid) return;
-
     window.open(url, '_blank');
-
     const overlay = document.getElementById('countdown-overlay');
     const numSpan = document.getElementById('countdown-number');
     const progCircle = document.getElementById('progress-circle');
-    
     overlay.style.display = 'flex';
     progCircle.style.animation = 'none';
     void progCircle.offsetWidth; 
     progCircle.style.animation = 'circle-deplete 7s linear forwards';
-    
     let timeLeft = 7;
     numSpan.innerText = timeLeft;
-
     const timer = setInterval(() => {
         timeLeft--;
         numSpan.innerText = timeLeft;
-
         if (timeLeft <= 0) {
             clearInterval(timer);
             overlay.style.display = 'none';
-
             if(type === 'c') { 
                 sub = true; 
                 document.getElementById('tk1').classList.remove('active');
@@ -304,64 +294,41 @@ function processTask(type, url) {
     }, 1000);
 }
 
-// فحص الشروط وإظهار واجهة النجاح
 window.verifyStrict = function() {
     if(!sub || !vid) return alert("يرجى إكمال المهام أولاً!");
-    
     document.getElementById('error-msg').style.display = 'none';
     const ld = document.getElementById('loader');
     ld.style.display = 'flex';
-    
     setTimeout(() => {
         fetchRealLikes((currentLikes) => {
             ld.style.display = 'none';
-            
-            if (currentLikes !== -1) {
-                document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
-            }
-
+            if (currentLikes !== -1) { document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US'); }
             if (currentLikes > initialLikes) {
                 document.getElementById('tasks-container').style.display = 'none';
                 document.getElementById('top-logo').style.display = 'none';
                 document.getElementById('top-title').style.display = 'none';
                 document.getElementById('success-container').style.display = 'block';
-                
-                var duration = 3 * 1000;
-                var end = Date.now() + duration;
-
                 if (typeof confetti !== 'undefined') {
-                    (function frame() {
-                        confetti({ particleCount: 5, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#ff0000', '#22c55e', '#ffffff'] });
-                        confetti({ particleCount: 5, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#ff0000', '#22c55e', '#ffffff'] });
-                        if (Date.now() < end) { requestAnimationFrame(frame); }
-                    }());
+                    confetti({ particleCount: 50, spread: 70, origin: { y: 0.6 } });
                 }
             } else {
                 let errMsg = document.getElementById('error-msg');
-                errMsg.innerHTML = "❌ فشل التحقق: لم نكتشف زيادة في اللايكات! إذا كنت متأكداً من وضع اللايك، اضغط على <b>أعد التحقق</b> مجدداً بعد ثوانٍ.";
+                errMsg.innerHTML = "❌ فشل التحقق: لم نكتشف زيادة في اللايكات! تأكد من وضع لايك.";
                 errMsg.style.display = 'block';
                 document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
-                
-                if (currentLikes !== -1 && currentLikes < initialLikes) {
-                    initialLikes = currentLikes; 
-                }
+                if (currentLikes !== -1 && currentLikes < initialLikes) { initialLikes = currentLikes; }
             }
         });
     }, 3000);
 };
 
-// إنشاء رابط جديد
-window.gen = function() {
-    const elId = id => document.getElementById(id) ? document.getElementById(id).value : "";
-    const d = [
-        safeEncode(elId('it')),
-        safeEncode(elId('ic')),
-        safeEncode(elId('iv')),
-        safeEncode(elId('if')),
-        safeEncode(elId('itut'))
-    ].join('|');
-    window.location.href = "?data=" + encodeURIComponent(d);
-};
-</script>
-</body>
-</html>
+// --- دالة إنشاء وتقصير الرابط ---
+window.genShort = async function() {
+    const btn = document.getElementById('main-gen-btn');
+    const outInput = document.getElementById('output-url');
+    const resArea = document.getElementById('result-area');
+    
+    btn.innerText = "جاري الإنشاء... ⏳";
+    btn.disabled = true;
+
+    const elI
