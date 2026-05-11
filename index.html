@@ -232,6 +232,9 @@ try {
             }, 1000);
         };
 
+        // ===============================================
+        // زر التحقق الصارم 100% 
+        // ===============================================
         window.verifyStrict = function() {
             if(!sub || !vid) return alert("يرجى إكمال المهام أولاً!");
             
@@ -239,6 +242,7 @@ try {
             const ld = document.getElementById('loader');
             ld.style.display = 'flex';
             
+            // تم زيادة وقت الانتظار لـ 5 ثواني عشان ندي يوتيوب فرصة يحدّث الرقم المباشر
             setTimeout(() => {
                 fetchRealLikes((currentLikes) => {
                     ld.style.display = 'none';
@@ -247,7 +251,7 @@ try {
                         document.getElementById('count-num').innerText = currentLikes.toLocaleString('en-US');
                     }
 
-                    // التعديل هنا: الاعتماد فقط على زيادة اللايكات
+                    // الشرط الصارم والوحيد للعبور: لازم اللايكات المباشرة تكون أعلى من القديمة
                     if (currentLikes > initialLikes) {
                         document.getElementById('tasks-container').style.display = 'none';
                         document.getElementById('top-logo').style.display = 'none';
@@ -263,18 +267,19 @@ try {
                             if (Date.now() < end) { requestAnimationFrame(frame); }
                         }());
                     } else {
-                        failedAttempts++; 
+                        // لو داس ومفيش لايك اتسجل في يوتيوب هيفشل
                         let errMsg = document.getElementById('error-msg');
-                        errMsg.innerHTML = "❌ فشل التحقق: لم نكتشف زيادة في اللايكات! (قد يأخذ يوتيوب بعض الثواني، جرب مرة أخرى).";
+                        errMsg.innerHTML = "❌ فشل التحقق: لم نكتشف زيادة في اللايكات!<br>يوتيوب يحتاج لبعض الثواني لتسجيل اللايك، انتظر قليلاً واضغط <b>أعد التحقق</b>.";
                         errMsg.style.display = 'block';
                         document.getElementById('vBtn').innerText = "أعد التحقق 🔄";
                         
+                        // لو المستخدم شال اللايك، هنحدث الرقم عشان ميعلقش
                         if (currentLikes !== -1 && currentLikes < initialLikes) {
                             initialLikes = currentLikes; 
                         }
                     }
                 });
-            }, 3000);
+            }, 5000); // 5000 يعني 5 ثواني انتظار
         };
 
     } else {
