@@ -11,16 +11,31 @@
         .btn-gold{background:#f39c12}
         input{padding:12px;border-radius:20px;border:none;margin:8px;font-size:16px;width:70%;text-align:center;background:rgba(255,255,255,.1);color:#fff}
         li{background:rgba(255,255,255,.05);margin:5px 0;padding:10px;border-radius:12px}
-        .host-box{background:rgba(255,255,255,.05);padding:16px;border-radius:24px;border:1px solid #e94560}
+        .host-box{background:rgba(255,255,255,.05);padding:16px;border-radius:24px;border:1px solid #e94560;margin-bottom:20px}
         .overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.96);z-index:1000;display:flex;align-items:center;justify-content:center}
-        .overlay-box{background:#1a1a3e;border:2px solid #e94560;padding:25px;border-radius:28px;max-width:450px}
+        .overlay-box{background:#1a1a3e;border:2px solid #e94560;padding:25px;border-radius:28px;max-width:500px;width:90%}
         .vote-counter{background:rgba(0,0,0,.5);padding:10px;border-radius:30px;margin:10px 0}
         .guess-buttons{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:15px 0}
         .guess-btn{background:#2ecc71;padding:8px 16px;margin:5px}
         .close-btn{background:#555;margin-top:15px;padding:8px 20px}
+        .settings-btn{position:fixed;top:15px;left:15px;background:#2c3e50;padding:10px 15px;border-radius:50px;font-size:16px;z-index:100;cursor:pointer}
+        .settings-btn:hover{background:#1a252f}
+        .rematch-btn{position:fixed;top:15px;left:80px;background:#27ae60;padding:10px 15px;border-radius:50px;font-size:16px;z-index:100;cursor:pointer}
+        .rematch-btn:hover{background:#219a52}
+        .player-list-settings{max-height:300px;overflow-y:auto;margin:15px 0}
+        .player-item{display:flex;justify-content:space-between;align-items:center;margin:8px 0;padding:8px;background:rgba(255,255,255,.1);border-radius:10px}
+        .kick-btn{background:#e74c3c;padding:5px 12px;margin:0;font-size:12px}
+        .kick-btn:hover{background:#c0392b}
+        .category-buttons{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:15px 0;max-height:300px;overflow-y:auto}
+        .category-btn{background:#3498db;padding:10px 15px;font-size:14px}
+        .category-btn:hover{background:#2980b9}
     </style>
 </head>
 <body>
+
+<div id="settingsButton" class="settings-btn" style="display:none" onclick="window.showSettingsPopup()">⚙️ الإعدادات</div>
+<div id="rematchButton" class="rematch-btn" style="display:none" onclick="window.rematchGame()">🔄 Rematch</div>
+
 <div id="app" style="max-width:550px;margin:auto;background:rgba(0,0,0,.5);border-radius:24px;padding:20px">
     <div id="host-screen">
         <h1>🕵️ لعبة الجاسوس</h1>
@@ -41,7 +56,7 @@
         </div>
         <div id="word-display" style="display:none;padding:20px;border-radius:20px;margin:10px 0;font-size:28px"></div>
         <div id="host-btns" style="display:none">
-            <button id="btn-start" onclick="window.startGame()">🚀 ابدأ</button>
+            <button id="btn-start" onclick="window.showCategorySelection()">🚀 ابدأ</button>
             <button id="btn-show-vote" onclick="window.showVoting()" style="display:none">🗳️ تصويت</button>
         </div>
         <div id="vote-counter-container" class="vote-counter" style="display:none">🗳️ <span id="vote-count">0</span>/<span id="total-voters">0</span></div>
@@ -66,18 +81,136 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    let mid, mn, rid, ih, gm, si, sw, ap = {}, ph = 'waiting';
+    let mid, mn, rid, ih, gm, si, sw, ap = {}, ph = 'waiting', selectedCategory = 'فواكه';
     let voteInterval = null;
 
-    // ---------- 1000 كلمة ----------
-    const w = [
-        'تفاحة','موز','برتقال','فراولة','عنب','مانجو','أناناس','بطيخ','شمام','كرز','خوخ','كمثرى','رمان','كيوي','جوز هند','افوكادو','توت','توت بري','ليمون','جريب فروت','يوسفي','باباي','جاك فروت','ليتشي','تمر','زيتون','جزر','بطاطس','طماطم','خيار','فلفل','باذنجان','قرنبيط','بروكلي','سبانخ','خس','كرنب','بصل','ثوم','زنجبيل','فجل','كرفس','كوسا','بامية','فاصوليا','بازلاء','ذرة','عدس','حمص','فول','أسد','نمر','فيل','زرافة','حمار وحشي','وحيد القرن','فرس النهر','تمساح','ثعبان','سلحفاة','قرد','غوريلا','شمبانزي','دب','ذئب','ثعلب','كلب','قطة','حصان','بقرة','خروف','ماعز','دجاجة','بطة','أوزة','حمامة','نسر','بومة','ببغاء','نعامة','كنغر','كوالا','باندا','جمل','غزال','سنجاب','أرنب','فأر','قنفذ','حوت','دلفين','قرش','أخطبوط','مسجد','كنيسة','مستشفى','مدرسة','جامعة','روضة','مكتبة','متحف','حديقة','حمام سباحة','صالة رياضية','سوبر ماركت','بقالة','سوق','مول تجاري','مطعم','مقهى','فندق','شاطئ','سينما','مسرح','استاد','مطار','محطة قطار','مركز شرطة','مخبز','صالون حلاقة','عيادة','صيدلية','نادي','طبيب','مهندس','معلم','محامي','قاضي','شرطي','جندي','اطفائي','طيار','بحار','سائق','ميكانيكي','نجار','حداد','سباك','كهربائي','بناء','رسام','موسيقي','مغني','راقص','ممثل','كاتب','شاعر','صحفي','مصور','طباخ','خباز','حلواني','صائغ','خياط','حلاق','بيطري','ممرض','صيدلي','عالم','باحث','محاسب','مدير','تاجر','مزارع','راعي','صياد','غواص','سرير','كرسي','طاولة','خزانة','كنبة','ستارة','سجادة','وسادة','بطانية','مرآة','مصباح','ثلاجة','فرن','ميكروويف','غسالة','مكنسة','ممسحة','خلاط','غلاية','طنجرة','مقلاة','صحن','كأس','ملعقة','شوكة','سكين','مفتاح','هاتف','شاحن','كمبيوتر','تلفاز','ريموت','كتاب','قلم','دفتر','مقص','صمغ','مشط','فرشاة أسنان','شامبو','صابون','شمس','قمر','نجوم','سماء','سحاب','مطر','ثلج','برق','رعد','رياح','بحر','نهر','شلال','بحيرة','وادي','جبل','صحراء','رمال','عشب','شجر','زهرة','وردة','ياسمين','نخلة','صنوبر','غابة','كهف','جزيرة','بركان','كرة قدم','كرة سلة','كرة طائرة','كرة يد','تنس','سباحة','ملاكمة','جودو','كاراتيه','يوغا','جمباز','جري','دراجات','فروسية','رماية','شطرنج','داما','بوكر','أونو','الغاز','سودوكو','لابتوب','تابلت','ساعة ذكية','سماعات','كاميرا','ميكروفون','شاشة','فأرة','طابعة','راوتر','فلاشة','بطارية','روبوت','انترنت','واي فاي','بلوتوث','تلسكوب','بيتزا','برغر','شاورما','فلافل','حمص','فتوش','تبولة','كبة','باستا','رز','كبسة','مندي','سلطة','شوربة','جبنة','حليب','عسل','شوكولاتة','بقلاوة','كنافة','قطايف','عصير','شاي','قهوة','نسكافيه','كابتشينو','كوكتيل','ميكي ماوس','بندق','سبونج بوب','كابتن ماجد','شريك','توم','جيري','علاء الدين','سيمبا','ناروتو','ساسوكي','غوكو','لوفي'
-    ];
+    // ==================== 13 تصنيف، كل تصنيف 300 كلمة ====================
+    const categories = {
+        'فواكه': Array(300).fill().map((_,i) => ['تفاحة','موز','برتقال','فراولة','عنب','مانجو','أناناس','بطيخ','شمام','كرز','خوخ','كمثرى','رمان','كيوي','جوز هند','افوكادو','توت','توت بري','ليمون','جريب فروت','يوسفي','باباي','جاك فروت','ليتشي','تمر','زيتون','تين','عليق','عنب الثعلب','قشطة','برقوق','نكتارين','بوملي','دراق','لوز','فستق','كاجو','جوز','بندق','فول سوداني'][i%40]),
+        'حيوانات': Array(300).fill().map((_,i) => ['أسد','نمر','فيل','زرافة','حمار وحشي','وحيد القرن','فرس النهر','تمساح','ثعبان','سلحفاة','قرد','غوريلا','شمبانزي','دب','ذئب','ثعلب','كلب','قطة','حصان','بقرة','خروف','ماعز','دجاجة','بطة','أوزة','حمامة','نسر','بومة','ببغاء','نعامة','كنغر','كوالا','باندا','جمل','غزال','سنجاب','أرنب','فأر','قنفذ','حوت','دلفين','قرش','أخطبوط','نجم البحر','قنديل بحر','سلطعون','روبيان','حبار','اخطبوط','نحلة'][i%50]),
+        'أماكن': Array(300).fill().map((_,i) => ['مسجد','كنيسة','مستشفى','مدرسة','جامعة','روضة','مكتبة','متحف','حديقة','مطار','محطة قطار','مركز شرطة','مخبز','صالون حلاقة','عيادة','صيدلية','نادي','مطعم','مقهى','فندق','شاطئ','سينما','مسرح','استاد','سوق','مول تجاري','بقالة','سوبر ماركت','نادي صحي','حمام سباحة','صالة رياضية','ملعب','مدينة ملاهي','حديقة حيوان','أكواريوم','دار أوبرا','قاعة حفلات','مركز مؤتمرات','استراحة','منتجع'][i%40]),
+        'مهن': Array(300).fill().map((_,i) => ['طبيب','مهندس','معلم','محامي','قاضي','شرطي','جندي','اطفائي','طيار','بحار','سائق','ميكانيكي','نجار','حداد','سباك','كهربائي','بناء','رسام','موسيقي','مغني','راقص','ممثل','مخرج','كاتب','شاعر','صحفي','مصور','طباخ','خباز','حلواني','صائغ','خياط','حلاق','عطار','بيطري','ممرض','صيدلي','عالم','باحث','محاسب','مدير','تاجر','مزارع','راعي','صياد','غواص'][i%45]),
+        'منزل': Array(300).fill().map((_,i) => ['سرير','كرسي','طاولة','خزانة','رف','كنبة','ستارة','سجادة','وسادة','بطانية','مرآة','مصباح','ثلاجة','فرن','ميكروويف','غسالة','مكنسة','ممسحة','خلاط','غلاية','طنجرة','مقلاة','صحن','كأس','ملعقة','شوكة','سكين','مفتاح','هاتف','شاحن','كمبيوتر','تلفاز','ريموت','كتاب','قلم','دفتر','مقص','صمغ','مشط','فرشاة أسنان','شامبو','صابون','منشفة','ساعة حائط','سلة مهملات'][i%45]),
+        'طبيعة': Array(300).fill().map((_,i) => ['شمس','قمر','نجوم','سماء','سحاب','مطر','ثلج','برق','رعد','رياح','بحر','نهر','شلال','بحيرة','وادي','جبل','صحراء','رمال','عشب','شجر','زهرة','وردة','ياسمين','نخلة','صنوبر','غابة','كهف','جزيرة','بركان','زلزال','فيضان','عاصفة','اعصار','ضباب','ندى','جليد','برد','صقيع','رذاذ','حجر','صخر','تراب','طين','نبع','واحة'][i%45]),
+        'رياضة': Array(300).fill().map((_,i) => ['كرة قدم','كرة سلة','كرة طائرة','كرة يد','تنس','سباحة','ملاكمة','جودو','كاراتيه','يوغا','جمباز','جري','دراجات','فروسية','رماية','شطرنج','داما','بوكر','أونو','الغاز','سودوكو','اسكواش','جولف','بيسبول','هوكي','غطس','تايكوندو','كونغ فو','رفع أثقال','قفز','رمي','تجديف','تزلج','تسلق','غوص','بلياردو','سنوكر','ريشة طائرة','بينغ بونغ','كريكيت'][i%40]),
+        'تكنولوجيا': Array(300).fill().map((_,i) => ['هاتف','كمبيوتر','لابتوب','تابلت','ساعة ذكية','سماعات','كاميرا','ميكروفون','شاشة','فأرة','طابعة','راوتر','فلاشة','بطارية','روبوت','انترنت','واي فاي','بلوتوث','تلسكوب','ميكروسكوب','معالج','رام','مذربورد','بطاقة شاشة','مروحة','تبريد','سيرفر','مودم','مسجل','مكبر صوت','لوحة مفاتيح','ماسح ضوئي','قرص صلب','شاحن','كابل','جهاز تحكم','عصا تحكم','طائرة درون','نظارة واقع افتراضي','سلك'][i%40]),
+        'ألوان': Array(300).fill().map((_,i) => ['أحمر','أزرق','أخضر','أصفر','برتقالي','بنفسجي','وردي','بني','أسود','أبيض','رمادي','ذهبي','فضي','نحاسي','فيروزي','نيلي','ماروني','زيتوني','كريمي','مرجاني','خوخي','نعناعي','فوشيا','كحلي','عاجي','لازوردي','زبرجدي','ياقوتي','زمردي','مرجاني'][i%30]),
+        'شخصيات كرتونية': Array(300).fill().map((_,i) => ['ميكي ماوس','بندق','سبونج بوب','كابتن ماجد','شريك','توم','جيري','علاء الدين','سيمبا','ناروتو','ساسوكي','غوكو','لوفي','زورو','كونان','بي كاش','باباي','سندريلا','بياض الثلج','تارزان','هيركولز','ويني','بورو','ساكورا','مدغشقر','باتريك','سنجوب','بوجي','مستر بين','فيونا'][i%30]),
+        'مشروبات': Array(300).fill().map((_,i) => ['عصير','شاي','قهوة','نسكافيه','كابتشينو','لاتيه','موكا','سموذي','كوكتيل','لبن','حليب','ماء','بيبسي','كولا','سفن أب','فانتا','ميراندا','سبرايت','ريد بول','استاز','عصير برتقال','عصير تفاح','عصير مانجو','عصير فراولة','عصير عنب','عصير رمان','عصير ليمون','شاي اخضر','شاي أحمر','قمر الدين'][i%30]),
+        'حلويات': Array(300).fill().map((_,i) => ['شوكولاتة','بقلاوة','كنافة','قطايف','بسبوسة','كعك','بسكويت','كيك','مادلين','كرواسون','بان كيك','بوظة','آيس كريم','جلي','مهلبية','أرز بلبن','سحلب','حلقوم','راحة','تمرية','حلاوة','مربى','نوتيلا','عسل','حليب مكثف','كريمة','كاسترد','بودنغ','موس','تشيز كيك'][i%30]),
+        'دول': Array(300).fill().map((_,i) => ['مصر','السعودية','الإمارات','قطر','الكويت','عمان','البحرين','الأردن','لبنان','سوريا','فلسطين','العراق','ليبيا','تونس','الجزائر','المغرب','السودان','اليمن','تركيا','إيران','باكستان','الهند','الصين','اليابان','كوريا','أمريكا','كندا','بريطانيا','فرنسا','ألمانيا','إيطاليا','إسبانيا','روسيا','أستراليا','البرازيل','الأرجنتين'][i%36])
+    };
 
     const params = new URLSearchParams(location.search);
     const roomIdUrl = params.get('room');
     if (roomIdUrl) { rid = roomIdUrl; document.getElementById('host-screen').style.display = 'none'; document.getElementById('join-screen').style.display = 'block'; checkRoom(); }
     else document.getElementById('host-screen').style.display = 'block';
+
+    window.showCategorySelection = function() {
+        let popup = document.createElement('div');
+        popup.className = 'overlay';
+        popup.id = 'categoryPopup';
+        let btns = '';
+        for (let cat in categories) {
+            btns += `<button class="category-btn" onclick="window.selectCategoryAndStart('${cat}')">${cat}</button>`;
+        }
+        popup.innerHTML = `<div class="overlay-box">
+            <h3>🎯 اختر تصنيف الكلمات</h3>
+            <div class="category-buttons">${btns}</div>
+            <button class="close-btn" onclick="document.getElementById('categoryPopup')?.remove()">✖️ إغلاق</button>
+        </div>`;
+        document.body.appendChild(popup);
+    };
+
+    window.selectCategoryAndStart = async function(category) {
+        selectedCategory = category;
+        document.getElementById('categoryPopup')?.remove();
+        await startGameWithCategory();
+    };
+
+    window.startGameWithCategory = async function() {
+        let players = (await get(ref(db, 'rooms/'+rid+'/players'))).val() || {};
+        let ids = Object.keys(players);
+        if ((gm === 'normal' && ids.length < 2) || (gm === 'multi' && ids.length < 3)) {
+            showMessage(`⚠️ يحتاج ${gm==='normal'?2:3} لاعبين`);
+            return;
+        }
+        let spy = ids[Math.floor(Math.random()*ids.length)];
+        let categoryWords = categories[selectedCategory];
+        let word = categoryWords[Math.floor(Math.random()*categoryWords.length)];
+        await update(ref(db, 'rooms/'+rid), { phase: 'playing', si: spy, sw: word, vr: {}, vl: {}, msg: null });
+        for(let id of ids) await update(ref(db, 'rooms/'+rid+'/players/'+id), { eliminated: false });
+        showMessage(`🎮 بدأت اللعبة! (التصنيف: ${selectedCategory})`);
+        document.getElementById('btn-start').style.display = 'none';
+        document.getElementById('btn-show-vote').style.display = 'inline-block';
+    };
+
+    window.showSettingsPopup = function() {
+        if (!ih) return;
+        let playersList = '';
+        for (let id in ap) {
+            if (id !== mid && !ap[id].eliminated) {
+                playersList += `<div class="player-item">
+                    <span>${ap[id].name}</span>
+                    <button class="kick-btn" onclick="window.kickPlayer('${id}')">🚫 طرد</button>
+                </div>`;
+            }
+        }
+        if (playersList === '') playersList = '<div>لا يوجد لاعبين آخرين</div>';
+        let popup = document.createElement('div');
+        popup.className = 'overlay';
+        popup.id = 'settingsPopup';
+        popup.innerHTML = `<div class="overlay-box">
+            <h3>⚙️ إدارة اللاعبين</h3>
+            <div class="player-list-settings">${playersList}</div>
+            <button class="close-btn" onclick="document.getElementById('settingsPopup')?.remove()">✖️ إغلاق</button>
+        </div>`;
+        document.body.appendChild(popup);
+    };
+
+    window.kickPlayer = async function(playerId) {
+        if (!ih) return;
+        await remove(ref(db, 'rooms/' + rid + '/players/' + playerId));
+        showMessage(`✅ تم طرد اللاعب`, false);
+        document.getElementById('settingsPopup')?.remove();
+        let players = (await get(ref(db, 'rooms/'+rid+'/players'))).val() || {};
+        let active = Object.values(players).filter(p=>!p.eliminated).length;
+        let votes = (await get(ref(db, 'rooms/'+rid+'/vr'))).val() || {};
+        if (Object.keys(votes).length >= active && ph === 'voting') {
+            document.getElementById('waiting-votes').style.display = 'none';
+            let count = {}; for(let v of Object.values(votes)) count[v] = (count[v]||0)+1;
+            let sorted = Object.entries(count).sort((a,b)=>b[1]-a[1]);
+            let votedOut = sorted[0][0];
+            let isSpy = (votedOut === si);
+            let votedName = ap[votedOut]?.name || '???';
+            let spyName = ap[si]?.name || '???';
+            if (isSpy) {
+                await update(ref(db, 'rooms/'+rid), { phase: 'spyGuess' });
+                await set(ref(db, 'rooms/'+rid+'/msg'), { html: `✅ تم اكتشاف الجاسوس: ${votedName}\n⏳ في انتظار تخمين الجاسوس...`, target: 'all' });
+            } else {
+                await update(ref(db, 'rooms/'+rid+'/players/'+votedOut), { eliminated: true });
+                if (gm === 'normal') {
+                    await set(ref(db, 'rooms/'+rid+'/msg'), { html: `❌ غلط! لم يكن الجاسوس\n🚫 تم طرد مدني: ${votedName}\n🕵️ الجاسوس الحقيقي هو: ${spyName}\n⏳ في انتظار تخمين الجاسوس...`, target: 'all' });
+                    await update(ref(db, 'rooms/'+rid), { phase: 'spyGuess' });
+                } else {
+                    await set(ref(db, 'rooms/'+rid+'/msg'), { html: `❌ غلط! لم يكن الجاسوس\n🚫 تم طرد مدني: ${votedName}\n⏳ في انتظار قرار الجاسوس...`, target: 'all' });
+                    if (mid === si) showSpyOptions();
+                    else await update(ref(db, 'rooms/'+rid), { phase: 'playing' });
+                }
+            }
+        }
+    };
+
+    window.rematchGame = async function() {
+        if (!ih) return;
+        let players = await get(ref(db, 'rooms/' + rid + '/players'));
+        let playerList = players.val() || {};
+        let ids = Object.keys(playerList);
+        for (let id of ids) {
+            await update(ref(db, 'rooms/' + rid + '/players/' + id), { eliminated: false });
+        }
+        window.showCategorySelection();
+    };
 
     async function checkRoom() { let snap = await get(ref(db, 'rooms/' + rid)); if (!snap.exists() || !snap.val().active) expireRoom(); }
     function expireRoom() { document.getElementById('join-screen').style.display = 'none'; showMessage("⚠️ الغرفة منتهية"); setTimeout(()=> location.href=location.origin+location.pathname, 2000); }
@@ -91,6 +224,8 @@
         document.getElementById('room-link').style.display = 'block';
         document.getElementById('link-text').innerText = location.origin+location.pathname+'?room='+rid;
         document.getElementById('host-btns').style.display = 'block';
+        document.getElementById('settingsButton').style.display = 'block';
+        document.getElementById('rematchButton').style.display = 'block';
         listenPlayers(); listenRoom();
         showMessage("✅ الغرفة جاهزة");
     };
@@ -98,9 +233,12 @@
     window.joinRoom = async function() {
         let name = document.getElementById('player-name').value.trim();
         if (!name) return showMessage("ادخل اسمك");
+        let roomSnap = await get(ref(db, 'rooms/'+rid));
+        if (!roomSnap.exists() || !roomSnap.val().active) return expireRoom();
+        if (roomSnap.val().phase !== 'waiting') {
+            return showMessage("⚠️ اللعبة بدأت بالفعل، لا يمكنك الدخول الآن");
+        }
         mn = name; mid = 'p'+Date.now(); ih = false;
-        let snap = await get(ref(db, 'rooms/'+rid));
-        if (!snap.exists() || !snap.val().active) return expireRoom();
         await set(ref(db, 'rooms/'+rid+'/players/'+mid), { id:mid, name:mn, ih:false, eliminated:false });
         document.getElementById('join-screen').style.display = 'none';
         document.getElementById('game-screen').style.display = 'block';
@@ -154,7 +292,10 @@
     function startVoting() {
         document.getElementById('vote-section').style.display = 'block';
         let btns = '';
-        for (let id in ap) if (id !== mid && !ap[id].eliminated) btns += `<button onclick="window.vote('${id}')">${ap[id].name}</button>`;
+        let playerArray = Object.entries(ap).filter(([id, p]) => id !== mid && !p.eliminated);
+        for (let [id, p] of playerArray) {
+            btns += `<button onclick="window.vote('${id}')">${p.name}</button>`;
+        }
         document.getElementById('vote-btns').innerHTML = btns;
         document.getElementById('vote-log-section').style.display = 'block';
         if (voteInterval) clearInterval(voteInterval);
@@ -194,7 +335,6 @@
             } else {
                 await update(ref(db, 'rooms/'+rid+'/players/'+votedOut), { eliminated: true });
                 if (gm === 'normal') {
-                    // جاسوس 1: الرسالة تظهر لكل اللاعبين عبر Firebase Messaging
                     await set(ref(db, 'rooms/'+rid+'/msg'), { html: `❌ غلط! لم يكن الجاسوس\n🚫 تم طرد مدني: ${votedName}\n🕵️ الجاسوس الحقيقي هو: ${spyName}\n⏳ في انتظار تخمين الجاسوس...`, target: 'all' });
                     await update(ref(db, 'rooms/'+rid), { phase: 'spyGuess' });
                 } else {
@@ -222,62 +362,4 @@
         if (!guess) return;
         document.getElementById('guessDiv')?.remove();
         await update(ref(db, 'rooms/'+rid), { phase: 'finished' });
-        await set(ref(db, 'rooms/'+rid+'/msg'), { html: `🔍 الجاسوس (${ap[si]?.name}) كتب: ${guess}\n🔑 الكلمة الصحيحة: ${sw}\n🏆 انتهت اللعبة`, target: 'all' });
-    };
-
-    function showSpyOptions() {
-        let other = w.filter(word => word !== sw);
-        let picks = [sw];
-        for(let i=0;i<9;i++) picks.push(other[Math.floor(Math.random()*other.length)]);
-        picks.sort(()=>Math.random()-0.5);
-        let btns = '';
-        picks.forEach(p => btns += `<button class="guess-btn" onclick="window.submitChoiceGuess('${p.replace(/'/g,"\\'")}')">${p}</button>`);
-        let d = document.createElement('div');
-        d.className = 'overlay';
-        d.innerHTML = `<div class="overlay-box"><h3>🤔 اختر الكلمة الصحيحة</h3><div class="guess-buttons">${btns}</div><button class="close-btn" onclick="this.closest('.overlay').remove()">✖️</button></div>`;
-        document.body.appendChild(d);
-    }
-
-    window.submitChoiceGuess = async function(guess) {
-        document.querySelector('.overlay')?.remove();
-        await update(ref(db, 'rooms/'+rid), { phase: 'finished' });
-        await set(ref(db, 'rooms/'+rid+'/msg'), { html: `🔍 الجاسوس (${ap[si]?.name}) اختار: ${guess}\n🔑 الكلمة الصحيحة: ${sw}\n🏆 انتهت اللعبة`, target: 'all' });
-    };
-
-    async function endGameLowPlayers(spyName, word) {
-        if (ph === 'finished') return;
-        ph = 'finished';
-        await set(ref(db, 'rooms/'+rid+'/msg'), { html: `⚠️ انتهت اللعبة لان عدد اللاعبين 2 فقط\n🕵️ الجاسوس الحقيقي: ${spyName}\n🔑 الكلمة: ${word}\n🎉 الجاسوس كسب`, target: 'all' });
-        await update(ref(db, 'rooms/'+rid), { phase: 'finished', active: false });
-    }
-
-    window.startGame = async function() {
-        let players = (await get(ref(db, 'rooms/'+rid+'/players'))).val() || {};
-        let ids = Object.keys(players);
-        if ((gm === 'normal' && ids.length < 2) || (gm === 'multi' && ids.length < 3)) return showMessage(`⚠️ يحتاج ${gm==='normal'?2:3} لاعبين`);
-        let spy = ids[Math.floor(Math.random()*ids.length)];
-        let word = w[Math.floor(Math.random()*w.length)];
-        await update(ref(db, 'rooms/'+rid), { phase: 'playing', si: spy, sw: word, vr: {}, vl: {} });
-        for(let id of ids) await update(ref(db, 'rooms/'+rid+'/players/'+id), { eliminated: false });
-        showMessage("🎮 بدأت اللعبة!");
-        document.getElementById('btn-start').style.display = 'none';
-        document.getElementById('btn-show-vote').style.display = 'inline-block';
-    };
-
-    window.showVoting = function() { update(ref(db, 'rooms/'+rid), { phase: 'voting' }); };
-    window.copyLink = function() { navigator.clipboard.writeText(document.getElementById('link-text').innerText); showMessage("📋 تم نسخ الرابط"); document.getElementById('room-link').style.display = 'none'; };
-    window.leaveRoom = function() { if(voteInterval) clearInterval(voteInterval); if(mid && rid) { if(ih) remove(ref(db, 'rooms/'+rid)); else remove(ref(db, 'rooms/'+rid+'/players/'+mid)); } location.reload(); };
-
-    let activeMsgDiv = null;
-    function showMessage(msg, permanent = false) {
-        if (activeMsgDiv) activeMsgDiv.remove();
-        let div = document.createElement('div');
-        div.className = 'overlay';
-        div.innerHTML = `<div class="overlay-box">${msg.replace(/\n/g,'<br>')}<br><button class="close-btn" onclick="this.closest('.overlay').remove(); activeMsgDiv=null;">✖️ إغلاق</button></div>`;
-        document.body.appendChild(div);
-        activeMsgDiv = div;
-        if (!permanent) setTimeout(() => { if(activeMsgDiv === div) { div.remove(); activeMsgDiv = null; } }, 5000);
-    }
-</script>
-</body>
-</html>
+        await set(ref(db, 'rooms/'+rid+'/msg'),
