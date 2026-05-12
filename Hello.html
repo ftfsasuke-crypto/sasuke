@@ -84,19 +84,8 @@ let mid,mn,rid,ih,gm='normal',si,sw,ap={},ph='waiting';
 const w=['تفاحة','سيارة','قمر','شمس','بحر','جبل','كتاب','قلم','نجمة','وردة','أسد','فيل','طائرة','سفينة','مفتاح','كاميرا','شجرة','نهر','ساعة','كرة','بيانو','تلفون','كنز','قناع','ملك','حصان','سيف','ذهب','ماء','نار','هاتف','تنس','عزف','ياسمين','ليمون','برتقال','عنب','مانجو','فراولة','رمان','عسل'];
 const pr=new URLSearchParams(location.search),rf=pr.get('room');
 
-// ========== تحديد أي شاشة تظهر ==========
-if(rf){
-    // دخل برابط غرفة
-    rid=rf;
-    document.getElementById('host-screen').style.display='none';
-    document.getElementById('join-screen').style.display='block';
-    ck();
-} else {
-    // بدون رابط: الهوست الحقيقي SASUKE فقط
-    // طالما الصفحة فتحت بدون ?room= فهذا هو الهوست
-    document.getElementById('host-screen').style.display='block';
-    document.getElementById('join-screen').style.display='none';
-}
+if(rf){rid=rf;document.getElementById('host-screen').style.display='none';document.getElementById('join-screen').style.display='block';ck();}
+else{document.getElementById('host-screen').style.display='block';document.getElementById('join-screen').style.display='none';}
 
 function ck(){get(ref(db,'rooms/'+rid)).then(s=>{if(!s.exists()||!s.val().active){ex()}})}
 function ex(){document.getElementById('join-screen').style.display='none';ov('⚠️ انتهت صلاحية الرابط!');setTimeout(()=>{location.href=location.origin+location.pathname},3000);}
@@ -188,8 +177,23 @@ function fz(v){
     let vc={};Object.values(v).forEach(x=>{vc[x]=(vc[x]||0)+1});
     let mv=Object.entries(vc).sort((a,b)=>b[1]-a[1])[0][0],ok=(mv===si),sn=ap[si]?.name||'???';
     document.getElementById('waiting-votes').style.display='none';
-    if(ok){set(ref(db,'rooms/'+rid+'/om'),{h:`✅ الجاسوس هو: <strong>${sn}</strong><br>عليه يخمن الكلمة!`});}
-    else{set(ref(db,'rooms/'+rid+'/om'),{h:`❌ مش هو الجاسوس!<br>🕵️ الجاسوس الحقيقي: <strong>${sn}</strong><br>عليه يخمن الكلمة!`});}
+
+    // ========== رسالة خاصة بلعبة الجاسوس ١ ==========
+    if(gm === 'normal'){
+        if(ok){
+            set(ref(db,'rooms/'+rid+'/om'),{h:`✅ الجاسوس هو: <strong>${sn}</strong><br>عليه يخمن الكلمة!`});
+        } else {
+            set(ref(db,'rooms/'+rid+'/om'),{h:`❌ الي صوتو عليه غلط<br>🕵️ الجاسوس: <strong>${sn}</strong><br><br>⏳ في انتظار إجابة الجاسوس...`});
+        }
+    } else {
+        // لعبة الجاسوس ٢ أو غيرها (تبقى كما هي)
+        if(ok){
+            set(ref(db,'rooms/'+rid+'/om'),{h:`✅ الجاسوس هو: <strong>${sn}</strong><br>عليه يخمن الكلمة!`});
+        } else {
+            set(ref(db,'rooms/'+rid+'/om'),{h:`❌ مش هو الجاسوس!<br>🕵️ الجاسوس الحقيقي: <strong>${sn}</strong><br>عليه يخمن الكلمة!`});
+        }
+    }
+
     update(ref(db,'rooms/'+rid),{phase:'spyGuess'});
 }
 
@@ -211,14 +215,10 @@ function nt(msg){let n=document.createElement('div');n.className='notification';
 
 window.leaveRoom=function(){
     if(mid&&rid){if(ih)remove(ref(db,'rooms/'+rid));else remove(ref(db,'rooms/'+rid+'/players/'+mid))}
-    // إخفاء الشاشات
     document.getElementById('game-screen').style.display='none';
     document.getElementById('host-screen').style.display='none';
     document.getElementById('join-screen').style.display='none';
-    // رسالة المغادرة للجميع
     ov('<h2>👋 لقد غادرت اللعبة</h2>',3000);
-    // بعد 3 ثواني نرجع للصفحة الرئيسية
-    // لو كنت الهوست سترى شاشة الهوست، ولو لاعب سترى شاشة الانضمام
     setTimeout(()=>{location.href=location.origin+location.pathname},3000);
 };
 </script>
