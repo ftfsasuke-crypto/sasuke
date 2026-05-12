@@ -6,11 +6,17 @@
     <title>لعبة الجاسوس</title>
     <style>
         *{box-sizing:border-box;margin:0;padding:0}
-        body{font-family:'Segoe UI',Tahoma,sans-serif;background:#0a0a1a;color:#eee;text-align:center;padding:15px;min-height:100vh;direction:rtl}
-        button{background:#e94560;color:white;border:none;padding:12px 24px;margin:6px;border-radius:30px;font-size:16px;cursor:pointer}
+        body{font-family:'Segoe UI',Tahoma,sans-serif;background:#0a0a1a;color:#eee;text-align:center;padding:15px;min-height:100vh;direction:rtl;overflow-x:hidden}
+        
+        /* النجوم المتساقطة */
+        .stars-container{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
+        .star{position:absolute;background:white;border-radius:50%;animation:fall linear infinite;opacity:.8}
+        @keyframes fall{0%{transform:translateY(-10vh) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(360deg);opacity:0}}
+        
+        button{background:#e94560;color:white;border:none;padding:12px 24px;margin:6px;border-radius:30px;font-size:16px;cursor:pointer;position:relative;z-index:1}
         button:hover{background:#c23152}
         .btn-gold{background:#f39c12}
-        input{padding:12px;border-radius:20px;border:none;margin:8px;font-size:16px;width:70%;text-align:center;background:rgba(255,255,255,.1);color:#fff}
+        input{padding:12px;border-radius:20px;border:none;margin:8px;font-size:16px;width:70%;text-align:center;background:rgba(255,255,255,.1);color:#fff;position:relative;z-index:1}
         li{background:rgba(255,255,255,.05);margin:3px 0;padding:10px;border-radius:12px;font-size:16px}
         .game-select-btn{display:block;width:90%;margin:10px auto;font-size:18px;padding:16px;border-radius:20px}
         .host-name-display{background:linear-gradient(135deg,#f093fb,#f5576c,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:20px;font-weight:bold}
@@ -25,7 +31,11 @@
     </style>
 </head>
 <body>
-<div id="app" style="max-width:550px;margin:0 auto;background:rgba(0,0,0,.5);border-radius:20px;padding:15px;backdrop-filter:blur(5px)">
+
+<!-- النجوم المتساقطة -->
+<div class="stars-container" id="starsContainer"></div>
+
+<div id="app" style="max-width:550px;margin:0 auto;background:rgba(0,0,0,.5);border-radius:20px;padding:15px;backdrop-filter:blur(5px);position:relative;z-index:1">
 
     <!-- شاشة الهوست -->
     <div id="host-screen">
@@ -62,6 +72,25 @@
         <button onclick="leaveRoom()" style="background:#555;margin-top:12px">🚪 مغادرة</button>
     </div>
 </div>
+
+<!-- إنشاء النجوم -->
+<script>
+(function(){
+    let c=document.getElementById('starsContainer');
+    for(let i=0;i<80;i++){
+        let s=document.createElement('div');
+        s.className='star';
+        let z=Math.random()*3+1;
+        s.style.width=z+'px';
+        s.style.height=z+'px';
+        s.style.left=Math.random()*100+'%';
+        s.style.animationDuration=(Math.random()*5+4)+'s';
+        s.style.animationDelay=Math.random()*6+'s';
+        s.style.opacity=Math.random()*.8+.2;
+        c.appendChild(s);
+    }
+})();
+</script>
 
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
