@@ -85,7 +85,7 @@ if(rf){rid=rf;document.getElementById('host-screen').style.display='none';docume
 else{document.getElementById('host-screen').style.display='block';document.getElementById('join-screen').style.display='none';}
 
 function ck(){get(ref(db,'rooms/'+rid)).then(s=>{if(!s.exists()||!s.val().active){ex()}})}
-function ex(){document.getElementById('join-screen').style.display='none';ov('⚠️ انتهت صلاحية الرابط!');setTimeout(()=>{location.href=location.origin+location.pathname},3000);}
+function ex(){document.getElementById('join-screen').style.display='none';ov('⚠️ انتهت صلاحية الرابط!',3000);setTimeout(()=>{location.href=location.origin+location.pathname},3000);}
 
 window.createRoom=function(m){
     gm=m;mn='⚔️ SASUKE ⚔️';rid='r'+Date.now().toString(36);mid='h'+Date.now().toString(36);ih=true;
@@ -118,7 +118,17 @@ window.copyLink=function(){navigator.clipboard.writeText(document.getElementById
 
 function lg(){onValue(ref(db,'rooms/'+rid),s=>{if(!s.exists()){if(!ih){ov('<h2>👑 غادر الهوست</h2>',3000);setTimeout(()=>{location.href=location.origin+location.pathname},3000);}return}let d=s.val();if(!d.active&&!ih&&d.phase!=='finished'){ov('<h2>انتهت اللعبة</h2>',3000);setTimeout(()=>{location.href=location.origin+location.pathname},3000);return}si=d.si;sw=d.sw;if(d.phase!==ph){ph=d.phase;hp(d)}});}
 
-function lo(){onValue(ref(db,'rooms/'+rid+'/om'),s=>{let m=s.val();if(!m)return;ov(m.h,0);if(m.cd)sc();});}
+function lo(){onValue(ref(db,'rooms/'+rid+'/om'),s=>{let m=s.val();if(!m)return;
+    // Overlay واحد يتعامل مع الكل
+    if(mid===si && m.showGuess){
+        // الجاسوس يشوف نافذة التخمين
+        sgi();
+    } else {
+        // باقي اللاعبين يشوفوا الرسالة
+        ov(m.h, 0);
+        if(m.cd) sc();
+    }
+});}
 
 function hp(d){
     if(d.phase==='finished')return;
@@ -126,7 +136,7 @@ function hp(d){
     document.getElementById('vote-log-section').style.display='none';rov();
     if(d.phase==='playing'){swd(d);if(ih){document.getElementById('btn-start').style.display='none';document.getElementById('btn-show-vote').style.display='inline-block'}}
     if(d.phase==='voting'){svu();if(ih)document.getElementById('btn-show-vote').style.display='none';document.getElementById('vote-log-section').style.display='block';}
-    if(d.phase==='spyGuess'){document.getElementById('vote-log-section').style.display='block';if(mid===d.si)sgi();}
+    if(d.phase==='spyGuess'){document.getElementById('vote-log-section').style.display='block';}
 }
 
 function swd(d){let wd=document.getElementById('word-display');wd.style.display='block';wd.style.background=mid===d.si?'rgba(200,0,0,.3)':'rgba(0,150,0,.3)';wd.innerHTML=mid===d.si?'🕵️ أنت الجاسوس!':'الكلمة: '+d.sw;}
@@ -158,23 +168,16 @@ function fz(v){
 
     if(gm==='normal'){
         if(ok){
-            set(ref(db,'rooms/'+rid+'/om'),{h:`✅ الجاسوس هو: <strong>${sn}</strong><br>عليه يخمن الكلمة!`});
+            set(ref(db,'rooms/'+rid+'/om'),{h:`✅ الجاسوس هو: <strong>${sn}</strong><br>عليه يخمن الكلمة!`, showGuess:true});
         } else {
-            set(ref(db,'rooms/'+rid+'/om'),{h:`❌ الي صوتو عليه غلط<br>🕵️ الجاسوس: <strong>${sn}</strong><br><br>⏳ في انتظار إجابة الجاسوس...`});
+            set(ref(db,'rooms/'+rid+'/om'),{h:`❌ الي صوتو عليه غلط<br>🕵️ الجاسوس: <strong>${sn}</strong><br><br>⏳ في انتظار إجابة الجاسوس...`, showGuess:true});
         }
-    } else {
-        if(ok){set(ref(db,'rooms/'+rid+'/om'),{h:`✅ الجاسوس هو: <strong>${sn}</strong><br>عليه يخمن الكلمة!`});}
-        else{set(ref(db,'rooms/'+rid+'/om'),{h:`❌ مش هو الجاسوس!<br>🕵️ الجاسوس: <strong>${sn}</strong><br>عليه يخمن الكلمة!`});}
     }
     update(ref(db,'rooms/'+rid),{phase:'spyGuess'});
 }
 
-// نافذة التخمين للجاسوس
 function sgi(){
-    // بنشيل أي overlay قديم
-    let oldGo=document.getElementById('go');if(oldGo)oldGo.remove();
     let oldMo=document.getElementById('mo');if(oldMo)oldMo.remove();
-    
     let ovd=document.createElement('div');ovd.className='overlay';ovd.id='go';
     ovd.innerHTML=`<div class="overlay-box"><h3>🤔 خمن الكلمة:</h3><input id="gi" placeholder="اكتب الكلمة"><br><button onclick="sg()">📨 إرسال</button></div>`;
     document.body.appendChild(ovd);
