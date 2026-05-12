@@ -87,31 +87,28 @@
 </div>
 
 <script>
-(function(){let c=document.getElementById('starsContainer');for(let i=0;i<80;i++){let s=document.createElement('div');s.className='star';let z=Math.random()*3+1;s.style.width=z+'px';s.style.height=z+'px';s.style.left=Math.random()*100+'%';s.style.animationDuration=(Math.random()*5+4)+'s';s.style.animationDelay=Math.random()*6+'s';s.style.opacity=Math.random()*.8+.2;c.appendChild(s);}})();
+// إعدادات Firebase (نفس اللي عندك)
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getDatabase,ref,set,get,update,onValue,remove}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-// تعريف الدوال بشكل عام عشان تظهر في console
+const fc={apiKey:"AIzaSyDTyJqVntFqKe3I-zntb_rMx9Qcv7Nqi94",authDomain:"spy-game-1d774.firebaseapp.com",projectId:"spy-game-1d774",storageBucket:"spy-game-1d774.firebasestorage.app",messagingSenderId:"261865713515",appId:"1:261865713515:web:8868e0998ccd0d00aba62e",databaseURL:"https://spy-game-1d774-default-rtdb.firebaseio.com/"};
+const a=initializeApp(fc),db=getDatabase(a);
+
+let mid,mn,rid,ih,gm='normal',si,sw,ap={},ph='waiting';
+let voteCounterInterval = null;
+
+const w = ['تفاحة','موز','برتقال','فراولة','عنب','مانجو','أناناس','بطيخ','خوخ','رمان','ليمون','جزر','طماطم','خيار','فلفل','بصل','ثوم','أسد','نمر','فيل','زرافة','تمساح','ثعبان','كلب','قطة','حصان','بقرة','مسجد','كنيسة','مستشفى','مدرسة','جامعة','مكتبة','متحف','حديقة','سوق','مطعم','مقهى','فندق','شاطئ','سينما','مسرح','مطار','طبيب','مهندس','معلم','محامي','شرطي','طيار','سائق','نجار','سباك','كهربائي','سرير','كرسي','طاولة','خزانة','كنبة','ثلاجة','فرن','غسالة','هاتف','تلفاز','كتاب','قلم','شمس','قمر','نجوم','بحر','نهر','جبل','صحراء','كرة قدم','كرة سلة','تنس','سباحة','ملاكمة','شطرنج','بيتزا','برغر','شاورما','فلافل','حمص','عصير','شاي','قهوة','نسكافيه'];
+
 window.createRoom = function(m) {
-    console.log("createRoom called with mode:", m);
-    alert("جاري إنشاء الغرفة...");
+    gm=m; mn='⚔️ SASUKE ⚔️'; rid='r'+Date.now().toString(36); mid='h'+Date.now().toString(36); ih=true;
+    set(ref(db,'rooms/'+rid),{gm,phase:'waiting',active:true,si:null,sw:null,vr:{},vl:{},msg:null}).then(()=>{
+        document.getElementById('mode-display').innerText=gm==='multi'?'٢':'١';
+        document.getElementById('host-btns').style.display='block';
+        document.getElementById('btn-start').style.display='inline-block';
+        document.getElementById('room-link').style.display='block';
+        document.getElementById('link-text').innerText=location.origin+location.pathname+'?room='+rid;
+        document.getElementById('host-screen').style.display='none';
+        document.getElementById('game-screen').style.display='block';
+        alert("✅ تم إنشاء الغرفة!");
+    }).catch(err=>alert("❌ خطأ: "+err.message));
 };
-window.joinRoom = function() {
-    alert("جاري الانضمام...");
-};
-window.startGame = function() {
-    alert("بدء اللعبة...");
-};
-window.showVoting = function() {
-    alert("إظهار التصويت...");
-};
-window.copyLink = function() {
-    alert("تم نسخ الرابط!");
-};
-window.vote = function(id) {
-    alert("تم التصويت على: "+id);
-};
-window.leaveRoom = function() {
-    alert("غادرت اللعبة");
-};
-</script>
-</body>
-</html>
