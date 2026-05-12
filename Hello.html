@@ -7,12 +7,9 @@
     <style>
         *{box-sizing:border-box;margin:0;padding:0}
         body{font-family:'Segoe UI',Tahoma,sans-serif;background:#0a0a1a;color:#eee;text-align:center;padding:15px;min-height:100vh;direction:rtl;overflow-x:hidden}
-        
-        /* النجوم المتساقطة */
         .stars-container{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
         .star{position:absolute;background:white;border-radius:50%;animation:fall linear infinite;opacity:.8}
         @keyframes fall{0%{transform:translateY(-10vh) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(360deg);opacity:0}}
-        
         button{background:#e94560;color:white;border:none;padding:12px 24px;margin:6px;border-radius:30px;font-size:16px;cursor:pointer;position:relative;z-index:1}
         button:hover{background:#c23152}
         .btn-gold{background:#f39c12}
@@ -32,13 +29,12 @@
 </head>
 <body>
 
-<!-- النجوم المتساقطة -->
 <div class="stars-container" id="starsContainer"></div>
 
 <div id="app" style="max-width:550px;margin:0 auto;background:rgba(0,0,0,.5);border-radius:20px;padding:15px;backdrop-filter:blur(5px);position:relative;z-index:1">
 
-    <!-- شاشة الهوست -->
-    <div id="host-screen">
+    <!-- شاشة الهوست (لن تظهر إلا إذا كان هو الهوست الفعلي) -->
+    <div id="host-screen" style="display:none">
         <h1 style="background:linear-gradient(135deg,#e94560,#ff6b6b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:32px">🕵️ لعبة الجاسوس</h1>
         <div class="host-box"><p>👑 أنت الهوست</p><p>اسمك: <span class="host-name-display">⚔️ S A S U K E ⚔️</span></p></div>
         <button class="game-select-btn" onclick="createRoom('normal')">🎮 لعبة الجاسوس ١</button>
@@ -73,16 +69,13 @@
     </div>
 </div>
 
-<!-- إنشاء النجوم -->
 <script>
 (function(){
     let c=document.getElementById('starsContainer');
     for(let i=0;i<80;i++){
-        let s=document.createElement('div');
-        s.className='star';
+        let s=document.createElement('div'); s.className='star';
         let z=Math.random()*3+1;
-        s.style.width=z+'px';
-        s.style.height=z+'px';
+        s.style.width=z+'px'; s.style.height=z+'px';
         s.style.left=Math.random()*100+'%';
         s.style.animationDuration=(Math.random()*5+4)+'s';
         s.style.animationDelay=Math.random()*6+'s';
@@ -103,14 +96,30 @@ let mid,mn,rid,ih,gm='normal',si,sw,ap={},ph='waiting';
 const w=['تفاحة','سيارة','قمر','شمس','بحر','جبل','كتاب','قلم','نجمة','وردة','أسد','فيل','طائرة','سفينة','مفتاح','كاميرا','شجرة','نهر','ساعة','كرة','بيانو','تلفون','كنز','قناع','ملك','حصان','سيف','ذهب','ماء','نار','هاتف','تنس','عزف','ياسمين','ليمون','برتقال','عنب','مانجو','فراولة','رمان','عسل'];
 const pr=new URLSearchParams(location.search),rf=pr.get('room');
 
-if(rf){rid=rf;document.getElementById('host-screen').style.display='none';document.getElementById('join-screen').style.display='block';ck();}
-else{document.getElementById('host-screen').style.display='block';document.getElementById('join-screen').style.display='none';}
+// ========== تحديد أي شاشة تظهر ==========
+if(rf){
+    // دخلوا برابط الغرفة
+    rid=rf;
+    document.getElementById('host-screen').style.display='none';
+    document.getElementById('join-screen').style.display='block';
+    ck();
+} else {
+    // بدون رابط: نقرر حسب localStorage
+    if(localStorage.getItem('isHost')==='1'){
+        document.getElementById('host-screen').style.display='block';
+        document.getElementById('join-screen').style.display='none';
+    } else {
+        document.getElementById('host-screen').style.display='none';
+        document.getElementById('join-screen').style.display='block';
+    }
+}
 
 function ck(){get(ref(db,'rooms/'+rid)).then(s=>{if(!s.exists()||!s.val().active){ex()}})}
 function ex(){document.getElementById('join-screen').style.display='none';ov('⚠️ انتهت صلاحية الرابط!');setTimeout(()=>{location.href=location.origin+location.pathname},3000);}
 
 window.createRoom=function(m){
     gm=m;mn='⚔️ SASUKE ⚔️';rid='r'+Date.now().toString(36);mid='h'+Date.now().toString(36);ih=true;
+    localStorage.setItem('isHost','1');  // 🟢 نحفظ إنه الهوست
     set(ref(db,'rooms/'+rid),{gm,phase:'waiting',active:true,si:null,sw:null,vr:{},vl:{},om:null}).then(()=>{
         am();sg();document.getElementById('mode-display').textContent=gm==='multi'?'٢':'١';
         document.getElementById('host-btns').style.display='block';document.getElementById('btn-start').style.display='inline-block';
@@ -138,13 +147,34 @@ function lvl(){onValue(ref(db,'rooms/'+rid+'/vl'),s=>{let l=s.val()||{};let h=''
 window.kick=function(id){remove(ref(db,'rooms/'+rid+'/players/'+id));};
 window.copyLink=function(){navigator.clipboard.writeText(document.getElementById('link-text').textContent);nt('📋 تم!');};
 
-function lg(){onValue(ref(db,'rooms/'+rid),s=>{if(!s.exists()){if(!ih){ov('<h2>👑 غادر الهوست</h2>',3000);setTimeout(()=>{location.href=location.origin+location.pathname},3000);}return}let d=s.val();if(!d.active&&!ih){ov('<h2>انتهت اللعبة</h2>',3000);setTimeout(()=>{location.href=location.origin+location.pathname},3000);return}si=d.si;sw=d.sw;if(d.phase!==ph){ph=d.phase;hp(d)}});}
+function lg(){
+    onValue(ref(db,'rooms/'+rid),s=>{
+        if(!s.exists()){
+            if(!ih){ov('<h2>👑 غادر الهوست</h2>',3000);setTimeout(()=>{location.href=location.origin+location.pathname},3000);}
+            return;
+        }
+        let d=s.val();
+        // 🟢 إذا انتهت اللعبة (finished) لا نعرض "انتهت اللعبة" لأن الرسالة النهائية ستظهر من om
+        if(!d.active && !ih && d.phase !== 'finished'){
+            ov('<h2>انتهت اللعبة</h2>',3000);
+            setTimeout(()=>{location.href=location.origin+location.pathname},3000);
+            return;
+        }
+        si=d.si; sw=d.sw;
+        if(d.phase!==ph){ph=d.phase; hp(d);}
+    });
+}
 
 function lo(){onValue(ref(db,'rooms/'+rid+'/om'),s=>{let m=s.val();if(!m)return;ov(m.h,0);if(m.cd)sc();});}
 
 function hp(d){
-    document.getElementById('vote-section').style.display='none';document.getElementById('waiting-votes').style.display='none';
-    document.getElementById('vote-log-section').style.display='none';rov();
+    // 🟢 في مرحلة finished لا نلمس الـ overlay ولا نخفي شيء
+    if(d.phase==='finished') return;
+
+    document.getElementById('vote-section').style.display='none';
+    document.getElementById('waiting-votes').style.display='none';
+    document.getElementById('vote-log-section').style.display='none';
+    rov();
     if(d.phase==='playing'){swd(d);if(ih){document.getElementById('btn-start').style.display='none';document.getElementById('btn-show-vote').style.display='inline-block'}}
     if(d.phase==='voting'){svu();if(ih)document.getElementById('btn-show-vote').style.display='none';document.getElementById('vote-log-section').style.display='block';}
     if(d.phase==='spyGuess'){document.getElementById('vote-log-section').style.display='block';if(mid===d.si)sgi();}
@@ -199,9 +229,13 @@ function nt(msg){let n=document.createElement('div');n.className='notification';
 
 window.leaveRoom=function(){
     if(mid&&rid){if(ih)remove(ref(db,'rooms/'+rid));else remove(ref(db,'rooms/'+rid+'/players/'+mid))}
+    // إخفاء كل الشاشات
     document.getElementById('game-screen').style.display='none';
     document.getElementById('host-screen').style.display='none';
     document.getElementById('join-screen').style.display='none';
+    // مسح علامة الهوست
+    localStorage.removeItem('isHost');
+    // رسالة المغادرة
     ov('<h2>👋 لقد غادرت اللعبة</h2>',3000);
     setTimeout(()=>{location.href=location.origin+location.pathname},3000);
 };
