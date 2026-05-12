@@ -89,7 +89,7 @@ function ex(){document.getElementById('join-screen').style.display='none';ov('�
 
 window.createRoom=function(m){
     gm=m;mn='⚔️ SASUKE ⚔️';rid='r'+Date.now().toString(36);mid='h'+Date.now().toString(36);ih=true;
-    set(ref(db,'rooms/'+rid),{gm,phase:'waiting',active:true,si:null,sw:null,vr:{},vl:{},om:null,om2:null}).then(()=>{
+    set(ref(db,'rooms/'+rid),{gm,phase:'waiting',active:true,si:null,sw:null,vr:{},vl:{},om:null}).then(()=>{
         am();sg();document.getElementById('mode-display').textContent=gm==='multi'?'٢':'١';
         document.getElementById('host-btns').style.display='block';document.getElementById('btn-start').style.display='inline-block';
         document.getElementById('btn-show-vote').style.display='none';document.getElementById('room-link').style.display='block';
@@ -106,7 +106,7 @@ window.joinRoom=function(){
 
 function am(){set(ref(db,'rooms/'+rid+'/players/'+mid),{id:mid,name:mn,ih,eliminated:false});}
 function sdc(){if(ih){onDisconnect(ref(db,'rooms/'+rid)).remove();}}
-function la(){lp();lg();lo();lo2();lvl();}
+function la(){lp();lg();lo();lvl();}
 function sg(){document.getElementById('host-screen').style.display='none';document.getElementById('join-screen').style.display='none';document.getElementById('game-screen').style.display='block';}
 
 function lp(){onValue(ref(db,'rooms/'+rid+'/players'),s=>{let p=s.val()||{};ap=p;let h='';Object.keys(p).forEach(i=>{h+=`<li>${p[i].name}${p[i].ih?' 👑':''}</li>`});document.getElementById('player-list').innerHTML=h;if(ih&&ph==='waiting'){let k='';Object.keys(p).forEach(i=>{if(i!==mid)k+=`<button onclick="kick('${i}')" style="background:#ff6b6b;font-size:11px">❌ ${p[i].name}</button>`});document.getElementById('player-list').insertAdjacentHTML('afterend',k);}});}
@@ -116,30 +116,17 @@ function lvl(){onValue(ref(db,'rooms/'+rid+'/vl'),s=>{let l=s.val()||{};let h=''
 window.kick=function(id){remove(ref(db,'rooms/'+rid+'/players/'+id));};
 window.copyLink=function(){navigator.clipboard.writeText(document.getElementById('link-text').textContent);nt('📋 تم!');};
 
-function lg(){
-    onValue(ref(db,'rooms/'+rid),s=>{
-        if(!s.exists()){if(!ih){ov('<h2>👑 غادر الهوست</h2>',3000);setTimeout(()=>{location.href=location.origin+location.pathname},3000);}return}
-        let d=s.val();
-        if(!d.active&&!ih&&d.phase!=='finished'){ov('<h2>انتهت اللعبة</h2>',3000);setTimeout(()=>{location.href=location.origin+location.pathname},3000);return}
-        si=d.si;sw=d.sw;
-        if(d.phase!==ph){ph=d.phase;hp(d);}
-    });
-}
+function lg(){onValue(ref(db,'rooms/'+rid),s=>{if(!s.exists()){if(!ih){ov('<h2>👑 غادر الهوست</h2>',3000);setTimeout(()=>{location.href=location.origin+location.pathname},3000);}return}let d=s.val();if(!d.active&&!ih&&d.phase!=='finished'){ov('<h2>انتهت اللعبة</h2>',3000);setTimeout(()=>{location.href=location.origin+location.pathname},3000);return}si=d.si;sw=d.sw;if(d.phase!==ph){ph=d.phase;hp(d)}});}
 
-// رسالة للجميع
 function lo(){onValue(ref(db,'rooms/'+rid+'/om'),s=>{let m=s.val();if(!m)return;ov(m.h,0);if(m.cd)sc();});}
-// رسالة للجاسوس فقط
-function lo2(){onValue(ref(db,'rooms/'+rid+'/om2'),s=>{let m=s.val();if(!m)return;if(mid===si){sgi();}});}
 
 function hp(d){
     if(d.phase==='finished')return;
-    document.getElementById('vote-section').style.display='none';
-    document.getElementById('waiting-votes').style.display='none';
-    document.getElementById('vote-log-section').style.display='none';
-    rov();
+    document.getElementById('vote-section').style.display='none';document.getElementById('waiting-votes').style.display='none';
+    document.getElementById('vote-log-section').style.display='none';rov();
     if(d.phase==='playing'){swd(d);if(ih){document.getElementById('btn-start').style.display='none';document.getElementById('btn-show-vote').style.display='inline-block'}}
     if(d.phase==='voting'){svu();if(ih)document.getElementById('btn-show-vote').style.display='none';document.getElementById('vote-log-section').style.display='block';}
-    if(d.phase==='spyGuess'){document.getElementById('vote-log-section').style.display='block';}
+    if(d.phase==='spyGuess'){document.getElementById('vote-log-section').style.display='block';if(mid===d.si)sgi();}
 }
 
 function swd(d){let wd=document.getElementById('word-display');wd.style.display='block';wd.style.background=mid===d.si?'rgba(200,0,0,.3)':'rgba(0,150,0,.3)';wd.innerHTML=mid===d.si?'🕵️ أنت الجاسوس!':'الكلمة: '+d.sw;}
@@ -173,20 +160,25 @@ function fz(v){
         if(ok){
             set(ref(db,'rooms/'+rid+'/om'),{h:`✅ الجاسوس هو: <strong>${sn}</strong><br>عليه يخمن الكلمة!`});
         } else {
-            // رسالة للجميع
             set(ref(db,'rooms/'+rid+'/om'),{h:`❌ الي صوتو عليه غلط<br>🕵️ الجاسوس: <strong>${sn}</strong><br><br>⏳ في انتظار إجابة الجاسوس...`});
         }
-        // إشارة للجاسوس فقط
-        set(ref(db,'rooms/'+rid+'/om2'),{show:true});
     } else {
         if(ok){set(ref(db,'rooms/'+rid+'/om'),{h:`✅ الجاسوس هو: <strong>${sn}</strong><br>عليه يخمن الكلمة!`});}
-        else{set(ref(db,'rooms/'+rid+'/om'),{h:`❌ مش هو الجاسوس!<br>🕵️ الجاسوس الحقيقي: <strong>${sn}</strong><br>عليه يخمن الكلمة!`});}
-        set(ref(db,'rooms/'+rid+'/om2'),{show:true});
+        else{set(ref(db,'rooms/'+rid+'/om'),{h:`❌ مش هو الجاسوس!<br>🕵️ الجاسوس: <strong>${sn}</strong><br>عليه يخمن الكلمة!`});}
     }
     update(ref(db,'rooms/'+rid),{phase:'spyGuess'});
 }
 
-function sgi(){rov();let ovd=document.createElement('div');ovd.className='overlay';ovd.id='go';ovd.innerHTML=`<div class="overlay-box"><h3>🤔 خمن الكلمة:</h3><input id="gi" placeholder="اكتب الكلمة"><br><button onclick="sg()">📨 إرسال</button></div>`;document.body.appendChild(ovd);}
+// نافذة التخمين للجاسوس
+function sgi(){
+    // بنشيل أي overlay قديم
+    let oldGo=document.getElementById('go');if(oldGo)oldGo.remove();
+    let oldMo=document.getElementById('mo');if(oldMo)oldMo.remove();
+    
+    let ovd=document.createElement('div');ovd.className='overlay';ovd.id='go';
+    ovd.innerHTML=`<div class="overlay-box"><h3>🤔 خمن الكلمة:</h3><input id="gi" placeholder="اكتب الكلمة"><br><button onclick="sg()">📨 إرسال</button></div>`;
+    document.body.appendChild(ovd);
+}
 
 window.sg=function(){
     let g=document.getElementById('gi')?.value.trim();if(!g)return;
@@ -197,7 +189,7 @@ window.sg=function(){
 
 function sc(){let c=10;let el=document.getElementById('cd');if(!el)return;let iv=setInterval(()=>{c--;if(c<=0){clearInterval(iv);location.href=location.origin+location.pathname;}else{el.textContent=c;}},1000);}
 
-function ov(h,d){rov();let od=document.createElement('div');od.className='overlay';od.id='mo';od.innerHTML=`<div class="overlay-box">${h}</div>`;document.body.appendChild(od);if(d>0)setTimeout(()=>rov(),d);}
+function ov(h,d){let oldMo=document.getElementById('mo');if(oldMo)oldMo.remove();let od=document.createElement('div');od.className='overlay';od.id='mo';od.innerHTML=`<div class="overlay-box">${h}</div>`;document.body.appendChild(od);if(d>0)setTimeout(()=>{let m=document.getElementById('mo');if(m)m.remove();},d);}
 function rov(){let mo=document.getElementById('mo');if(mo)mo.remove();let go=document.getElementById('go');if(go)go.remove();}
 
 function nt(msg){let n=document.createElement('div');n.className='notification';n.textContent=msg;document.body.appendChild(n);setTimeout(()=>n.remove(),3000);}
