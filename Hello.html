@@ -11,32 +11,25 @@
         .star{position:absolute;background:white;border-radius:50%;animation:fall linear infinite;opacity:.8}
         @keyframes fall{0%{transform:translateY(-10vh) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(360deg);opacity:0}}
         button{background:#e94560;color:white;border:none;padding:12px 24px;margin:6px;border-radius:30px;font-size:16px;cursor:pointer;transition:0.3s}
-        button:hover{background:#c23152;transform:scale(1.02)}
+        button:hover{background:#c23152}
         .btn-gold{background:#f39c12}
-        .btn-gold:hover{background:#e67e22}
         input{padding:12px;border-radius:20px;border:none;margin:8px;font-size:16px;width:70%;text-align:center;background:rgba(255,255,255,.1);color:#fff}
-        input:focus{outline:2px solid #e94560}
-        li{background:rgba(255,255,255,.05);margin:3px 0;padding:10px;border-radius:12px;font-size:16px}
-        .game-select-btn{display:block;width:90%;margin:10px auto;font-size:18px;padding:16px;border-radius:20px}
-        .host-name-display{background:linear-gradient(135deg,#f093fb,#f5576c,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:20px;font-weight:bold}
+        li{background:rgba(255,255,255,.05);margin:3px 0;padding:10px;border-radius:12px}
+        .game-select-btn{display:block;width:90%;margin:10px auto;padding:16px;border-radius:20px}
+        .host-name-display{background:linear-gradient(135deg,#f093fb,#f5576c,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
         .host-box{background:rgba(255,255,255,.05);padding:12px;border-radius:12px;border:1px solid #e94560;margin-bottom:12px}
         .overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.95);z-index:999;display:flex;align-items:center;justify-content:center}
         .overlay-box{background:#1a1a3e;border:2px solid #e94560;padding:25px;border-radius:15px;text-align:center;max-width:450px}
         .notification{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#e94560;padding:10px 20px;border-radius:25px;z-index:1000;font-size:14px;animation:fadeOut 3s forwards}
         @keyframes fadeOut{0%{opacity:1}70%{opacity:1}100%{opacity:0;display:none}}
-        .countdown{font-size:40px;color:#2ecc71;font-weight:bold;margin:10px 0}
+        .countdown{font-size:40px;color:#2ecc71;font-weight:bold}
         .spinner{width:40px;height:40px;border:4px solid rgba(255,255,255,.2);border-top:4px solid #e94560;border-radius:50%;animation:spin 1s linear infinite;margin:10px auto}
         @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-        .vote-log-item{background:rgba(255,255,255,.05);padding:6px 12px;margin:3px 0;border-radius:8px;font-size:14px}
-        #kick-section{background:rgba(255,0,0,.1);padding:8px;border-radius:8px;margin-top:8px}
-        #kick-section button{background:#ff4444;font-size:12px;padding:4px 10px;margin:2px}
-        #vote-btns button{margin:5px;padding:8px 16px}
         .vote-counter{background:rgba(0,0,0,.5);padding:10px;border-radius:12px;margin:10px 0;font-size:18px}
         .vote-counter span{color:#f39c12;font-weight:bold;font-size:24px}
-        .link-box{background:rgba(0,0,0,.3);padding:10px;border-radius:10px;margin:10px 0;direction:ltr}
-        .link-text{word-break:break-all;font-size:12px;color:#aaa}
-        .copy-btn{background:#2ecc71;padding:5px 15px;font-size:12px}
-        .copy-btn:hover{background:#27ae60}
+        .vote-log-item{background:rgba(255,255,255,.05);padding:6px 12px;margin:3px 0;border-radius:8px;font-size:14px}
+        #kick-section{background:rgba(255,0,0,.1);padding:8px;border-radius:8px;margin-top:8px}
+        #kick-section button{background:#ff4444;font-size:12px;padding:4px 10px}
     </style>
 </head>
 <body>
@@ -46,44 +39,36 @@
 
     <div id="host-screen">
         <h1 style="background:linear-gradient(135deg,#e94560,#ff6b6b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:32px">🕵️ لعبة الجاسوس</h1>
-        <div class="host-box"><p>👑 أنت الهوست</p><p>اسمك: <span class="host-name-display">⚔️ S A S U K E ⚔️</span></p></div>
+        <div class="host-box"><p>👑 أنت الهوست</p><p>اسمك: <span class="host-name-display">⚔️ SASUKE ⚔️</span></p></div>
         <button class="game-select-btn" onclick="createRoom('normal')">🎮 لعبة الجاسوس ١</button>
         <button class="game-select-btn btn-gold" onclick="createRoom('multi')">🎯 لعبة الجاسوس ٢</button>
     </div>
 
     <div id="join-screen" style="display:none">
-        <h1 style="background:linear-gradient(135deg,#e94560,#ff6b6b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:32px">🕵️ لعبة الجاسوس</h1>
+        <h1>🕵️ لعبة الجاسوس</h1>
         <p style="color:#aaa;margin:15px 0">ادخل غرفة صديقك:</p>
-        <input type="text" id="player-name" placeholder="اكتب اسمك" maxlength="15"><br>
+        <input type="text" id="player-name" placeholder="اكتب اسمك"><br>
         <button onclick="joinRoom()">🚪 انضمام للغرفة</button>
     </div>
 
     <div id="game-screen" style="display:none">
         <h2>🕵️ لعبة الجاسوس <span id="mode-display"></span></h2>
-        
         <div id="room-link" style="display:none;background:rgba(0,0,0,.3);padding:10px;border-radius:10px;margin:10px 0">
-            <div style="font-size:12px;color:#aaa;margin-bottom:5px">🔗 رابط دعوة الأصدقاء:</div>
-            <div class="link-box">
-                <div class="link-text" id="link-text" style="word-break:break-all"></div>
-                <button onclick="copyLink()" class="copy-btn" style="margin-top:8px">📋 نسخ الرابط</button>
-            </div>
+            <div>🔗 رابط دعوة الأصدقاء:</div>
+            <div class="link-box"><span id="link-text" style="direction:ltr;word-break:break-all;font-size:12px"></span></div>
+            <button onclick="copyLink()" style="background:#2ecc71;padding:5px 15px;font-size:12px">📋 نسخ الرابط</button>
         </div>
-        
         <div id="word-display" style="display:none;padding:20px;border-radius:15px;margin:10px 0;font-size:28px;font-weight:bold"></div>
-        
         <div id="host-btns" style="display:none">
             <button id="btn-start" onclick="startGame()">🚀 ابدأ اللعبة</button>
-            <button id="btn-show-vote" onclick="showVoting()" style="display:none;background:#f39c12">🗳️ إظهار التصويت</button>
+            <button id="btn-show-vote" onclick="showVoting()" style="display:none">🗳️ إظهار التصويت</button>
         </div>
-        
         <div id="vote-counter-container" class="vote-counter" style="display:none">
             🗳️ عدد المصوتين: <span id="vote-count">0</span> / <span id="total-voters">0</span>
         </div>
-        
-        <h4>👥 اللاعبون:</h4>
-        <ul id="player-list" style="max-height:200px;overflow-y:auto"></ul>
+        <h4>👥 اللاعبون:</h4><ul id="player-list"></ul>
         <div id="kick-section"></div>
-        <div id="vote-log-section" style="display:none"><h4>📋 التصويتات:</h4><div id="vote-log" style="max-height:150px;overflow-y:auto"></div></div>
+        <div id="vote-log-section" style="display:none"><h4>📋 التصويتات:</h4><div id="vote-log"></div></div>
         <div id="vote-section" style="display:none"><h4>🗳️ صوت على الجاسوس:</h4><div id="vote-btns"></div></div>
         <div id="waiting-votes" style="display:none">⏳ في انتظار باقي اللاعبين...</div>
         <button onclick="leaveRoom()" style="background:#555;margin-top:12px">🚪 مغادرة</button>
@@ -102,65 +87,23 @@ const fc={apiKey:"AIzaSyDTyJqVntFqKe3I-zntb_rMx9Qcv7Nqi94",authDomain:"spy-game-
 const a=initializeApp(fc),db=getDatabase(a);
 
 let mid,mn,rid,ih,gm='normal',si,sw,ap={},ph='waiting';
-let countdownInterval = null;
 let voteCounterInterval = null;
 
-const w = [
-    'تفاحة', 'موز', 'برتقال', 'فراولة', 'عنب', 'مانجو', 'أناناس', 'بطيخ', 'شمام', 'كرز',
-    'خوخ', 'كمثرى', 'رمان', 'كيوي', 'جوز هند', 'افوكادو', 'توت', 'توت بري', 'ليمون', 'جريب فروت',
-    'يوسفي', 'باباي', 'جاك فروت', 'ليتشي', 'تمر', 'زيتون', 'جزر', 'بطاطس', 'طماطم', 'خيار',
-    'فلفل', 'باذنجان', 'قرنبيط', 'بروكلي', 'سبانخ', 'خس', 'كرنب', 'بصل', 'ثوم', 'زنجبيل',
-    'فجل', 'كرفس', 'كوسا', 'بامية', 'فاصوليا', 'بازلاء', 'ذرة', 'عدس', 'حمص', 'فول',
-    'أسد', 'نمر', 'فيل', 'زرافة', 'حمار وحشي', 'وحيد القرن', 'فرس النهر', 'تمساح', 'ثعبان', 'سلحفاة',
-    'قرد', 'غوريلا', 'شمبانزي', 'دب', 'ذئب', 'ثعلب', 'كلب', 'قطة', 'حصان', 'بقرة',
-    'خروف', 'ماعز', 'دجاجة', 'بطة', 'أوزة', 'حمامة', 'نسر', 'بومة', 'ببغاء', 'نعامة',
-    'كنغر', 'كوالا', 'باندا', 'جمل', 'غزال', 'سنجاب', 'أرنب', 'فأر', 'قنفذ', 'حوت',
-    'مسجد', 'كنيسة', 'مستشفى', 'مدرسة', 'جامعة', 'روضة', 'مكتبة', 'متحف', 'حديقة', 'حمام سباحة',
-    'صالة رياضية', 'سوبر ماركت', 'بقالة', 'سوق', 'مول تجاري', 'مطعم', 'مقهى', 'فندق', 'منتجع', 'شاطئ',
-    'متنزه', 'مدينة ملاهي', 'حديقة حيوان', 'سينما', 'مسرح', 'استاد', 'مطار', 'محطة قطار', 'مركز شرطة', 'مخبز',
-    'صالون حلاقة', 'عيادة', 'صيدلية', 'نادي', 'حمام', 'مطبخ', 'غرفة نوم', 'جراج', 'معمل', 'استوديو',
-    'طبيب', 'مهندس', 'معلم', 'محامي', 'قاضي', 'شرطي', 'جندي', 'اطفائي', 'طيار', 'بحار',
-    'سائق', 'ميكانيكي', 'نجار', 'حداد', 'سباك', 'كهربائي', 'بناء', 'رسام', 'موسيقي', 'مغني',
-    'راقص', 'ممثل', 'مخرج', 'كاتب', 'شاعر', 'صحفي', 'مصور', 'طباخ', 'خباز', 'حلواني',
-    'سرير', 'كرسي', 'طاولة', 'خزانة', 'رف', 'كنبة', 'ستارة', 'سجادة', 'وسادة', 'بطانية',
-    'مرآة', 'ساعة حائط', 'مصباح', 'ثلاجة', 'فرن', 'ميكروويف', 'غسالة', 'مكنسة', 'ممسحة', 'خلاط',
-    'غلاية', 'طنجرة', 'مقلاة', 'صحن', 'كأس', 'ملعقة', 'شوكة', 'سكين', 'مفتاح', 'هاتف',
-    'شمس', 'قمر', 'نجوم', 'سماء', 'سحاب', 'مطر', 'ثلج', 'برق', 'رعد', 'رياح',
-    'بحر', 'نهر', 'شلال', 'بحيرة', 'وادي', 'جبل', 'صحراء', 'رمال', 'عشب', 'شجر',
-    'كرة قدم', 'كرة سلة', 'كرة طائرة', 'كرة يد', 'تنس', 'سباحة', 'ملاكمة', 'جودو', 'كاراتيه', 'يوغا',
-    'جمباز', 'جري', 'دراجات', 'فروسية', 'رماية', 'شطرنج', 'داما', 'بوكر', 'أونو', 'الغاز',
-    'كمبيوتر', 'لابتوب', 'تابلت', 'ساعة ذكية', 'سماعات', 'كاميرا', 'ميكروفون', 'شاشة', 'فأرة', 'طابعة',
-    'راوتر', 'فلاشة', 'بطارية', 'شاحن', 'روبوت', 'انترنت', 'واي فاي', 'بلوتوث', 'تلسكوب', 'ميكروسكوب',
-    'بيتزا', 'برغر', 'شاورما', 'فلافل', 'حمص', 'فتوش', 'تبولة', 'كبة', 'باستا', 'رز',
-    'كبسة', 'مندي', 'سلطة', 'شوربة', 'جبنة', 'حليب', 'عسل', 'شوكولاتة', 'بقلاوة', 'كنافة',
-    'قطايف', 'عصير', 'شاي', 'قهوة', 'نسكافيه', 'كابتشينو', 'موكا', 'كوكتيل', 'لبن', 'حلاوة',
-    'ميكي ماوس', 'بندق', 'سبونج بوب', 'سنجوب', 'كابتن ماجد', 'شريك', 'توم', 'جيري', 'علاء الدين', 'سيمبا'
-];
+const w = ['تفاحة','موز','برتقال','فراولة','عنب','مانجو','أناناس','بطيخ','شمام','كرز','خوخ','رمان','كيوي','ليمون','جزر','بطاطس','طماطم','خيار','فلفل','بصل','أسد','نمر','فيل','زرافة','تمساح','ثعبان','كلب','قطة','حصان','بقرة','مسجد','كنيسة','مستشفى','مدرسة','جامعة','مكتبة','متحف','حديقة','سوبر ماركت','سوق','مطعم','مقهى','فندق','شاطئ','سينما','مسرح','مطار','طبيب','مهندس','معلم','محامي','شرطي','طيار','سائق','نجار','سباك','كهربائي','سرير','كرسي','طاولة','خزانة','كنبة','ثلاجة','فرن','غسالة','هاتف','تلفاز','كتاب','قلم','شمس','قمر','نجوم','بحر','نهر','جبل','صحراء','كرة قدم','كرة سلة','تنس','سباحة','ملاكمة','شطرنج','بيتزا','برغر','شاورما','فلافل','حمص','عصير','شاي','قهوة','نسكافيه'];
 
 const pr=new URLSearchParams(location.search),rf=pr.get('room');
-
 if(rf){rid=rf;document.getElementById('host-screen').style.display='none';document.getElementById('join-screen').style.display='block';ck();}
 else{document.getElementById('host-screen').style.display='block';document.getElementById('join-screen').style.display='none';}
 
-function ck(){get(ref(db,'rooms/'+rid)).then(s=>{if(!s.exists()||!s.val().active){ex()}}).catch(()=>{setTimeout(()=>ck(),1000);});}
+function ck(){get(ref(db,'rooms/'+rid)).then(s=>{if(!s.exists()||!s.val().active){ex()}});}
 function ex(){document.getElementById('join-screen').style.display='none';ov('⚠️ انتهت صلاحية الرابط!',3000);setTimeout(()=>{location.href=location.origin+location.pathname},3000);}
 
 window.createRoom=function(m){
-    gm=m;mn='⚔️ SASUKE ⚔️';rid='r'+Date.now().toString(36)+Math.random().toString(36).substr(2,5);mid='h'+Date.now().toString(36);ih=true;
-    // إنشاء غرفة جديدة مع فلترة كاملة للبيانات القديمة
-    set(ref(db,'rooms/'+rid),{
-        gm: gm,
-        phase: 'waiting',
-        active: true,
-        si: null,
-        sw: null,
-        vr: {},   // ← تصفير الأصوات
-        vl: {},   // ← تصفير سجل التصويت
-        msg: null
-    }).then(()=>{
+    gm=m;mn='⚔️ SASUKE ⚔️';rid='r'+Date.now().toString(36);mid='h'+Date.now().toString(36);ih=true;
+    set(ref(db,'rooms/'+rid),{gm,phase:'waiting',active:true,si:null,sw:null,vr:{},vl:{},msg:null}).then(()=>{
         am();sg();document.getElementById('mode-display').textContent=gm==='multi'?'٢':'١';
-        document.getElementById('host-btns').style.display='block';document.getElementById('btn-start').style.display='inline-block';
-        document.getElementById('btn-show-vote').style.display='none';
+        document.getElementById('host-btns').style.display='block';
+        document.getElementById('btn-start').style.display='inline-block';
         document.getElementById('room-link').style.display='block';
         document.getElementById('link-text').textContent=location.origin+location.pathname+'?room='+rid;
         la();nt('✅ تم إنشاء الغرفة!');
@@ -170,170 +113,86 @@ window.createRoom=function(m){
 window.joinRoom=function(){
     let n=document.getElementById('player-name').value.trim();
     if(!n) return nt('⚠️ اكتب اسمك!');
-    if(n.length>15) return nt('⚠️ الاسم طويل قوي!');
-    mn=n;mid='p'+Date.now().toString(36)+Math.random().toString(36).substr(2,5);ih=false;
-    
-    nt('⏳ جاري الدخول...');
-    
-    function tryJoin(retry=0){
-        get(ref(db,'rooms/'+rid)).then(s=>{
-            if(s.exists() && s.val().active){
-                am();sg();
-                document.getElementById('host-btns').style.display='none';
-                document.getElementById('room-link').style.display='none';
-                la();
-                nt('👋 مرحباً '+n+'!');
-            } else {
-                if(retry<3){setTimeout(()=>tryJoin(retry+1),1000);}
-                else{ex();}
-            }
-        }).catch(()=>{
-            if(retry<3){setTimeout(()=>tryJoin(retry+1),1000);}
-            else{ex();}
-        });
-    }
-    tryJoin();
+    mn=n;mid='p'+Date.now().toString(36);ih=false;
+    get(ref(db,'rooms/'+rid)).then(s=>{
+        if(s.exists()&&s.val().active){am();sg();document.getElementById('host-btns').style.display='none';document.getElementById('room-link').style.display='none';la();nt('👋 مرحباً '+n+'!')}
+        else{ex()}
+    });
 };
 
 function am(){set(ref(db,'rooms/'+rid+'/players/'+mid),{id:mid,name:mn,ih,eliminated:false});}
-function sdc(){if(ih){}}
 function la(){lp();lg();lmsg();lvl();startVoteCounter();}
-function sg(){
-    if(!ih){
-        document.getElementById('btn-start').style.display='none';
-        document.getElementById('btn-show-vote').style.display='none';
-    }
-    document.getElementById('host-screen').style.display='none';
-    document.getElementById('join-screen').style.display='none';
-    document.getElementById('game-screen').style.display='block';
-}
+function sg(){document.getElementById('host-screen').style.display='none';document.getElementById('join-screen').style.display='none';document.getElementById('game-screen').style.display='block';}
 
 function lp(){
     onValue(ref(db,'rooms/'+rid+'/players'),s=>{
         let p=s.val()||{};ap=p;
         let h='';Object.keys(p).forEach(i=>{h+=`<li>${p[i].name}${p[i].ih?' 👑':''}${p[i].eliminated?' ❌':''}</li>`});
         document.getElementById('player-list').innerHTML=h;
-        
         let kickDiv=document.getElementById('kick-section');
         if(ih&&ph==='waiting'){
             let k='<strong>🚫 طرد لاعب:</strong><br>';
             let has=false;
-            Object.keys(p).forEach(i=>{
-                if(i!==mid && !p[i].eliminated){
-                    k+=`<button onclick="kick('${i}')">❌ ${p[i].name}</button> `;
-                    has=true;
-                }
-            });
+            Object.keys(p).forEach(i=>{if(i!==mid&&!p[i].eliminated){k+=`<button onclick="kick('${i}')">❌ ${p[i].name}</button>`;has=true;}});
             kickDiv.innerHTML=has?k:'';
-            kickDiv.style.display=has?'block':'none';
-        }else{kickDiv.innerHTML='';kickDiv.style.display='none';}
+        }else{kickDiv.innerHTML='';}
     });
 }
 
-function lvl(){
-    onValue(ref(db,'rooms/'+rid+'/vl'),s=>{
-        let l=s.val()||{};
-        let h='';
-        Object.values(l).forEach(x=>{
-            h+=`<div class="vote-log-item">🗳️ ${x.v} ➡️ ${x.t}</div>`;
-        });
-        document.getElementById('vote-log').innerHTML=h||'لا تصويتات بعد';
-    });
-}
+function lvl(){onValue(ref(db,'rooms/'+rid+'/vl'),s=>{let l=s.val()||{};let h='';Object.values(l).forEach(x=>{h+=`<div class="vote-log-item">🗳️ ${x.v} ➡️ ${x.t}</div>`});document.getElementById('vote-log').innerHTML=h||'لا تصويتات بعد';});}
 
 window.kick=function(id){remove(ref(db,'rooms/'+rid+'/players/'+id));nt('✅ تم طرد اللاعب');};
-
-window.copyLink=function(){
-    navigator.clipboard.writeText(document.getElementById('link-text').textContent);
-    nt('📋 تم نسخ الرابط!');
-    // إخفاء رابط الدعوة بعد النسخ
-    document.getElementById('room-link').style.display='none';
-};
+window.copyLink=function(){navigator.clipboard.writeText(document.getElementById('link-text').textContent);nt('📋 تم نسخ الرابط!');document.getElementById('room-link').style.display='none';};
 
 function startVoteCounter(){
     if(voteCounterInterval) clearInterval(voteCounterInterval);
     voteCounterInterval = setInterval(()=>{
         if(ph === 'voting'){
             get(ref(db,'rooms/'+rid+'/players')).then(ps=>{
-                let players = ps.val()||{};
-                let activeCount = Object.values(players).filter(p=>!p.eliminated).length;
+                let players=ps.val()||{};
+                let activeCount=Object.values(players).filter(p=>!p.eliminated).length;
                 get(ref(db,'rooms/'+rid+'/vr')).then(vs=>{
-                    let votes = vs.val()||{};
-                    let votersCount = Object.keys(votes).length;
-                    document.getElementById('vote-count').textContent = votersCount;
-                    document.getElementById('total-voters').textContent = activeCount;
-                    document.getElementById('vote-counter-container').style.display = 'block';
+                    let votes=vs.val()||{};
+                    document.getElementById('vote-count').textContent=Object.keys(votes).length;
+                    document.getElementById('total-voters').textContent=activeCount;
+                    document.getElementById('vote-counter-container').style.display='block';
                 });
             });
         } else {
-            document.getElementById('vote-counter-container').style.display = 'none';
+            document.getElementById('vote-counter-container').style.display='none';
         }
     }, 500);
 }
 
 function lg(){onValue(ref(db,'rooms/'+rid),s=>{if(!s.exists()){if(!ih){ov('<h2>👑 غادر الهوست</h2>',2000);setTimeout(()=>{location.href=location.origin+location.pathname},2000);}return}let d=s.val();if(!d.active&&!ih&&d.phase!=='finished'){ov('<h2>انتهت اللعبة</h2>',2000);setTimeout(()=>{location.href=location.origin+location.pathname},2000);return}si=d.si;sw=d.sw;if(d.phase!==ph){ph=d.phase;hp(d)}});}
 
-function lmsg(){onValue(ref(db,'rooms/'+rid+'/msg'),s=>{let m=s.val();if(!m)return;if(m.target==='all'){ov(m.html,m.duration||0);if(m.cd)sc();}});}
+function lmsg(){onValue(ref(db,'rooms/'+rid+'/msg'),s=>{let m=s.val();if(!m)return;if(m.target==='all'){ov(m.html,m.duration||0);}});}
 
 function swd(d){
     let wd=document.getElementById('word-display');
-    if(!wd)return;
     wd.style.display='block';
-    if(!d||!d.si){wd.innerHTML='⚠️ جاري التحميل...';return;}
-    if(ap[mid]&&ap[mid].eliminated){wd.innerHTML='❌ تم استبعادك';wd.style.background='rgba(100,100,100,.3)';return;}
+    if(ap[mid]?.eliminated){wd.innerHTML='❌ تم استبعادك';wd.style.background='rgba(100,100,100,.3)';return;}
     if(mid===d.si){wd.style.background='rgba(200,0,0,.3)';wd.innerHTML='🕵️ أنت الجاسوس! 🤫';}
-    else{wd.style.background='rgba(0,150,0,.3)';wd.innerHTML='🔍 الكلمة: '+(d.sw||'???');}
+    else{wd.style.background='rgba(0,150,0,.3)';wd.innerHTML='🔍 الكلمة: '+d.sw;}
 }
 
 function hp(d){
-    if(d.phase==='finished')return;
     document.getElementById('vote-section').style.display='none';
     document.getElementById('waiting-votes').style.display='none';
     document.getElementById('vote-log-section').style.display='none';
-    let mo=document.getElementById('mo');if(mo)mo.remove();
-    let go=document.getElementById('go');if(go)go.remove();
-    
-    if(d.phase==='playing'){
-        swd(d);
-        if(ih){
-            document.getElementById('btn-start').style.display='none';
-            if(Object.keys(ap).length>=2){document.getElementById('btn-show-vote').style.display='inline-block';}
-        }
-    }
-    if(d.phase==='voting'){
-        svu();
-        if(ih)document.getElementById('btn-show-vote').style.display='none';
-        document.getElementById('vote-log-section').style.display='block';
-    }
-    if(d.phase==='spyGuess'){
-        document.getElementById('vote-log-section').style.display='block';
-        document.getElementById('vote-counter-container').style.display='none';
-    }
+    if(d.phase==='playing'){swd(d);if(ih){document.getElementById('btn-start').style.display='none';document.getElementById('btn-show-vote').style.display='inline-block';}}
+    if(d.phase==='voting'){svu();if(ih)document.getElementById('btn-show-vote').style.display='none';document.getElementById('vote-log-section').style.display='block';}
+    if(d.phase==='spyGuess'){document.getElementById('vote-log-section').style.display='block';document.getElementById('vote-counter-container').style.display='none';}
 }
 
 window.startGame=function(){
     get(ref(db,'rooms/'+rid+'/players')).then(s=>{
         let p=s.val(),ids=Object.keys(p);
         if(ids.length<2)return nt('⚠️ لازم على الأقل 2 لاعبين!');
-        
-        // إعادة تعيين كل اللاعبين
-        ids.forEach(i=>{
-            update(ref(db,'rooms/'+rid+'/players/'+i),{eliminated:false});
-        });
-        
+        ids.forEach(i=>update(ref(db,'rooms/'+rid+'/players/'+i),{eliminated:false}));
         let spy=ids[Math.floor(Math.random()*ids.length)];
         let sword=w[Math.floor(Math.random()*w.length)];
-        if(!sword)sword='تفاحة';
-        
-        // مهم: تصفير الأصوات وسجل التصويت قبل كل لعبة جديدة
-        update(ref(db,'rooms/'+rid),{
-            phase:'playing',
-            si:spy,
-            sw:sword,
-            vr: {},   // ← تصفير الأصوات
-            vl: {}    // ← تصفير سجل التصويت
-        });
-        
+        update(ref(db,'rooms/'+rid),{phase:'playing',si:spy,sw:sword,vr:{},vl:{}});
         document.getElementById('btn-start').style.display='none';
         document.getElementById('btn-show-vote').style.display='inline-block';
         nt('🎮 بدأت اللعبة! جاسوس واحد بينكم');
@@ -345,10 +204,8 @@ window.showVoting=function(){update(ref(db,'rooms/'+rid),{phase:'voting'});}
 function svu(){
     document.getElementById('vote-section').style.display='block';
     let h='';
-    Object.entries(ap).forEach(([id,p])=>{
-        if(id!==mid && !p.eliminated) h+=`<button onclick="vote('${id}')">${p.name}</button>`;
-    });
-    document.getElementById('vote-btns').innerHTML=h||'<p>لا يوجد لاعبين للتصويت عليهم</p>';
+    Object.entries(ap).forEach(([id,p])=>{if(id!==mid&&!p.eliminated) h+=`<button onclick="vote('${id}')">${p.name}</button>`;});
+    document.getElementById('vote-btns').innerHTML=h;
 }
 
 window.vote=function(id){
@@ -357,93 +214,64 @@ window.vote=function(id){
     document.getElementById('vote-section').style.display='none';
     document.getElementById('waiting-votes').style.display='block';
     
-    get(ref(db,'rooms/'+rid+'/players')).then(ps=>{
-        let cur=ps.val()||{};
-        let act=Object.values(cur).filter(p=>!p.eliminated).length;
+    setTimeout(()=>{
         get(ref(db,'rooms/'+rid+'/vr')).then(vs=>{
-            let votesObj = vs.val()||{};
-            if(Object.keys(votesObj).length >= act){
-                document.getElementById('waiting-votes').style.display='none';
-                fz(votesObj);
-            }
+            let votesObj=vs.val()||{};
+            get(ref(db,'rooms/'+rid+'/players')).then(ps=>{
+                let cur=ps.val()||{};
+                let act=Object.values(cur).filter(p=>!p.eliminated).length;
+                if(Object.keys(votesObj).length >= act){
+                    document.getElementById('waiting-votes').style.display='none';
+                    fz(votesObj);
+                }
+            });
         });
-    });
+    }, 500);
 };
 
 function fz(v){
-    let vc={};Object.values(v).forEach(x=>{vc[x]=(vc[x]||0)+1});
-    if(Object.keys(vc).length===0){
-        set(ref(db,'rooms/'+rid+'/msg'),{html:`⚠️ لا توجد تصويتات!<br>🕵️ الجاسوس: ${ap[si]?.name||'???'}`,target:'all'});
-        update(ref(db,'rooms/'+rid),{phase:'spyGuess'});
-        if(mid===si)sgi();
-        return;
-    }
+    let vc={};
+    Object.values(v).forEach(x=>{vc[x]=(vc[x]||0)+1});
     let sorted=Object.entries(vc).sort((a,b)=>b[1]-a[1]);
-    let mv=sorted[0][0],maxV=sorted[0][1],isTie=sorted.length>1&&sorted[1][1]===maxV;
-    let ok=(mv===si),sn=ap[si]?.name||'???',vn=ap[mv]?.name||'???';
+    let mv=sorted[0][0];
+    let sn=ap[si]?.name||'???';
+    let votedName=ap[mv]?.name||'???';
+    let ok=(mv===si);
     
-    if(ok&&!isTie){set(ref(db,'rooms/'+rid+'/msg'),{html:`✅ تم اكتشاف الجاسوس: ${sn}<br>عليه يخمن الكلمة!`,target:'all'});}
-    else if(isTie){set(ref(db,'rooms/'+rid+'/msg'),{html:`⚠️ تعادل! (${maxV} صوت لكل من: ${sorted.map(s=>ap[s[0]]?.name).join(', ')})<br>🕵️ الجاسوس: ${sn}<br>يخمن الجاسوس...`,target:'all'});}
-    else{set(ref(db,'rooms/'+rid+'/msg'),{html:`❌ تم التصويت على: ${vn} (خطأ)<br>🕵️ الجاسوس: ${sn}<br>⏳ يخمن الجاسوس...`,target:'all'});}
-    
+    if(ok){
+        set(ref(db,'rooms/'+rid+'/msg'),{html:`✅ تم اكتشاف الجاسوس: ${sn}<br>عليه يخمن الكلمة!`,target:'all'});
+    } else {
+        set(ref(db,'rooms/'+rid+'/msg'),{html:`❌ تم التصويت على: ${votedName} (خطأ)<br>🕵️ الجاسوس: ${sn}<br>⏳ يخمن الجاسوس...`,target:'all'});
+    }
     update(ref(db,'rooms/'+rid),{phase:'spyGuess'});
-    if(mid===si)sgi();
+    if(mid===si) sgi();
 }
 
 function sgi(){
     let old=document.getElementById('go');if(old)old.remove();
     let d=document.createElement('div');d.className='overlay';d.id='go';
-    d.innerHTML=`<div class="overlay-box"><h3>🤔 خمن الكلمة:</h3><input id="gi" placeholder="اكتب الكلمة" autocomplete="off"><br><button onclick="sg()">📨 إرسال</button></div>`;
+    d.innerHTML=`<div class="overlay-box"><h3>🤔 خمن الكلمة:</h3><input id="gi" placeholder="اكتب الكلمة"><br><button onclick="sg()">📨 إرسال</button></div>`;
     document.body.appendChild(d);
-    document.getElementById('gi')?.focus();
 }
 
 window.sg=function(){
     let g=document.getElementById('gi')?.value.trim();
     if(!g)return;
-    let el=document.getElementById('go');if(el)el.remove();
+    document.getElementById('go')?.remove();
     let isCorrect=(g===sw);
-    if(!isCorrect && gm==='normal'){update(ref(db,'rooms/'+rid+'/players/'+si),{eliminated:true});}
-    let result=isCorrect?`🎉 الجاسوس خمن صح! الكلمة: ${sw} 🎉`:`💀 الجاسوس خمن غلط! الكلمة: ${sw} 💀`;
-    set(ref(db,'rooms/'+rid+'/msg'),{html:`✍️ خمّن: ${g}<br>${result}<br><br><div class="spinner"></div><div class="countdown" id="cd">10</div><p>✅ اللعبة انتهت - اضغط مغادرة</p>`,target:'all',cd:true});
+    if(!isCorrect){update(ref(db,'rooms/'+rid+'/players/'+si),{eliminated:true});}
+    let result=isCorrect?`🎉 الجاسوس خمن صح! الكلمة: ${sw}`:`💀 الجاسوس خمن غلط! الكلمة: ${sw}`;
+    set(ref(db,'rooms/'+rid+'/msg'),{html:`✍️ خمّن: ${g}<br>${result}<br><br>✅ اللعبة انتهت - اضغط مغادرة`,target:'all'});
     update(ref(db,'rooms/'+rid),{phase:'finished'});
 };
 
-function sc(){
-    let c=10,el=document.getElementById('cd');
-    if(!el)return;
-    let iv=setInterval(()=>{c--;if(c<=0){clearInterval(iv);if(el)el.innerHTML='انتهت!';}else{if(el)el.textContent=c;}},1000);
-}
-
-function ov(h,d){
-    let old=document.getElementById('mo');if(old)old.remove();
-    let od=document.createElement('div');od.className='overlay';od.id='mo';
-    od.innerHTML=`<div class="overlay-box">${h}</div>`;
-    document.body.appendChild(od);
-    if(d>0)setTimeout(()=>{let m=document.getElementById('mo');if(m)m.remove();},d);
-}
-
-function nt(msg){
-    let n=document.createElement('div');n.className='notification';n.textContent=msg;
-    document.body.appendChild(n);
-    setTimeout(()=>{if(n)n.remove();},3000);
-}
+function ov(h,d){let od=document.createElement('div');od.className='overlay';od.id='mo';od.innerHTML=`<div class="overlay-box">${h}</div>`;document.body.appendChild(od);if(d)setTimeout(()=>od.remove(),d);}
+function nt(msg){let n=document.createElement('div');n.className='notification';n.textContent=msg;document.body.appendChild(n);setTimeout(()=>n.remove(),3000);}
 
 window.leaveRoom=function(){
-    if(countdownInterval)clearInterval(countdownInterval);
     if(voteCounterInterval)clearInterval(voteCounterInterval);
-    if(mid&&rid){
-        if(ih){remove(ref(db,'rooms/'+rid));}
-        else{remove(ref(db,'rooms/'+rid+'/players/'+mid));}
-    }
-    document.getElementById('game-screen').style.display='none';
-    document.getElementById('host-screen').style.display='block';
-    document.getElementById('join-screen').style.display='none';
-    document.getElementById('host-btns').style.display='none';
-    document.getElementById('word-display').style.display='none';
-    document.getElementById('vote-log-section').style.display='none';
-    document.getElementById('vote-counter-container').style.display='none';
-    nt('👋 لقد غادرت اللعبة');
+    if(mid&&rid){if(ih)remove(ref(db,'rooms/'+rid));else remove(ref(db,'rooms/'+rid+'/players/'+mid));}
+    location.reload();
 };
 </script>
 </body>
