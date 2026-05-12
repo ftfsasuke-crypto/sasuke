@@ -6,8 +6,11 @@
     <title>لعبة الجاسوس</title>
     <style>
         *{box-sizing:border-box;margin:0;padding:0}
-        body{font-family:'Segoe UI',Tahoma,sans-serif;background:linear-gradient(135deg,#0a0a1a,#1a1a3e);color:#eee;text-align:center;padding:20px;min-height:100vh;direction:rtl}
-        #app{max-width:600px;margin:0 auto;background:rgba(0,0,0,.5);border-radius:20px;padding:20px}
+        body{font-family:'Segoe UI',Tahoma,sans-serif;background:linear-gradient(135deg,#0a0a1a,#1a1a3e);color:#eee;text-align:center;padding:20px;min-height:100vh;direction:rtl;overflow-x:hidden}
+        .stars-container{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
+        .star{position:absolute;background:white;border-radius:50%;animation:fall linear infinite;opacity:.8}
+        @keyframes fall{0%{transform:translateY(-10vh) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(360deg);opacity:0}}
+        #app{max-width:600px;margin:0 auto;background:rgba(0,0,0,.5);border-radius:20px;padding:20px;position:relative;z-index:1;backdrop-filter:blur(10px)}
         h1 .title-spy{background:linear-gradient(135deg,#e94560,#ff6b6b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:38px}
         button{background:#e94560;color:white;border:none;padding:12px 24px;margin:8px;border-radius:30px;font-size:16px;cursor:pointer}
         button:hover{background:#c23152}
@@ -24,6 +27,7 @@
     </style>
 </head>
 <body>
+<div class="stars-container" id="starsContainer"></div>
 <div id="app">
     <div id="host-screen">
         <h1><span class="title-spy">🕵️ لعبة الجاسوس</span></h1>
@@ -54,6 +58,11 @@
         <button onclick="leaveRoom()" style="background:#555;margin-top:15px">🚪 مغادرة</button>
     </div>
 </div>
+
+<script>
+// إنشاء النجوم المتساقطة
+(function(){let c=document.getElementById('starsContainer');for(let i=0;i<60;i++){let s=document.createElement('div');s.className='star';let z=Math.random()*3+1;s.style.width=z+'px';s.style.height=z+'px';s.style.left=Math.random()*100+'%';s.style.animationDuration=(Math.random()*4+3)+'s';s.style.animationDelay=Math.random()*5+'s';s.style.opacity=Math.random()*.7+.3;c.appendChild(s);}})();
+</script>
 
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -166,7 +175,6 @@ function showGuessInput(){
 window.submitGuess=function(){
     let g=document.getElementById('guess-input')?.value.trim();if(!g)return;
     document.getElementById('overlay').remove();
-    // إظهار التخمين للكل + الكلمة الصحيحة
     update(ref(db,'rooms/'+rid+'/overlay'),{html:`✍️ الجاسوس خمّن: <strong>${g}</strong><br>🔑 الكلمة الصحيحة: <strong>${sword}</strong>`,auto:0});
     update(ref(db,'rooms/'+rid),{phase:'finished',active:false});
 };
