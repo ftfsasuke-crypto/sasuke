@@ -22,14 +22,16 @@
         .overlay-box{background:#1a1a3e;border:2px solid #e94560;padding:25px;border-radius:15px;text-align:center;max-width:450px}
         .notification{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#e94560;padding:10px 20px;border-radius:25px;z-index:1000;font-size:14px;animation:fadeOut 3s forwards}
         @keyframes fadeOut{0%{opacity:1}70%{opacity:1}100%{opacity:0;display:none}}
-        .countdown{font-size:40px;color:#2ecc71;font-weight:bold}
-        .spinner{width:40px;height:40px;border:4px solid rgba(255,255,255,.2);border-top:4px solid #e94560;border-radius:50%;animation:spin 1s linear infinite;margin:10px auto}
-        @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
         .vote-counter{background:rgba(0,0,0,.5);padding:10px;border-radius:12px;margin:10px 0;font-size:18px}
         .vote-counter span{color:#f39c12;font-weight:bold;font-size:24px}
         .vote-log-item{background:rgba(255,255,255,.05);padding:6px 12px;margin:3px 0;border-radius:8px;font-size:14px}
         #kick-section{background:rgba(255,0,0,.1);padding:8px;border-radius:8px;margin-top:8px}
         #kick-section button{background:#ff4444;font-size:12px;padding:4px 10px}
+        .close-btn{background:#555;padding:8px 20px;margin-top:15px}
+        .close-btn:hover{background:#777}
+        .guess-buttons{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:15px 0}
+        .guess-btn{background:#2ecc71;padding:10px 15px;margin:5px}
+        .guess-btn:hover{background:#27ae60}
     </style>
 </head>
 <body>
@@ -89,14 +91,87 @@ const a=initializeApp(fc),db=getDatabase(a);
 let mid,mn,rid,ih,gm='normal',si,sw,ap={},ph='waiting';
 let voteCounterInterval = null;
 
-const w = ['تفاحة','موز','برتقال','فراولة','عنب','مانجو','أناناس','بطيخ','شمام','كرز','خوخ','رمان','كيوي','ليمون','جزر','بطاطس','طماطم','خيار','فلفل','بصل','أسد','نمر','فيل','زرافة','تمساح','ثعبان','كلب','قطة','حصان','بقرة','مسجد','كنيسة','مستشفى','مدرسة','جامعة','مكتبة','متحف','حديقة','سوبر ماركت','سوق','مطعم','مقهى','فندق','شاطئ','سينما','مسرح','مطار','طبيب','مهندس','معلم','محامي','شرطي','طيار','سائق','نجار','سباك','كهربائي','سرير','كرسي','طاولة','خزانة','كنبة','ثلاجة','فرن','غسالة','هاتف','تلفاز','كتاب','قلم','شمس','قمر','نجوم','بحر','نهر','جبل','صحراء','كرة قدم','كرة سلة','تنس','سباحة','ملاكمة','شطرنج','بيتزا','برغر','شاورما','فلافل','حمص','عصير','شاي','قهوة','نسكافيه'];
+const w = [
+    // فواكه وخضروات (50)
+    'تفاحة', 'موز', 'برتقال', 'فراولة', 'عنب', 'مانجو', 'أناناس', 'بطيخ', 'شمام', 'كرز',
+    'خوخ', 'كمثرى', 'رمان', 'كيوي', 'جوز هند', 'افوكادو', 'توت', 'توت بري', 'ليمون', 'جريب فروت',
+    'يوسفي', 'باباي', 'جاك فروت', 'ليتشي', 'تمر', 'زيتون', 'جزر', 'بطاطس', 'طماطم', 'خيار',
+    'فلفل', 'باذنجان', 'قرنبيط', 'بروكلي', 'سبانخ', 'خس', 'كرنب', 'بصل', 'ثوم', 'زنجبيل',
+    'فجل', 'كرفس', 'كوسا', 'بامية', 'فاصوليا', 'بازلاء', 'ذرة', 'عدس', 'حمص', 'فول',
+    // حيوانات (50)
+    'أسد', 'نمر', 'فيل', 'زرافة', 'حمار وحشي', 'وحيد القرن', 'فرس النهر', 'تمساح', 'ثعبان', 'سلحفاة',
+    'قرد', 'غوريلا', 'شمبانزي', 'دب', 'ذئب', 'ثعلب', 'كلب', 'قطة', 'حصان', 'بقرة',
+    'خروف', 'ماعز', 'دجاجة', 'بطة', 'أوزة', 'حمامة', 'نسر', 'بومة', 'ببغاء', 'نعامة',
+    'كنغر', 'كوالا', 'باندا', 'نمر الثلوج', 'فهد', 'جمل', 'لاما', 'ألبكة', 'غزال', 'أيل',
+    'سنجاب', 'أرنب', 'فأر', 'جرذ', 'قنفذ', 'وطواط', 'حوت', 'دلفين', 'قرش', 'أخطبوط',
+    // أماكن (50)
+    'مسجد', 'كنيسة', 'معبد', 'مستشفى', 'مدرسة', 'جامعة', 'روضة', 'مكتبة', 'متحف', 'حديقة',
+    'صالة ألعاب', 'حمام سباحة', 'ملعب كرة قدم', 'ملعب كرة سلة', 'صالة رياضية', 'نادي صحي', 'سوبر ماركت', 'بقالة', 'سوق', 'مول تجاري',
+    'مطعم', 'كافيتريا', 'مقهى', 'بوفيه', 'فندق', 'استراحة', 'منتجع', 'قرية سياحية', 'شاطئ', 'متنزه',
+    'مدينة ملاهي', 'حديقة حيوان', 'أكواريوم', 'سينما', 'مسرح', 'دار أوبرا', 'قاعة حفلات', 'استاد', 'صالة حفلات', 'مركز مؤتمرات',
+    'مطار', 'محطة قطار', 'محطة حافلات', 'مركز شرطة', 'قسم إطفاء', 'محكمة', 'بنك', 'بريد', 'شركة', 'مصنع',
+    // مهن (50)
+    'طبيب', 'مهندس', 'معلم', 'محامي', 'قاضي', 'شرطي', 'جندي', 'اطفائي', 'طيار', 'بحار',
+    'سائق', 'ميكانيكي', 'نجار', 'حداد', 'سباك', 'كهربائي', 'بناء', 'رسام', 'موسيقي', 'مغني',
+    'راقص', 'ممثل', 'مخرج', 'كاتب', 'شاعر', 'صحفي', 'مصور', 'طباخ', 'خباز', 'حلواني',
+    'صائغ', 'خياط', 'اسكافي', 'حلاق', 'عطار', 'بيطري', 'ممرض', 'صيدلي', 'عالم', 'باحث',
+    'محاسب', 'مدير', 'تاجر', 'بائع', 'مستورد', 'مصدر', 'مزارع', 'راعي', 'صياد', 'غواص',
+    // أثاث منزلي (50)
+    'سرير', 'كرسي', 'طاولة', 'خزانة', 'رف', 'كنبة', 'ستارة', 'سجادة', 'وسادة', 'بطانية',
+    'مرآة', 'ساعة حائط', 'مصباح', 'ثلاجة', 'فرن', 'ميكروويف', 'غسالة', 'مجفف', 'مكنسة', 'ممسحة',
+    'شفاط', 'خلاط', 'عصارة', 'غلاية', 'محضرة قهوة', 'طنجرة', 'مقلاة', 'صحن', 'كأس', 'ملعقة',
+    'شوكة', 'سكين', 'مفتاح', 'قفل', 'هاتف', 'شاحن', 'كمبيوتر', 'تلفاز', 'ريموت', 'كتاب',
+    'قلم', 'دفتر', 'مقص', 'صمغ', 'شريط لاصق', 'مشط', 'فرشاة أسنان', 'معجون أسنان', 'شامبو', 'صابون',
+    // طبيعة (50)
+    'شمس', 'قمر', 'نجوم', 'سماء', 'سحاب', 'مطر', 'ثلج', 'برق', 'رعد', 'رياح',
+    'بحر', 'نهر', 'ينبوع', 'شلال', 'بحيرة', 'وادي', 'جبل', 'تل', 'صحراء', 'رمال',
+    'حجر', 'صخر', 'تراب', 'طين', 'عشب', 'شجر', 'زهرة', 'وردة', 'ياسمين', 'فل',
+    'نرجس', 'بابونج', 'نخلة', 'صنوبر', 'بلوط', 'صفصاف', 'غابة', 'كهف', 'جزيرة', 'بركان',
+    'زلزال', 'فيضان', 'عاصفة', 'اعصار', 'ضباب', 'ندى', 'جليد', 'برد', 'صقيع', 'رذاذ',
+    // رياضة (50)
+    'كرة قدم', 'كرة سلة', 'كرة طائرة', 'كرة يد', 'تنس', 'اسكواش', 'جولف', 'بيسبول', 'كريكيت', 'هوكي',
+    'سباحة', 'غطس', 'ملاكمة', 'تايكوندو', 'جودو', 'كاراتيه', 'كونغ فو', 'يوغا', 'جمباز', 'ألعاب قوى',
+    'جري', 'قفز', 'رمي', 'رفع أثقال', 'دراجات', 'فروسية', 'رماية', 'سيوف', 'نبالة', 'تجديف',
+    'تزلج', 'تزحلق', 'تسلق', 'غوص', 'صيد', 'صيد سمك', 'ريشة طائرة', 'بينغ بونغ', 'سنوكر', 'بلياردو',
+    'شطرنج', 'داما', 'بوكر', 'أونو', 'مونوبولي', 'سكرابل', 'سودوكو', 'كلمات متقاطعة', 'الغاز', 'ألغاز',
+    // تكنولوجيا (50)
+    'هاتف', 'كمبيوتر', 'لابتوب', 'تابلت', 'ساعة ذكية', 'سماعات', 'كاميرا', 'مسجل', 'ميكروفون', 'مكبر صوت',
+    'شاشة', 'لوحة مفاتيح', 'فأرة', 'طابعة', 'ماسح ضوئي', 'راوتر', 'مودم', 'سيرفر', 'قرص صلب', 'فلاشة',
+    'بطارية', 'شاحن', 'كابل', 'محول', 'بطاقة شاشة', 'معالج', 'رام', 'مذربورد', 'مروحة', 'تبريد',
+    'طابعة ثلاثية الأبعاد', 'روبوت', 'طائرة درون', 'جهاز تحكم', 'عصا تحكم', 'نظارة واقع افتراضي', 'سلك', 'لحام', 'مفك', 'كماشة',
+    'انترنت', 'واي فاي', 'بلوتوث', 'جي بي اس', 'رادار', 'قمر صناعي', 'صاروخ', 'مركبة فضائية', 'تلسكوب', 'ميكروسكوب',
+    // فنون (50)
+    'رسم', 'تصوير', 'نحت', 'خط', 'زخرفة', 'نسيج', 'فخار', 'خزف', 'زجاج معشق', 'فسيفساء',
+    'مسرح', 'سينما', 'تلفزيون', 'راديو', 'بودكاست', 'يوتيوب', 'إنستغرام', 'تيك توك', 'فيسبوك', 'تويتر',
+    'متحف', 'معرض', 'مكتبة', 'جامعة', 'مدرسة', 'روضة', 'حضانة', 'معهد', 'مركز ثقافي', 'دار أوبرا',
+    'مهرجان', 'كرنفال', 'احتفال', 'عيد', 'مناسبة', 'زفاف', 'عزاء', 'وليمة', 'حفلة', 'سهرة',
+    'غناء', 'موسيقى', 'عزف', 'رقص', 'تأليف', 'تلحين', 'شعر', 'نثر', 'رواية', 'قصة قصيرة',
+    // أطعمة ومشروبات (50)
+    'بيتزا', 'برغر', 'شاورما', 'فلافل', 'حمص', 'متبل', 'فتوش', 'تبولة', 'دولمة', 'وارق عنب',
+    'كبة', 'باستا', 'لازانيا', 'رز', 'برياني', 'كبسة', 'مندي', 'مظبي', 'سلطة', 'شوربة',
+    'لبن', 'زبادي', 'جبنة', 'حليب', 'قشطة', 'عسل', 'مربى', 'نوتيلا', 'شوكولاتة', 'حلاوة',
+    'بقلاوة', 'كنافة', 'قطايف', 'بسبوسة', 'كعك', 'بسكويت', 'كيك', 'مادلين', 'كرواسون', 'بان كيك',
+    'عصير', 'ماء', 'شاي', 'قهوة', 'نسكافيه', 'كابتشينو', 'لاتيه', 'موكا', 'سموذي', 'كوكتيل',
+    // شخصيات كرتونية (50)
+    'ميكي ماوس', 'بندق', 'سبونج بوب', 'باتريك', 'سنجوب', 'بوجي', 'محمد', 'بسنت', 'كابتن ماجد', 'ريمي',
+    'مدغشقر', 'شريك', 'فيونا', 'بوش', 'مادجاسكار', 'كورتانا', 'مستر بين', 'توم', 'جيري', 'باباي',
+    'سانتا', 'بياض الثلج', 'سندريلا', 'اورورا', 'اريل', 'بل', 'جميلة', 'ياسمين', 'بوكاهونتاس', 'مولان',
+    'تارزان', 'علاء الدين', 'هيركولز', 'سيمبا', 'نالا', 'موفاسا', 'سكار', 'تيمون', 'بومبا', 'ويني',
+    'بورو', 'لوفي', 'زورو', 'ناروتو', 'ساسوكي', 'ساكورا', 'غوكو', 'بيجيتا', 'سيل', 'فريزا',
+    // إضافات (50)
+    'قلم رصاص', 'قلم حبر', 'مسطرة', 'براية', 'ممحاة', 'دباسة', 'مشبك ورق', 'ملف', 'ظرف', 'طابع بريد',
+    'علم', 'خريطة', 'كرة أرضية', 'بوصلة', 'ساعة يد', 'نظارة', 'عدسة', 'منظار', 'مجهر', 'سماعة طبيب',
+    'ميزان', 'شريط قياس', 'مسدس', 'بندقية', 'سيف', 'خنجر', 'درع', 'خوذة', 'حزام', 'شنطة',
+    'حقيبة', 'صندوق', 'علبة', 'زجاجة', 'كوب', 'فنجان', 'ابريق', 'دلة', 'مبخرة', 'بخور',
+    'عطر', 'كولونيا', 'مرهم', 'كريم', 'زيت', 'صابون سائل', 'فوطة', 'منشفة', 'شرشف', 'مفرش'
+];
 
 const pr=new URLSearchParams(location.search),rf=pr.get('room');
 if(rf){rid=rf;document.getElementById('host-screen').style.display='none';document.getElementById('join-screen').style.display='block';ck();}
 else{document.getElementById('host-screen').style.display='block';document.getElementById('join-screen').style.display='none';}
 
 function ck(){get(ref(db,'rooms/'+rid)).then(s=>{if(!s.exists()||!s.val().active){ex()}});}
-function ex(){document.getElementById('join-screen').style.display='none';ov('⚠️ انتهت صلاحية الرابط!',3000);setTimeout(()=>{location.href=location.origin+location.pathname},3000);}
+function ex(){document.getElementById('join-screen').style.display='none';showMessage('⚠️ انتهت صلاحية الرابط!',true);setTimeout(()=>{location.href=location.origin+location.pathname},3000);}
 
 window.createRoom=function(m){
     gm=m;mn='⚔️ SASUKE ⚔️';rid='r'+Date.now().toString(36);mid='h'+Date.now().toString(36);ih=true;
@@ -106,16 +181,16 @@ window.createRoom=function(m){
         document.getElementById('btn-start').style.display='inline-block';
         document.getElementById('room-link').style.display='block';
         document.getElementById('link-text').textContent=location.origin+location.pathname+'?room='+rid;
-        la();nt('✅ تم إنشاء الغرفة!');
+        la();showMessage('✅ تم إنشاء الغرفة!',false);
     });
 };
 
 window.joinRoom=function(){
     let n=document.getElementById('player-name').value.trim();
-    if(!n) return nt('⚠️ اكتب اسمك!');
+    if(!n) return showMessage('⚠️ اكتب اسمك!',false);
     mn=n;mid='p'+Date.now().toString(36);ih=false;
     get(ref(db,'rooms/'+rid)).then(s=>{
-        if(s.exists()&&s.val().active){am();sg();document.getElementById('host-btns').style.display='none';document.getElementById('room-link').style.display='none';la();nt('👋 مرحباً '+n+'!')}
+        if(s.exists()&&s.val().active){am();sg();document.getElementById('host-btns').style.display='none';document.getElementById('room-link').style.display='none';la();showMessage('👋 مرحباً '+n+'!',false);}
         else{ex()}
     });
 };
@@ -127,7 +202,7 @@ function sg(){document.getElementById('host-screen').style.display='none';docume
 function lp(){
     onValue(ref(db,'rooms/'+rid+'/players'),s=>{
         let p=s.val()||{};ap=p;
-        let h='';Object.keys(p).forEach(i=>{h+=`<li>${p[i].name}${p[i].ih?' 👑':''}${p[i].eliminated?' ❌':''}</li>`});
+        let h='';Object.keys(p).forEach(i=>{h+=`<li>${p[i].name}${p[i].ih?' 👑':''}${p[i].eliminated?' 👀 مشاهدة':''}</li>`});
         document.getElementById('player-list').innerHTML=h;
         let kickDiv=document.getElementById('kick-section');
         if(ih&&ph==='waiting'){
@@ -136,13 +211,19 @@ function lp(){
             Object.keys(p).forEach(i=>{if(i!==mid&&!p[i].eliminated){k+=`<button onclick="kick('${i}')">❌ ${p[i].name}</button>`;has=true;}});
             kickDiv.innerHTML=has?k:'';
         }else{kickDiv.innerHTML='';}
+        
+        let activeCount = Object.values(p).filter(pl => !pl.eliminated).length;
+        if(gm==='multi' && ph === 'playing' && activeCount <= 2){
+            let spyName = ap[si]?.name || '???';
+            endGameDueToLowPlayers(spyName, sw);
+        }
     });
 }
 
 function lvl(){onValue(ref(db,'rooms/'+rid+'/vl'),s=>{let l=s.val()||{};let h='';Object.values(l).forEach(x=>{h+=`<div class="vote-log-item">🗳️ ${x.v} ➡️ ${x.t}</div>`});document.getElementById('vote-log').innerHTML=h||'لا تصويتات بعد';});}
 
-window.kick=function(id){remove(ref(db,'rooms/'+rid+'/players/'+id));nt('✅ تم طرد اللاعب');};
-window.copyLink=function(){navigator.clipboard.writeText(document.getElementById('link-text').textContent);nt('📋 تم نسخ الرابط!');document.getElementById('room-link').style.display='none';};
+window.kick=function(id){remove(ref(db,'rooms/'+rid+'/players/'+id));showMessage('✅ تم طرد اللاعب',false);};
+window.copyLink=function(){navigator.clipboard.writeText(document.getElementById('link-text').textContent);showMessage('📋 تم نسخ الرابط!',false);document.getElementById('room-link').style.display='none';};
 
 function startVoteCounter(){
     if(voteCounterInterval) clearInterval(voteCounterInterval);
@@ -164,14 +245,14 @@ function startVoteCounter(){
     }, 500);
 }
 
-function lg(){onValue(ref(db,'rooms/'+rid),s=>{if(!s.exists()){if(!ih){ov('<h2>👑 غادر الهوست</h2>',2000);setTimeout(()=>{location.href=location.origin+location.pathname},2000);}return}let d=s.val();if(!d.active&&!ih&&d.phase!=='finished'){ov('<h2>انتهت اللعبة</h2>',2000);setTimeout(()=>{location.href=location.origin+location.pathname},2000);return}si=d.si;sw=d.sw;if(d.phase!==ph){ph=d.phase;hp(d)}});}
+function lg(){onValue(ref(db,'rooms/'+rid),s=>{if(!s.exists()){if(!ih){showMessage('👑 غادر الهوست',true);setTimeout(()=>{location.href=location.origin+location.pathname},2000);}return}let d=s.val();if(!d.active&&!ih&&d.phase!=='finished'){showMessage('⚠️ انتهت اللعبة',true);setTimeout(()=>{location.href=location.origin+location.pathname},2000);return}si=d.si;sw=d.sw;if(d.phase!==ph){ph=d.phase;hp(d)}});}
 
-function lmsg(){onValue(ref(db,'rooms/'+rid+'/msg'),s=>{let m=s.val();if(!m)return;if(m.target==='all'){ov(m.html,m.duration||0);}});}
+function lmsg(){onValue(ref(db,'rooms/'+rid+'/msg'),s=>{let m=s.val();if(!m)return;if(m.target==='all'){showMessage(m.html,true,m.noAutoClose);}});}
 
 function swd(d){
     let wd=document.getElementById('word-display');
     wd.style.display='block';
-    if(ap[mid]?.eliminated){wd.innerHTML='❌ تم استبعادك';wd.style.background='rgba(100,100,100,.3)';return;}
+    if(ap[mid]?.eliminated){wd.innerHTML='👀 أنت في وضع المشاهدة';wd.style.background='rgba(100,100,100,.3)';return;}
     if(mid===d.si){wd.style.background='rgba(200,0,0,.3)';wd.innerHTML='🕵️ أنت الجاسوس! 🤫';}
     else{wd.style.background='rgba(0,150,0,.3)';wd.innerHTML='🔍 الكلمة: '+d.sw;}
 }
@@ -182,24 +263,48 @@ function hp(d){
     document.getElementById('vote-log-section').style.display='none';
     if(d.phase==='playing'){swd(d);if(ih){document.getElementById('btn-start').style.display='none';document.getElementById('btn-show-vote').style.display='inline-block';}}
     if(d.phase==='voting'){svu();if(ih)document.getElementById('btn-show-vote').style.display='none';document.getElementById('vote-log-section').style.display='block';}
-    if(d.phase==='spyGuess'){document.getElementById('vote-log-section').style.display='block';document.getElementById('vote-counter-container').style.display='none';}
+    if(d.phase==='spyGuess' && gm==='multi'){
+        document.getElementById('vote-log-section').style.display='block';
+        document.getElementById('vote-counter-container').style.display='none';
+        if(mid===si) showSpyGuessOptions();
+    }
 }
 
 window.startGame=function(){
-    get(ref(db,'rooms/'+rid+'/players')).then(s=>{
-        let p=s.val(),ids=Object.keys(p);
-        if(ids.length<2)return nt('⚠️ لازم على الأقل 2 لاعبين!');
-        ids.forEach(i=>update(ref(db,'rooms/'+rid+'/players/'+i),{eliminated:false}));
-        let spy=ids[Math.floor(Math.random()*ids.length)];
-        let sword=w[Math.floor(Math.random()*w.length)];
-        update(ref(db,'rooms/'+rid),{phase:'playing',si:spy,sw:sword,vr:{},vl:{}});
-        document.getElementById('btn-start').style.display='none';
-        document.getElementById('btn-show-vote').style.display='inline-block';
-        nt('🎮 بدأت اللعبة! جاسوس واحد بينكم');
-    });
+    if(gm==='normal'){
+        get(ref(db,'rooms/'+rid+'/players')).then(s=>{
+            let p=s.val(),ids=Object.keys(p);
+            if(ids.length<2)return showMessage('⚠️ لازم على الأقل 2 لاعبين!',false);
+            ids.forEach(i=>update(ref(db,'rooms/'+rid+'/players/'+i),{eliminated:false}));
+            let spy=ids[Math.floor(Math.random()*ids.length)];
+            let sword=w[Math.floor(Math.random()*w.length)];
+            update(ref(db,'rooms/'+rid),{phase:'playing',si:spy,sw:sword,vr:{},vl:{}});
+            document.getElementById('btn-start').style.display='none';
+            document.getElementById('btn-show-vote').style.display='inline-block';
+            showMessage('🎮 بدأت اللعبة! جاسوس واحد بينكم',false);
+        });
+    } else {
+        get(ref(db,'rooms/'+rid+'/players')).then(s=>{
+            let p=s.val(),ids=Object.keys(p);
+            if(ids.length<3)return showMessage('⚠️ لازم على الأقل 3 لاعبين للجاسوس 2!',false);
+            ids.forEach(i=>update(ref(db,'rooms/'+rid+'/players/'+i),{eliminated:false}));
+            let spy=ids[Math.floor(Math.random()*ids.length)];
+            let sword=w[Math.floor(Math.random()*w.length)];
+            update(ref(db,'rooms/'+rid),{phase:'playing',si:spy,sw:sword,vr:{},vl:{}});
+            document.getElementById('btn-start').style.display='none';
+            document.getElementById('btn-show-vote').style.display='inline-block';
+            showMessage('🎮 بدأت لعبة الجاسوس 2! جاسوس واحد بينكم',false);
+        });
+    }
 };
 
-window.showVoting=function(){update(ref(db,'rooms/'+rid),{phase:'voting'});}
+window.showVoting=function(){
+    if(gm==='multi'){
+        update(ref(db,'rooms/'+rid),{phase:'voting'});
+    } else {
+        update(ref(db,'rooms/'+rid),{phase:'voting'});
+    }
+}
 
 function svu(){
     document.getElementById('vote-section').style.display='block';
@@ -209,6 +314,7 @@ function svu(){
 }
 
 window.vote=function(id){
+    if(ap[mid]?.eliminated){showMessage('⚠️ أنت في وضع المشاهدة لا يمكنك التصويت',false);return;}
     set(ref(db,'rooms/'+rid+'/vr/'+mid),id);
     set(ref(db,'rooms/'+rid+'/vl/'+mid),{v:mn,t:ap[id]?.name||'???'});
     document.getElementById('vote-section').style.display='none';
@@ -222,57 +328,17 @@ window.vote=function(id){
                 let act=Object.values(cur).filter(p=>!p.eliminated).length;
                 if(Object.keys(votesObj).length >= act){
                     document.getElementById('waiting-votes').style.display='none';
-                    fz(votesObj);
+                    if(gm==='multi'){
+                        processMultiVotingResult(votesObj);
+                    } else {
+                        processNormalVotingResult(votesObj);
+                    }
                 }
             });
         });
     }, 500);
 };
 
-function fz(v){
+function processNormalVotingResult(v){
     let vc={};
     Object.values(v).forEach(x=>{vc[x]=(vc[x]||0)+1});
-    let sorted=Object.entries(vc).sort((a,b)=>b[1]-a[1]);
-    let mv=sorted[0][0];
-    let sn=ap[si]?.name||'???';
-    let votedName=ap[mv]?.name||'???';
-    let ok=(mv===si);
-    
-    if(ok){
-        set(ref(db,'rooms/'+rid+'/msg'),{html:`✅ تم اكتشاف الجاسوس: ${sn}<br>عليه يخمن الكلمة!`,target:'all'});
-    } else {
-        set(ref(db,'rooms/'+rid+'/msg'),{html:`❌ تم التصويت على: ${votedName} (خطأ)<br>🕵️ الجاسوس: ${sn}<br>⏳ يخمن الجاسوس...`,target:'all'});
-    }
-    update(ref(db,'rooms/'+rid),{phase:'spyGuess'});
-    if(mid===si) sgi();
-}
-
-function sgi(){
-    let old=document.getElementById('go');if(old)old.remove();
-    let d=document.createElement('div');d.className='overlay';d.id='go';
-    d.innerHTML=`<div class="overlay-box"><h3>🤔 خمن الكلمة:</h3><input id="gi" placeholder="اكتب الكلمة"><br><button onclick="sg()">📨 إرسال</button></div>`;
-    document.body.appendChild(d);
-}
-
-window.sg=function(){
-    let g=document.getElementById('gi')?.value.trim();
-    if(!g)return;
-    document.getElementById('go')?.remove();
-    let isCorrect=(g===sw);
-    if(!isCorrect){update(ref(db,'rooms/'+rid+'/players/'+si),{eliminated:true});}
-    let result=isCorrect?`🎉 الجاسوس خمن صح! الكلمة: ${sw}`:`💀 الجاسوس خمن غلط! الكلمة: ${sw}`;
-    set(ref(db,'rooms/'+rid+'/msg'),{html:`✍️ خمّن: ${g}<br>${result}<br><br>✅ اللعبة انتهت - اضغط مغادرة`,target:'all'});
-    update(ref(db,'rooms/'+rid),{phase:'finished'});
-};
-
-function ov(h,d){let od=document.createElement('div');od.className='overlay';od.id='mo';od.innerHTML=`<div class="overlay-box">${h}</div>`;document.body.appendChild(od);if(d)setTimeout(()=>od.remove(),d);}
-function nt(msg){let n=document.createElement('div');n.className='notification';n.textContent=msg;document.body.appendChild(n);setTimeout(()=>n.remove(),3000);}
-
-window.leaveRoom=function(){
-    if(voteCounterInterval)clearInterval(voteCounterInterval);
-    if(mid&&rid){if(ih)remove(ref(db,'rooms/'+rid));else remove(ref(db,'rooms/'+rid+'/players/'+mid));}
-    location.reload();
-};
-</script>
-</body>
-</html>
