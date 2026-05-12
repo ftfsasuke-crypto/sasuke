@@ -63,14 +63,11 @@
 
 <script>
 (function(){let c=document.getElementById('starsContainer');for(let i=0;i<60;i++){let s=document.createElement('div');s.className='star';let z=Math.random()*3+1;s.style.width=z+'px';s.style.height=z+'px';s.style.left=Math.random()*100+'%';s.style.animationDuration=(Math.random()*4+3)+'s';s.style.animationDelay=Math.random()*5+'s';s.style.opacity=Math.random()*.7+.3;c.appendChild(s);}})();
-
-// منع الطرد لما الشاشة تقفل
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){/* رجعنا - إعادة الاتصال */}});
 </script>
 
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import{getDatabase,ref,set,get,update,onValue,onDisconnect,remove,onChildRemoved}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import{getDatabase,ref,set,get,update,onValue,onDisconnect,remove}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const fc={apiKey:"AIzaSyDTyJqVntFqKe3I-zntb_rMx9Qcv7Nqi94",authDomain:"spy-game-1d774.firebaseapp.com",projectId:"spy-game-1d774",storageBucket:"spy-game-1d774.firebasestorage.app",messagingSenderId:"261865713515",appId:"1:261865713515:web:8868e0998ccd0d00aba62e"};
 const app=initializeApp(fc),db=getDatabase(app);
@@ -102,20 +99,8 @@ window.joinRoom=function(){
     get(ref(db,'rooms/'+rid)).then(s=>{if(s.exists()&&s.val().active){addMe();showGame();document.getElementById('host-btns').style.display='none';document.getElementById('room-link').style.display='none';listenAll();notify('👋 '+n+'!')}else{notify('⚠️ غرفة مش موجودة')}});
 };
 
-function addMe(){
-    let r=ref(db,'rooms/'+rid+'/players/'+mid);
-    set(r,{id:mid,name:mname,isHost,eliminated:false,lastSeen:Date.now()});
-    // هنستخدم onDisconnect بس لو فعلاً قفل التب مش الشاشة
-    // مش هنمسح اللاعب تلقائي - هيتم مسحه بس لو الهوست طرده أو هو ضغط مغادرة
-}
-
-function setupDC(){
-    // الهوست بس هو اللي لما يخرج تتمسح الغرفة
-    if(isHost){
-        onDisconnect(ref(db,'rooms/'+rid)).remove();
-    }
-}
-
+function addMe(){let r=ref(db,'rooms/'+rid+'/players/'+mid);set(r,{id:mid,name:mname,isHost,eliminated:false});}
+function setupDC(){if(isHost){onDisconnect(ref(db,'rooms/'+rid)).remove();}}
 function listenAll(){listenPlayers();listenGame();listenOverlay();listenVoteLogs();}
 function showGame(){document.getElementById('host-screen').style.display='none';document.getElementById('join-screen').style.display='none';document.getElementById('game-screen').style.display='block';}
 
@@ -126,7 +111,7 @@ function listenVoteLogs(){onValue(ref(db,'rooms/'+rid+'/voteLogs'),s=>{let logs=
 window.kick=function(id){remove(ref(db,'rooms/'+rid+'/players/'+id));};
 window.copyLink=function(){navigator.clipboard.writeText(document.getElementById('link-text').textContent);notify('📋 تم!');};
 
-function listenGame(){onValue(ref(db,'rooms/'+rid),s=>{if(!s.exists()){if(!isHost){showBigMsg('<h2>👑 غادر الهوست</h2><p>تعطلت اللعبة</p>',4000);setTimeout(()=>{location.href=location.origin+location.pathname},4000);}return}let d=s.val();if(!d.active&&!isHost){location.href=location.origin+location.pathname;return}spyId=d.spyId;sword=d.sword;if(d.phase!==phase){phase=d.phase;handlePhase(d)}});}
+function listenGame(){onValue(ref(db,'rooms/'+rid),s=>{if(!s.exists()){if(!isHost){showBigMsg('<h2>👑 غادر الهوست</h2><p>تعطلت اللعبة</p>',4000);setTimeout(()=>{goHome()},4000);}return}let d=s.val();if(!d.active&&!isHost){showBigMsg('<h2>⚠️ انتهت اللعبة</h2>',3000);setTimeout(()=>{goHome()},3000);return}spyId=d.spyId;sword=d.sword;if(d.phase!==phase){phase=d.phase;handlePhase(d)}});}
 
 function listenOverlay(){onValue(ref(db,'rooms/'+rid+'/overlay'),s=>{let msg=s.val();if(!msg)return;showBigMsg(msg.html,msg.auto||0);});}
 
@@ -173,11 +158,8 @@ function finalize(v){
     let vc={};Object.values(v).forEach(x=>{vc[x]=(vc[x]||0)+1});
     let mv=Object.entries(vc).sort((a,b)=>b[1]-a[1])[0][0],ok=(mv===spyId),sn=allPlayers[spyId]?.name||'???';
     document.getElementById('waiting-votes').style.display='none';
-    if(ok){
-        update(ref(db,'rooms/'+rid+'/overlay'),{html:`✅ الجاسوس هو: <strong>${sn}</strong><br>عليه يخمن الكلمة!`,auto:0});
-    }else{
-        update(ref(db,'rooms/'+rid+'/overlay'),{html:`❌ مش هو الجاسوس!<br>🕵️ الجاسوس الحقيقي: <strong>${sn}</strong><br>عليه يخمن الكلمة!`,auto:0});
-    }
+    if(ok){update(ref(db,'rooms/'+rid+'/overlay'),{html:`✅ الجاسوس هو: <strong>${sn}</strong><br>عليه يخمن الكلمة!`,auto:0});}
+    else{update(ref(db,'rooms/'+rid+'/overlay'),{html:`❌ مش هو الجاسوس!<br>🕵️ الجاسوس الحقيقي: <strong>${sn}</strong><br>عليه يخمن الكلمة!`,auto:0});}
     update(ref(db,'rooms/'+rid),{phase:'spyGuess'});
 }
 
@@ -201,8 +183,15 @@ function showBigMsg(html,auto){
     if(auto>0)setTimeout(()=>div.remove(),auto);
 }
 
+// دالة الرجوع للصفحة الرئيسية بدون بارامترات
+function goHome(){location.href=location.origin+location.pathname;}
+
 function notify(msg){let n=document.createElement('div');n.className='notification';n.textContent=msg;document.body.appendChild(n);setTimeout(()=>n.remove(),3000);}
-window.leaveRoom=function(){if(mid&&rid){if(isHost)remove(ref(db,'rooms/'+rid));else remove(ref(db,'rooms/'+rid+'/players/'+mid))}location.href=location.origin+location.pathname};
+
+window.leaveRoom=function(){
+    if(mid&&rid){if(isHost)remove(ref(db,'rooms/'+rid));else remove(ref(db,'rooms/'+rid+'/players/'+mid))}
+    goHome(); // بيرجع للصفحة الرئيسية بدون ?room=
+};
 </script>
 </body>
 </html>
