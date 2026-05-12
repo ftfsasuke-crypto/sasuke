@@ -3,112 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لعبة الجاسوس</title>
+    <title>لعبة الجاسوس - النسخة النهائية</title>
     <style>
         *{box-sizing:border-box;margin:0;padding:0}
-        body{font-family:'Segoe UI',Tahoma,sans-serif;background:#0a0a1a;color:#eee;text-align:center;padding:15px;min-height:100vh;direction:rtl;overflow-x:hidden}
-        .stars-container{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:0}
-        .star{position:absolute;background:white;border-radius:50%;animation:fall linear infinite;opacity:.8}
-        @keyframes fall{0%{transform:translateY(-10vh) rotate(0deg);opacity:1}100%{transform:translateY(110vh) rotate(360deg);opacity:0}}
-        button{background:#e94560;color:white;border:none;padding:12px 24px;margin:6px;border-radius:30px;font-size:16px;cursor:pointer;transition:0.3s}
-        button:hover{background:#c23152}
+        body{font-family:'Segoe UI',Tahoma,sans-serif;background:#0a0a1a;color:#eee;text-align:center;padding:15px;min-height:100vh;direction:rtl}
+        button{background:#e94560;color:white;border:none;padding:12px 24px;margin:6px;border-radius:30px;cursor:pointer}
         .btn-gold{background:#f39c12}
-        input{padding:12px;border-radius:20px;border:none;margin:8px;font-size:16px;width:70%;text-align:center;background:rgba(255,255,255,.1);color:#fff}
-        li{background:rgba(255,255,255,.05);margin:3px 0;padding:10px;border-radius:12px}
-        .game-select-btn{display:block;width:90%;margin:10px auto;padding:16px;border-radius:20px;font-size:18px}
-        .host-name-display{background:linear-gradient(135deg,#f093fb,#f5576c,#ffd700);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:20px;font-weight:bold}
-        .host-box{background:rgba(255,255,255,.05);padding:12px;border-radius:12px;border:1px solid #e94560;margin-bottom:12px}
-        .overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.95);z-index:999;display:flex;align-items:center;justify-content:center}
-        .overlay-box{background:#1a1a3e;border:2px solid #e94560;padding:25px;border-radius:15px;text-align:center;max-width:450px}
-        .notification{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#e94560;padding:10px 20px;border-radius:25px;z-index:1000;font-size:14px;animation:fadeOut 3s forwards}
-        @keyframes fadeOut{0%{opacity:1}70%{opacity:1}100%{opacity:0;display:none}}
-        .vote-counter{background:rgba(0,0,0,.5);padding:10px;border-radius:12px;margin:10px 0;font-size:18px}
-        .vote-counter span{color:#f39c12;font-weight:bold;font-size:24px}
-        .vote-log-item{background:rgba(255,255,255,.05);padding:6px 12px;margin:3px 0;border-radius:8px;font-size:14px}
-        #kick-section{background:rgba(255,0,0,.1);padding:8px;border-radius:8px;margin-top:8px}
-        #kick-section button{background:#ff4444;font-size:12px;padding:4px 10px}
+        input{padding:12px;border-radius:20px;border:none;margin:8px;font-size:16px;width:70%;text-align:center}
+        .game-select-btn{display:block;width:90%;margin:10px auto;padding:16px;border-radius:20px}
+        .host-box{background:rgba(255,255,255,.05);padding:12px;border-radius:12px;margin-bottom:12px}
+        .overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.9);z-index:999;display:flex;align-items:center;justify-content:center}
+        .overlay-box{background:#1a1a3e;border:2px solid #e94560;padding:25px;border-radius:15px;max-width:450px}
         .close-btn{background:#555;padding:8px 20px;margin-top:15px}
-        .close-btn:hover{background:#777}
+        .vote-counter{background:rgba(0,0,0,.5);padding:10px;border-radius:12px;margin:10px 0}
         .guess-buttons{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:15px 0}
-        .guess-btn{background:#2ecc71;padding:10px 15px;margin:5px;font-size:14px}
-        .guess-btn:hover{background:#27ae60}
-        .link-box{background:rgba(0,0,0,.3);padding:10px;border-radius:10px;margin:10px 0}
-        .link-text{word-break:break-all;font-size:12px}
-        .copy-btn{background:#2ecc71;padding:5px 15px;font-size:12px}
-        .copy-btn:hover{background:#27ae60}
-        .spy-choice-btn{background:#3498db;padding:10px;margin:5px}
-        .spy-choice-btn:hover{background:#2980b9}
+        .guess-btn{background:#2ecc71;padding:10px 15px;margin:5px}
     </style>
 </head>
 <body>
-<div class="stars-container" id="starsContainer"></div>
 
-<div id="app" style="max-width:550px;margin:0 auto;background:rgba(0,0,0,.5);border-radius:20px;padding:15px;backdrop-filter:blur(5px);position:relative;z-index:1">
-
+<div id="app" style="max-width:550px;margin:auto;background:rgba(0,0,0,.5);border-radius:20px;padding:15px">
     <div id="host-screen">
-        <h1 style="background:linear-gradient(135deg,#e94560,#ff6b6b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:32px">🕵️ لعبة الجاسوس</h1>
-        <div class="host-box"><p>👑 أنت الهوست</p><p>اسمك: <span class="host-name-display">⚔️ SASUKE ⚔️</span></p></div>
+        <h1>🕵️ لعبة الجاسوس</h1>
+        <div class="host-box"><p>👑 أنت الهوست</p><p>اسمك: ⚔️ SASUKE ⚔️</p></div>
         <button class="game-select-btn" onclick="window.createRoom('normal')">🎮 لعبة الجاسوس ١</button>
         <button class="game-select-btn btn-gold" onclick="window.createRoom('multi')">🎯 لعبة الجاسوس ٢</button>
     </div>
 
     <div id="join-screen" style="display:none">
-        <h1 style="background:linear-gradient(135deg,#e94560,#ff6b6b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:32px">🕵️ لعبة الجاسوس</h1>
-        <p style="color:#aaa;margin:15px 0">ادخل غرفة صديقك:</p>
-        <input type="text" id="player-name" placeholder="اكتب اسمك" maxlength="15"><br>
+        <h1>🕵️ لعبة الجاسوس</h1>
+        <input type="text" id="player-name" placeholder="اكتب اسمك"><br>
         <button onclick="window.joinRoom()">🚪 انضمام للغرفة</button>
     </div>
 
     <div id="game-screen" style="display:none">
         <h2>🕵️ لعبة الجاسوس <span id="mode-display"></span></h2>
         <div id="room-link" style="display:none;background:rgba(0,0,0,.3);padding:10px;border-radius:10px;margin:10px 0">
-            <div style="font-size:12px;color:#aaa;margin-bottom:5px">🔗 رابط دعوة الأصدقاء:</div>
-            <div class="link-box">
-                <span id="link-text" class="link-text"></span>
-            </div>
-            <button onclick="window.copyLink()" class="copy-btn">📋 نسخ الرابط</button>
+            <span id="link-text"></span>
+            <button onclick="window.copyLink()">📋 نسخ الرابط</button>
         </div>
-        <div id="word-display" style="display:none;padding:20px;border-radius:15px;margin:10px 0;font-size:28px;font-weight:bold"></div>
+        <div id="word-display" style="display:none;padding:20px;border-radius:15px;margin:10px 0;font-size:28px"></div>
         <div id="host-btns" style="display:none">
             <button id="btn-start" onclick="window.startGame()">🚀 ابدأ اللعبة</button>
-            <button id="btn-show-vote" onclick="window.showVoting()" style="display:none;background:#f39c12">🗳️ إظهار التصويت</button>
+            <button id="btn-show-vote" onclick="window.showVoting()" style="display:none">🗳️ إظهار التصويت</button>
         </div>
         <div id="vote-counter-container" class="vote-counter" style="display:none">
             🗳️ عدد المصوتين: <span id="vote-count">0</span> / <span id="total-voters">0</span>
         </div>
-        <h4>👥 اللاعبون:</h4>
-        <ul id="player-list" style="max-height:200px;overflow-y:auto"></ul>
-        <div id="kick-section"></div>
-        <div id="vote-log-section" style="display:none"><h4>📋 التصويتات:</h4><div id="vote-log" style="max-height:150px;overflow-y:auto"></div></div>
-        <div id="vote-section" style="display:none"><h4>🗳️ صوت على الجاسوس:</h4><div id="vote-btns"></div></div>
+        <ul id="player-list"></ul>
+        <div id="vote-log-section" style="display:none"><h4>📋 التصويتات</h4><div id="vote-log"></div></div>
+        <div id="vote-section" style="display:none"><div id="vote-btns"></div></div>
         <div id="waiting-votes" style="display:none">⏳ في انتظار باقي اللاعبين...</div>
-        <button onclick="window.leaveRoom()" style="background:#555;margin-top:12px">🚪 مغادرة</button>
+        <button onclick="window.leaveRoom()">🚪 مغادرة</button>
     </div>
 </div>
 
-<script>
-// إعدادات Firebase (نفس اللي عندك)
-import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import{getDatabase,ref,set,get,update,onValue,remove}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get, update, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-const fc={apiKey:"AIzaSyDTyJqVntFqKe3I-zntb_rMx9Qcv7Nqi94",authDomain:"spy-game-1d774.firebaseapp.com",projectId:"spy-game-1d774",storageBucket:"spy-game-1d774.firebasestorage.app",messagingSenderId:"261865713515",appId:"1:261865713515:web:8868e0998ccd0d00aba62e",databaseURL:"https://spy-game-1d774-default-rtdb.firebaseio.com/"};
-const a=initializeApp(fc),db=getDatabase(a);
+const firebaseConfig = {
+    apiKey: "AIzaSyDTyJqVntFqKe3I-zntb_rMx9Qcv7Nqi94",
+    authDomain: "spy-game-1d774.firebaseapp.com",
+    projectId: "spy-game-1d774",
+    storageBucket: "spy-game-1d774.firebasestorage.app",
+    messagingSenderId: "261865713515",
+    appId: "1:261865713515:web:8868e0998ccd0d00aba62e",
+    databaseURL: "https://spy-game-1d774-default-rtdb.firebaseio.com/"
+};
 
-let mid,mn,rid,ih,gm='normal',si,sw,ap={},ph='waiting';
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+let mid, mn, rid, ih, gm = 'normal', si, sw, ap = {}, ph = 'waiting';
 let voteCounterInterval = null;
 
-const w = ['تفاحة','موز','برتقال','فراولة','عنب','مانجو','أناناس','بطيخ','خوخ','رمان','ليمون','جزر','طماطم','خيار','فلفل','بصل','ثوم','أسد','نمر','فيل','زرافة','تمساح','ثعبان','كلب','قطة','حصان','بقرة','مسجد','كنيسة','مستشفى','مدرسة','جامعة','مكتبة','متحف','حديقة','سوق','مطعم','مقهى','فندق','شاطئ','سينما','مسرح','مطار','طبيب','مهندس','معلم','محامي','شرطي','طيار','سائق','نجار','سباك','كهربائي','سرير','كرسي','طاولة','خزانة','كنبة','ثلاجة','فرن','غسالة','هاتف','تلفاز','كتاب','قلم','شمس','قمر','نجوم','بحر','نهر','جبل','صحراء','كرة قدم','كرة سلة','تنس','سباحة','ملاكمة','شطرنج','بيتزا','برغر','شاورما','فلافل','حمص','عصير','شاي','قهوة','نسكافيه'];
+const w = ['تفاحة','موز','برتقال','فراولة','عنب','مانجو','أناناس','بطيخ','خوخ','رمان','ليمون','جزر','طماطم','خيار','فلفل','بصل','ثوم','أسد','نمر','فيل','زرافة','تمساح','ثعبان','كلب','قطة','حصان','بقرة'];
 
-window.createRoom = function(m) {
-    gm=m; mn='⚔️ SASUKE ⚔️'; rid='r'+Date.now().toString(36); mid='h'+Date.now().toString(36); ih=true;
-    set(ref(db,'rooms/'+rid),{gm,phase:'waiting',active:true,si:null,sw:null,vr:{},vl:{},msg:null}).then(()=>{
-        document.getElementById('mode-display').innerText=gm==='multi'?'٢':'١';
-        document.getElementById('host-btns').style.display='block';
-        document.getElementById('btn-start').style.display='inline-block';
-        document.getElementById('room-link').style.display='block';
-        document.getElementById('link-text').innerText=location.origin+location.pathname+'?room='+rid;
-        document.getElementById('host-screen').style.display='none';
-        document.getElementById('game-screen').style.display='block';
-        alert("✅ تم إنشاء الغرفة!");
-    }).catch(err=>alert("❌ خطأ: "+err.message));
+window.createRoom = async function(mode) {
+    gm = mode;
+    mn = '⚔️ SASUKE ⚔️';
+    rid = 'r' + Date.now();
+    mid = 'h' + Date.now();
+    ih = true;
+    
+    try {
+        await set(ref(db, 'rooms/' + rid), {
+            gm: gm, phase: 'waiting', active: true, si: null, sw: null, vr: {}, vl: {}, msg: null
+        });
+        await set(ref(db, 'rooms/' + rid + '/players/' + mid), { id: mid, name: mn, ih: true, eliminated: false });
+        
+        document.getElementById('mode-display').innerText = gm === 'multi' ? '٢' : '١';
+        document.getElementById('host-btns').style.display = 'block';
+        document.getElementById('btn-start').style.display = 'inline-block';
+        document.getElementById('room-link').style.display = 'block';
+        document.getElementById('link-text').innerText = location.origin + location.pathname + '?room=' + rid;
+        document.getElementById('host-screen').style.display = 'none';
+        document.getElementById('game-screen').style.display = 'block';
+        
+        const params = new URLSearchParams(location.search);
+        if (!params.has('room')) {
+            history.pushState({}, '', '?room=' + rid);
+        }
+    } catch(e) { alert("خطأ: " + e.message); }
 };
+
+window.joinRoom = function() {
+    let n = document.getElementById('player-name').value.trim();
+    if (!n) return alert("⚠️ اكتب اسمك");
+    mn = n; mid = 'p' + Date.now(); ih = false;
+    
+    get(ref(db, 'rooms/' + rid)).then(snap => {
+        if (snap.exists() && snap.val().active) {
+            set(ref(db, 'rooms/' + rid + '/players/' + mid), { id: mid, name: mn, ih: false, eliminated: false });
+            document.getElementById('host-screen').style.display = 'none';
+            document.getElementById('join-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'block';
+            alert("👋 مرحباً " + n);
+        } else alert("⚠️ الغرفة غير موجودة");
+    });
+};
+
+window.startGame = function() {
+    get(ref(db, 'rooms/' + rid + '/players')).then(snap => {
+        let players = snap.val();
+        let ids = Object.keys(players);
+        if (ids.length < 2) return alert("⚠️ لازم على الأقل 2 لاعبين");
+        let spy = ids[Math.floor(Math.random() * ids.length)];
+        let sword = w[Math.floor(Math.random() * w.length)];
+        update(ref(db, 'rooms/' + rid), { phase: 'playing', si: spy, sw: sword, vr: {}, vl: {} });
+        document.getElementById('btn-start').style.display = 'none';
+        document.getElementById('btn-show-vote').style.display = 'inline-block';
+        alert("🎮 بدأت اللعبة!");
+    });
+};
+
+window.showVoting = function() {
+    update(ref(db, 'rooms/' + rid), { phase: 'voting' });
+    alert("🗳️ بدأ التصويت!");
+};
+
+window.copyLink = function() {
+    navigator.clipboard.writeText(document.getElementById('link-text').innerText);
+    alert("📋 تم نسخ الرابط");
+    document.getElementById('room-link').style.display = 'none';
+};
+
+window.leaveRoom = function() {
+    if (mid && rid) {
+        if (ih) remove(ref(db, 'rooms/' + rid));
+        else remove(ref(db, 'rooms/' + rid + '/players/' + mid));
+    }
+    location.reload();
+};
+</script>
+</body>
+</html>
