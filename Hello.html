@@ -25,6 +25,9 @@
         .notification{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#e94560;color:white;padding:12px 24px;border-radius:30px;z-index:1000}
         .big-msg{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.95);border:2px solid #e94560;padding:30px;border-radius:20px;z-index:998;font-size:22px;text-align:center;max-width:450px}
         .vote-log-item{background:rgba(255,255,255,.05);padding:8px 15px;margin:4px 0;border-radius:10px;font-size:16px}
+        .countdown{font-size:48px;color:#2ecc71;font-weight:bold;margin:15px 0}
+        .spinner{width:50px;height:50px;border:5px solid rgba(255,255,255,.2);border-top:5px solid #e94560;border-radius:50%;animation:spin 1s linear infinite;margin:15px auto}
+        @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
     </style>
 </head>
 <body>
@@ -113,7 +116,7 @@ window.copyLink=function(){navigator.clipboard.writeText(document.getElementById
 
 function listenGame(){onValue(ref(db,'rooms/'+rid),s=>{if(!s.exists()){if(!isHost){showBigMsg('<h2>👑 غادر الهوست</h2><p>تعطلت اللعبة</p>',4000);setTimeout(()=>{goHome()},4000);}return}let d=s.val();if(!d.active&&!isHost){showBigMsg('<h2>⚠️ انتهت اللعبة</h2>',3000);setTimeout(()=>{goHome()},3000);return}spyId=d.spyId;sword=d.sword;if(d.phase!==phase){phase=d.phase;handlePhase(d)}});}
 
-function listenOverlay(){onValue(ref(db,'rooms/'+rid+'/overlay'),s=>{let msg=s.val();if(!msg)return;showBigMsg(msg.html,msg.auto||0);});}
+function listenOverlay(){onValue(ref(db,'rooms/'+rid+'/overlay'),s=>{let msg=s.val();if(!msg)return;showBigMsg(msg.html,msg.auto||0);if(msg.showCountdown){startCountdown();}});}
 
 function handlePhase(d){
     document.getElementById('vote-section').style.display='none';document.getElementById('waiting-votes').style.display='none';
@@ -172,9 +175,30 @@ function showGuessInput(){
 window.submitGuess=function(){
     let g=document.getElementById('guess-input')?.value.trim();if(!g)return;
     document.getElementById('overlay').remove();
-    update(ref(db,'rooms/'+rid+'/overlay'),{html:`✍️ الجاسوس خمّن: <strong>${g}</strong><br>🔑 الكلمة الصحيحة: <strong>${sword}</strong>`,auto:0});
+    // إظهار التخمين لكل اللاعبين مع عد تنازلي
+    update(ref(db,'rooms/'+rid+'/overlay'),{
+        html:`✍️ الجاسوس خمّن: <strong>${g}</strong><br>🔑 الكلمة الصحيحة: <strong>${sword}</strong><br><br><div class="spinner"></div><div class="countdown" id="countdown-display">10</div><p style="color:#aaa">جاري إنهاء اللعبة...</p>`,
+        auto:0,
+        showCountdown:true
+    });
     update(ref(db,'rooms/'+rid),{phase:'finished',active:false});
 };
+
+// عد تنازلي ١٠ ثواني
+function startCountdown(){
+    let count=10;
+    let countdownEl=document.getElementById('countdown-display');
+    if(!countdownEl)return;
+    let interval=setInterval(()=>{
+        count--;
+        if(count<=0){
+            clearInterval(interval);
+            goHome();
+        }else{
+            countdownEl.textContent=count;
+        }
+    },1000);
+}
 
 function showBigMsg(html,auto){
     let old=document.getElementById('big-msg');if(old)old.remove();
@@ -183,14 +207,13 @@ function showBigMsg(html,auto){
     if(auto>0)setTimeout(()=>div.remove(),auto);
 }
 
-// دالة الرجوع للصفحة الرئيسية بدون بارامترات
 function goHome(){location.href=location.origin+location.pathname;}
 
 function notify(msg){let n=document.createElement('div');n.className='notification';n.textContent=msg;document.body.appendChild(n);setTimeout(()=>n.remove(),3000);}
 
 window.leaveRoom=function(){
     if(mid&&rid){if(isHost)remove(ref(db,'rooms/'+rid));else remove(ref(db,'rooms/'+rid+'/players/'+mid))}
-    goHome(); // بيرجع للصفحة الرئيسية بدون ?room=
+    goHome();
 };
 </script>
 </body>
