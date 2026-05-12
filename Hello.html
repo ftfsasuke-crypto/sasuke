@@ -187,10 +187,80 @@ function hp(d){
     document.getElementById('vote-log-section').style.display='none';
     if(d.phase==='playing'){swd(d);if(ih){document.getElementById('btn-start').style.display='none';document.getElementById('btn-show-vote').style.display='inline-block';}}
     if(d.phase==='voting'){svu();if(ih)document.getElementById('btn-show-vote').style.display='none';document.getElementById('vote-log-section').style.display='block';}
-    if(d.phase==='spyGuess' && gm==='multi'){
+    if(d.phase==='spyGuess'){
         document.getElementById('vote-log-section').style.display='block';
-        if(mid===si) showSpyGuessOptions();
+        if(gm==='multi' && mid===si){
+            showSpyGuessOptions();
+        } else if(gm==='normal' && mid===si){
+            showSpyGuessInput();
+        }
     }
+}
+
+// الجاسوس 1: يكتب التخمين بنفسه (الأصلية)
+function showSpyGuessInput(){
+    let old=document.getElementById('go');if(old)old.remove();
+    let d=document.createElement('div');d.className='overlay';d.id='go';
+    d.innerHTML=`<div class="overlay-box"><h3>🤔 خمن الكلمة:</h3><input id="guessInput" type="text" placeholder="اكتب الكلمة" style="width:100%;padding:10px;margin:10px 0"><br><button onclick="makeGuessText()">📨 إرسال</button><br><button class="close-btn" onclick="this.closest('.overlay').remove()">✖️ إغلاق</button></div>`;
+    document.body.appendChild(d);
+    document.getElementById('guessInput')?.focus();
+}
+
+window.makeGuessText=function(){
+    let guess=document.getElementById('guessInput')?.value.trim();
+    if(!guess) return;
+    document.getElementById('go')?.remove();
+    let isCorrect=(guess===sw);
+    let spyName=ap[si]?.name||'???';
+    if(isCorrect){
+        showMessage(`🔍 الجاسوس (${spyName}) كتب: ${guess}<br>✅ كلمة صحيحة!<br>🎉 الجاسوس كسب!<br><br>🔑 الكلمة: ${sw}`);
+    } else {
+        showMessage(`🔍 الجاسوس (${spyName}) كتب: ${guess}<br>❌ كلمة خاطئة!<br>💀 تم كشف الجاسوس!<br><br>🔑 الكلمة الصحيحة: ${sw}`);
+    }
+    update(ref(db,'rooms/'+rid),{phase:'finished'});
+};
+
+// الجاسوس 2: يختار من 10 اختيارات
+function showSpyGuessOptions(){
+    let otherWords = w.filter(word => word !== sw);
+    let randomWords = [];
+    for(let i=0; i<9; i++){randomWords.push(otherWords[Math.floor(Math.random()*otherWords.length)]);}
+    randomWords.push(sw);
+    for(let i=randomWords.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[randomWords[i],randomWords[j]]=[randomWords[j],randomWords[i]];}
+    
+    let btnsHtml = '';
+    randomWords.forEach(word => {btnsHtml += `<button class="guess-btn" onclick="makeGuess('${word.replace(/'/g,"\\'")}')">${word}</button>`;});
+    
+    let old=document.getElementById('go');if(old)old.remove();
+    let d=document.createElement('div');d.className='overlay';d.id='go';
+    d.innerHTML=`<div class="overlay-box"><h3>🤔 اختر الكلمة الصحيحة:</h3><div class="guess-buttons">${btnsHtml}</div><button class="close-btn" onclick="this.closest('.overlay').remove()">✖️ إغلاق</button></div>`;
+    document.body.appendChild(d);
+}
+
+window.makeGuess=function(guessedWord){
+    document.getElementById('go')?.remove();
+    let isCorrect=(guessedWord===sw);
+    let spyName=ap[si]?.name||'???';
+    if(isCorrect){
+        showMessage(`🔍 الجاسوس (${spyName}) اختار: ${guessedWord}<br>✅ كلمة صحيحة!<br>🎉 الجاسوس كسب!<br><br>🔑 الكلمة: ${sw}`);
+    } else {
+        showMessage(`🔍 الجاسوس (${spyName}) اختار: ${guessedWord}<br>❌ كلمة خاطئة!<br>💀 تم كشف الجاسوس!<br><br>🔑 الكلمة الصحيحة: ${sw}`);
+    }
+    update(ref(db,'rooms/'+rid),{phase:'finished'});
+};
+
+function endGameDueToLowPlayers(spyName, word){
+    if(ph==='finished') return;
+    ph='finished';
+    showMessage(`⚠️ انتهت اللعبة لتناقص اللاعبين لـ2<br><br>🕵️ الجاسوس: ${spyName}<br>🔑 الكلمة: ${word}<br><br>🏆 انتهت اللعبة`);
+    update(ref(db,'rooms/'+rid),{phase:'finished'});
+}
+
+function showMessage(html){
+    let old=document.getElementById('mo');if(old)old.remove();
+    let d=document.createElement('div');d.className='overlay';d.id='mo';
+    d.innerHTML=`<div class="overlay-box">${html}<br><button class="close-btn" onclick="this.closest('.overlay').remove()">✖️ إغلاق</button></div>`;
+    document.body.appendChild(d);
 }
 
 window.startGame=function(){
@@ -244,54 +314,11 @@ window.vote=function(id){
                     update(ref(db,'rooms/'+rid+'/players/'+votedOut),{eliminated:true});
                     showMessage(`❌ غلط! تم طرد مدني: ${votedOutName}<br><br>⏳ في انتظار قرار الجاسوس...`);
                     update(ref(db,'rooms/'+rid),{phase:'spyGuess'});
-                    if(mid===si) showSpyGuessOptions();
                 }
             }
         });
     });
 };
-
-function showSpyGuessOptions(){
-    let otherWords = w.filter(word => word !== sw);
-    let randomWords = [];
-    for(let i=0; i<9; i++){randomWords.push(otherWords[Math.floor(Math.random()*otherWords.length)]);}
-    randomWords.push(sw);
-    for(let i=randomWords.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[randomWords[i],randomWords[j]]=[randomWords[j],randomWords[i]];}
-    
-    let btnsHtml = '';
-    randomWords.forEach(word => {btnsHtml += `<button class="guess-btn" onclick="makeGuess('${word.replace(/'/g,"\\'")}')">${word}</button>`;});
-    
-    let old=document.getElementById('go');if(old)old.remove();
-    let d=document.createElement('div');d.className='overlay';d.id='go';
-    d.innerHTML=`<div class="overlay-box"><h3>🤔 اختر الكلمة الصحيحة:</h3><div class="guess-buttons">${btnsHtml}</div><button class="close-btn" onclick="this.closest('.overlay').remove()">✖️ إغلاق</button></div>`;
-    document.body.appendChild(d);
-}
-
-window.makeGuess=function(guessedWord){
-    document.getElementById('go')?.remove();
-    let isCorrect=(guessedWord===sw);
-    let spyName=ap[si]?.name||'???';
-    if(isCorrect){
-        showMessage(`🔍 الجاسوس (${spyName}) اختار: ${guessedWord}<br>✅ كلمة صحيحة!<br>🎉 الجاسوس كسب!<br><br>🔑 الكلمة: ${sw}`);
-    } else {
-        showMessage(`🔍 الجاسوس (${spyName}) اختار: ${guessedWord}<br>❌ كلمة خاطئة!<br>💀 تم كشف الجاسوس!<br><br>🔑 الكلمة: ${sw}`);
-    }
-    update(ref(db,'rooms/'+rid),{phase:'finished'});
-};
-
-function endGameDueToLowPlayers(spyName, word){
-    if(ph==='finished') return;
-    ph='finished';
-    showMessage(`⚠️ انتهت اللعبة لتناقص اللاعبين لـ2<br><br>🕵️ الجاسوس: ${spyName}<br>🔑 الكلمة: ${word}<br><br>🏆 انتهت اللعبة`);
-    update(ref(db,'rooms/'+rid),{phase:'finished'});
-}
-
-function showMessage(html){
-    let old=document.getElementById('mo');if(old)old.remove();
-    let d=document.createElement('div');d.className='overlay';d.id='mo';
-    d.innerHTML=`<div class="overlay-box">${html}<br><button class="close-btn" onclick="this.closest('.overlay').remove()">✖️ إغلاق</button></div>`;
-    document.body.appendChild(d);
-}
 
 window.leaveRoom=function(){
     if(voteCounterInterval)clearInterval(voteCounterInterval);
