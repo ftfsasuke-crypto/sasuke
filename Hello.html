@@ -190,18 +190,17 @@
 
             if (isSpy) {
                 await update(ref(db, 'rooms/'+rid), { phase: 'spyGuess' });
-                showMessage(`✅ تم اكتشاف الجاسوس: ${votedName}\n⏳ في انتظار تخمين الجاسوس...`, true);
+                await set(ref(db, 'rooms/'+rid+'/msg'), { html: `✅ تم اكتشاف الجاسوس: ${votedName}\n⏳ في انتظار تخمين الجاسوس...`, target: 'all' });
             } else {
                 await update(ref(db, 'rooms/'+rid+'/players/'+votedOut), { eliminated: true });
                 if (gm === 'normal') {
-                    // جاسوس 1: الرسالة كاملة للكل
-                    showMessage(`❌ غلط! لم يكن الجاسوس\n🚫 تم طرد مدني: ${votedName}\n🕵️ الجاسوس الحقيقي هو: ${spyName}\n⏳ في انتظار تخمين الجاسوس...`, true);
+                    // جاسوس 1: الرسالة تظهر لكل اللاعبين عبر Firebase Messaging
+                    await set(ref(db, 'rooms/'+rid+'/msg'), { html: `❌ غلط! لم يكن الجاسوس\n🚫 تم طرد مدني: ${votedName}\n🕵️ الجاسوس الحقيقي هو: ${spyName}\n⏳ في انتظار تخمين الجاسوس...`, target: 'all' });
                     await update(ref(db, 'rooms/'+rid), { phase: 'spyGuess' });
                 } else {
-                    // جاسوس 2: بدون كشف الجاسوس
-                    showMessage(`❌ غلط! لم يكن الجاسوس\n🚫 تم طرد مدني: ${votedName}\n⏳ في انتظار قرار الجاسوس...`, true);
+                    await set(ref(db, 'rooms/'+rid+'/msg'), { html: `❌ غلط! لم يكن الجاسوس\n🚫 تم طرد مدني: ${votedName}\n⏳ في انتظار قرار الجاسوس...`, target: 'all' });
                     if (mid === si) showSpyOptions();
-                    else update(ref(db, 'rooms/'+rid), { phase: 'playing' });
+                    else await update(ref(db, 'rooms/'+rid), { phase: 'playing' });
                 }
             }
         }
@@ -223,7 +222,6 @@
         if (!guess) return;
         document.getElementById('guessDiv')?.remove();
         await update(ref(db, 'rooms/'+rid), { phase: 'finished' });
-        showMessage(`🔍 الجاسوس (${ap[si]?.name}) كتب: ${guess}\n🔑 الكلمة الصحيحة: ${sw}\n🏆 انتهت اللعبة`, true);
         await set(ref(db, 'rooms/'+rid+'/msg'), { html: `🔍 الجاسوس (${ap[si]?.name}) كتب: ${guess}\n🔑 الكلمة الصحيحة: ${sw}\n🏆 انتهت اللعبة`, target: 'all' });
     };
 
@@ -243,14 +241,13 @@
     window.submitChoiceGuess = async function(guess) {
         document.querySelector('.overlay')?.remove();
         await update(ref(db, 'rooms/'+rid), { phase: 'finished' });
-        showMessage(`🔍 الجاسوس (${ap[si]?.name}) اختار: ${guess}\n🔑 الكلمة الصحيحة: ${sw}\n🏆 انتهت اللعبة`, true);
         await set(ref(db, 'rooms/'+rid+'/msg'), { html: `🔍 الجاسوس (${ap[si]?.name}) اختار: ${guess}\n🔑 الكلمة الصحيحة: ${sw}\n🏆 انتهت اللعبة`, target: 'all' });
     };
 
     async function endGameLowPlayers(spyName, word) {
         if (ph === 'finished') return;
         ph = 'finished';
-        showMessage(`⚠️ انتهت اللعبة لان عدد اللاعبين 2 فقط\n🕵️ الجاسوس الحقيقي: ${spyName}\n🔑 الكلمة: ${word}\n🎉 الجاسوس كسب`, true);
+        await set(ref(db, 'rooms/'+rid+'/msg'), { html: `⚠️ انتهت اللعبة لان عدد اللاعبين 2 فقط\n🕵️ الجاسوس الحقيقي: ${spyName}\n🔑 الكلمة: ${word}\n🎉 الجاسوس كسب`, target: 'all' });
         await update(ref(db, 'rooms/'+rid), { phase: 'finished', active: false });
     }
 
