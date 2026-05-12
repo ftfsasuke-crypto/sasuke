@@ -48,15 +48,15 @@
     <div id="host-screen">
         <h1 style="background:linear-gradient(135deg,#e94560,#ff6b6b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:32px">🕵️ لعبة الجاسوس</h1>
         <div class="host-box"><p>👑 أنت الهوست</p><p>اسمك: <span class="host-name-display">⚔️ SASUKE ⚔️</span></p></div>
-        <button class="game-select-btn" onclick="createRoom('normal')">🎮 لعبة الجاسوس ١</button>
-        <button class="game-select-btn btn-gold" onclick="createRoom('multi')">🎯 لعبة الجاسوس ٢</button>
+        <button class="game-select-btn" onclick="window.createRoom('normal')">🎮 لعبة الجاسوس ١</button>
+        <button class="game-select-btn btn-gold" onclick="window.createRoom('multi')">🎯 لعبة الجاسوس ٢</button>
     </div>
 
     <div id="join-screen" style="display:none">
         <h1 style="background:linear-gradient(135deg,#e94560,#ff6b6b);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-size:32px">🕵️ لعبة الجاسوس</h1>
         <p style="color:#aaa;margin:15px 0">ادخل غرفة صديقك:</p>
         <input type="text" id="player-name" placeholder="اكتب اسمك" maxlength="15"><br>
-        <button onclick="joinRoom()">🚪 انضمام للغرفة</button>
+        <button onclick="window.joinRoom()">🚪 انضمام للغرفة</button>
     </div>
 
     <div id="game-screen" style="display:none">
@@ -66,12 +66,12 @@
             <div class="link-box">
                 <span id="link-text" class="link-text"></span>
             </div>
-            <button onclick="copyLink()" class="copy-btn">📋 نسخ الرابط</button>
+            <button onclick="window.copyLink()" class="copy-btn">📋 نسخ الرابط</button>
         </div>
         <div id="word-display" style="display:none;padding:20px;border-radius:15px;margin:10px 0;font-size:28px;font-weight:bold"></div>
         <div id="host-btns" style="display:none">
-            <button id="btn-start" onclick="startGame()">🚀 ابدأ اللعبة</button>
-            <button id="btn-show-vote" onclick="showVoting()" style="display:none;background:#f39c12">🗳️ إظهار التصويت</button>
+            <button id="btn-start" onclick="window.startGame()">🚀 ابدأ اللعبة</button>
+            <button id="btn-show-vote" onclick="window.showVoting()" style="display:none;background:#f39c12">🗳️ إظهار التصويت</button>
         </div>
         <div id="vote-counter-container" class="vote-counter" style="display:none">
             🗳️ عدد المصوتين: <span id="vote-count">0</span> / <span id="total-voters">0</span>
@@ -82,269 +82,36 @@
         <div id="vote-log-section" style="display:none"><h4>📋 التصويتات:</h4><div id="vote-log" style="max-height:150px;overflow-y:auto"></div></div>
         <div id="vote-section" style="display:none"><h4>🗳️ صوت على الجاسوس:</h4><div id="vote-btns"></div></div>
         <div id="waiting-votes" style="display:none">⏳ في انتظار باقي اللاعبين...</div>
-        <button onclick="leaveRoom()" style="background:#555;margin-top:12px">🚪 مغادرة</button>
+        <button onclick="window.leaveRoom()" style="background:#555;margin-top:12px">🚪 مغادرة</button>
     </div>
 </div>
 
 <script>
 (function(){let c=document.getElementById('starsContainer');for(let i=0;i<80;i++){let s=document.createElement('div');s.className='star';let z=Math.random()*3+1;s.style.width=z+'px';s.style.height=z+'px';s.style.left=Math.random()*100+'%';s.style.animationDuration=(Math.random()*5+4)+'s';s.style.animationDelay=Math.random()*6+'s';s.style.opacity=Math.random()*.8+.2;c.appendChild(s);}})();
+
+// تعريف الدوال بشكل عام عشان تظهر في console
+window.createRoom = function(m) {
+    console.log("createRoom called with mode:", m);
+    alert("جاري إنشاء الغرفة...");
+};
+window.joinRoom = function() {
+    alert("جاري الانضمام...");
+};
+window.startGame = function() {
+    alert("بدء اللعبة...");
+};
+window.showVoting = function() {
+    alert("إظهار التصويت...");
+};
+window.copyLink = function() {
+    alert("تم نسخ الرابط!");
+};
+window.vote = function(id) {
+    alert("تم التصويت على: "+id);
+};
+window.leaveRoom = function() {
+    alert("غادرت اللعبة");
+};
 </script>
-
-<script type="module">
-import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import{getDatabase,ref,set,get,update,onValue,remove}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-const fc={apiKey:"AIzaSyDTyJqVntFqKe3I-zntb_rMx9Qcv7Nqi94",authDomain:"spy-game-1d774.firebaseapp.com",projectId:"spy-game-1d774",storageBucket:"spy-game-1d774.firebasestorage.app",messagingSenderId:"261865713515",appId:"1:261865713515:web:8868e0998ccd0d00aba62e",databaseURL:"https://spy-game-1d774-default-rtdb.firebaseio.com/"};
-const a=initializeApp(fc),db=getDatabase(a);
-
-let mid,mn,rid,ih,gm='normal',si,sw,ap={},ph='waiting';
-let voteCounterInterval = null;
-
-const w = [
-    // فواكه (30)
-    'تفاحة', 'موز', 'برتقال', 'فراولة', 'عنب', 'مانجو', 'أناناس', 'بطيخ', 'شمام', 'كرز',
-    'خوخ', 'كمثرى', 'رمان', 'كيوي', 'جوز هند', 'افوكادو', 'توت', 'توت بري', 'ليمون', 'جريب فروت',
-    'يوسفي', 'باباي', 'جاك فروت', 'ليتشي', 'تمر', 'زيتون', 'تين', 'عليق', 'عوسرج', 'قشطة',
-    // خضروات (30)
-    'جزر', 'بطاطس', 'طماطم', 'خيار', 'فلفل', 'باذنجان', 'قرنبيط', 'بروكلي', 'سبانخ', 'خس',
-    'كرنب', 'بصل', 'ثوم', 'زنجبيل', 'فجل', 'كرفس', 'كوسا', 'بامية', 'فاصوليا', 'بازلاء',
-    'ذرة', 'عدس', 'حمص', 'فول', 'كراث', 'جرجير', 'بقدونس', 'كزبرة', 'نعناع', 'ريحان',
-    // حيوانات (40)
-    'أسد', 'نمر', 'فيل', 'زرافة', 'حمار وحشي', 'وحيد القرن', 'فرس النهر', 'تمساح', 'ثعبان', 'سلحفاة',
-    'قرد', 'غوريلا', 'شمبانزي', 'دب', 'ذئب', 'ثعلب', 'كلب', 'قطة', 'حصان', 'بقرة',
-    'خروف', 'ماعز', 'دجاجة', 'بطة', 'أوزة', 'حمامة', 'نسر', 'بومة', 'ببغاء', 'نعامة',
-    'كنغر', 'كوالا', 'باندا', 'جمل', 'لاما', 'غزال', 'سنجاب', 'أرنب', 'فأر', 'قنفذ',
-    'حوت', 'دلفين', 'قرش', 'أخطبوط', 'نجم البحر', 'قنديل بحر', 'سلطعون', 'روبيان', 'حبار', 'اخطبوط',
-    // حشرات (20)
-    'نحلة', 'نملة', 'جرادة', 'فراشة', 'يعسوب', 'خنفساء', 'صرصور', 'ذبابة', 'بعوضة', 'برغوث',
-    'بق', 'قمل', 'عنكبوت', 'عقرب', 'حريش', 'أم اربعة واربعين', 'دودة', 'يرقة', 'سرعوف', 'فرس النبي',
-    // طيور (20)
-    'عصفور', 'حمام', 'غراب', 'صقر', 'نسر', 'بوم', 'باز', 'هدهد', 'بلبل', 'طاووس',
-    'بطة', 'وزة', 'ديك رومي', 'سمان', 'نعامة', 'بجع', 'لقلق', 'مالك الحزين', 'نورس', 'خطاف',
-    // أماكن (50)
-    'مسجد', 'كنيسة', 'معبد', 'مستشفى', 'مدرسة', 'جامعة', 'روضة', 'مكتبة', 'متحف', 'حديقة',
-    'صالة ألعاب', 'حمام سباحة', 'ملعب كرة قدم', 'ملعب كرة سلة', 'صالة رياضية', 'نادي صحي', 'سوبر ماركت', 'بقالة', 'سوق', 'مول تجاري',
-    'مطعم', 'كافيتريا', 'مقهى', 'بوفيه', 'فندق', 'استراحة', 'منتجع', 'قرية سياحية', 'شاطئ', 'متنزه',
-    'مدينة ملاهي', 'حديقة حيوان', 'أكواريوم', 'سينما', 'مسرح', 'دار أوبرا', 'قاعة حفلات', 'استاد', 'صالة حفلات', 'مركز مؤتمرات',
-    'مطار', 'محطة قطار', 'محطة حافلات', 'مركز شرطة', 'قسم إطفاء', 'محكمة', 'بنك', 'بريد', 'شركة', 'مصنع',
-    // مهن (50)
-    'طبيب', 'مهندس', 'معلم', 'محامي', 'قاضي', 'شرطي', 'جندي', 'اطفائي', 'طيار', 'بحار',
-    'سائق', 'ميكانيكي', 'نجار', 'حداد', 'سباك', 'كهربائي', 'بناء', 'رسام', 'موسيقي', 'مغني',
-    'راقص', 'ممثل', 'مخرج', 'كاتب', 'شاعر', 'صحفي', 'مصور', 'طباخ', 'خباز', 'حلواني',
-    'صائغ', 'خياط', 'اسكافي', 'حلاق', 'عطار', 'بيطري', 'ممرض', 'صيدلي', 'عالم', 'باحث',
-    'محاسب', 'مدير', 'تاجر', 'بائع', 'مستورد', 'مصدر', 'مزارع', 'راعي', 'صياد', 'غواص',
-    // أثاث منزلي (50)
-    'سرير', 'كرسي', 'طاولة', 'خزانة', 'رف', 'كنبة', 'ستارة', 'سجادة', 'وسادة', 'بطانية',
-    'مرآة', 'ساعة حائط', 'مصباح', 'ثلاجة', 'فرن', 'ميكروويف', 'غسالة', 'مجفف', 'مكنسة', 'ممسحة',
-    'شفاط', 'خلاط', 'عصارة', 'غلاية', 'محضرة قهوة', 'طنجرة', 'مقلاة', 'صحن', 'كأس', 'ملعقة',
-    'شوكة', 'سكين', 'مفتاح', 'قفل', 'هاتف', 'شاحن', 'كمبيوتر', 'تلفاز', 'ريموت', 'كتاب',
-    'قلم', 'دفتر', 'مقص', 'صمغ', 'شريط لاصق', 'مشط', 'فرشاة أسنان', 'معجون أسنان', 'شامبو', 'صابون',
-    // طبيعة (50)
-    'شمس', 'قمر', 'نجوم', 'سماء', 'سحاب', 'مطر', 'ثلج', 'برق', 'رعد', 'رياح',
-    'بحر', 'نهر', 'ينبوع', 'شلال', 'بحيرة', 'وادي', 'جبل', 'تل', 'صحراء', 'رمال',
-    'حجر', 'صخر', 'تراب', 'طين', 'عشب', 'شجر', 'زهرة', 'وردة', 'ياسمين', 'فل',
-    'نرجس', 'بابونج', 'نخلة', 'صنوبر', 'بلوط', 'صفصاف', 'غابة', 'كهف', 'جزيرة', 'بركان',
-    'زلزال', 'فيضان', 'عاصفة', 'اعصار', 'ضباب', 'ندى', 'جليد', 'برد', 'صقيع', 'رذاذ',
-    // رياضة (50)
-    'كرة قدم', 'كرة سلة', 'كرة طائرة', 'كرة يد', 'تنس', 'اسكواش', 'جولف', 'بيسبول', 'كريكيت', 'هوكي',
-    'سباحة', 'غطس', 'ملاكمة', 'تايكوندو', 'جودو', 'كاراتيه', 'كونغ فو', 'يوغا', 'جمباز', 'ألعاب قوى',
-    'جري', 'قفز', 'رمي', 'رفع أثقال', 'دراجات', 'فروسية', 'رماية', 'سيوف', 'نبالة', 'تجديف',
-    'تزلج', 'تزحلق', 'تسلق', 'غوص', 'صيد', 'صيد سمك', 'ريشة طائرة', 'بينغ بونغ', 'سنوكر', 'بلياردو',
-    'شطرنج', 'داما', 'بوكر', 'أونو', 'مونوبولي', 'سكرابل', 'سودوكو', 'كلمات متقاطعة', 'الغاز', 'ألغاز',
-    // تكنولوجيا (50)
-    'هاتف', 'كمبيوتر', 'لابتوب', 'تابلت', 'ساعة ذكية', 'سماعات', 'كاميرا', 'مسجل', 'ميكروفون', 'مكبر صوت',
-    'شاشة', 'لوحة مفاتيح', 'فأرة', 'طابعة', 'ماسح ضوئي', 'راوتر', 'مودم', 'سيرفر', 'قرص صلب', 'فلاشة',
-    'بطارية', 'شاحن', 'كابل', 'محول', 'بطاقة شاشة', 'معالج', 'رام', 'مذربورد', 'مروحة', 'تبريد',
-    'طابعة ثلاثية الأبعاد', 'روبوت', 'طائرة درون', 'جهاز تحكم', 'عصا تحكم', 'نظارة واقع افتراضي', 'سلك', 'لحام', 'مفك', 'كماشة',
-    'انترنت', 'واي فاي', 'بلوتوث', 'جي بي اس', 'رادار', 'قمر صناعي', 'صاروخ', 'مركبة فضائية', 'تلسكوب', 'ميكروسكوب',
-    // فنون (40)
-    'رسم', 'تصوير', 'نحت', 'خط', 'زخرفة', 'نسيج', 'فخار', 'خزف', 'زجاج معشق', 'فسيفساء',
-    'مسرح', 'سينما', 'تلفزيون', 'راديو', 'بودكاست', 'يوتيوب', 'إنستغرام', 'تيك توك', 'فيسبوك', 'تويتر',
-    'متحف', 'معرض', 'مكتبة', 'جامعة', 'مدرسة', 'روضة', 'حضانة', 'معهد', 'مركز ثقافي', 'دار أوبرا',
-    'مهرجان', 'كرنفال', 'احتفال', 'عيد', 'مناسبة', 'زفاف', 'عزاء', 'وليمة', 'حفلة', 'سهرة',
-    // أطعمة ومشروبات (60)
-    'بيتزا', 'برغر', 'شاورما', 'فلافل', 'حمص', 'متبل', 'فتوش', 'تبولة', 'دولمة', 'وارق عنب',
-    'كبة', 'باستا', 'لازانيا', 'رز', 'برياني', 'كبسة', 'مندي', 'مظبي', 'سلطة', 'شوربة',
-    'لبن', 'زبادي', 'جبنة', 'حليب', 'قشطة', 'عسل', 'مربى', 'نوتيلا', 'شوكولاتة', 'حلاوة',
-    'بقلاوة', 'كنافة', 'قطايف', 'بسبوسة', 'كعك', 'بسكويت', 'كيك', 'مادلين', 'كرواسون', 'بان كيك',
-    'عصير', 'ماء', 'شاي', 'قهوة', 'نسكافيه', 'كابتشينو', 'لاتيه', 'موكا', 'سموذي', 'كوكتيل',
-    'بوظة', 'آيس كريم', 'جلي', 'مهلبية', 'أرز بلبن', 'سحلب', 'قمر الدين', 'تمرية', 'حلقوم', 'راحة',
-    // شخصيات كرتونية (50)
-    'ميكي ماوس', 'بندق', 'سبونج بوب', 'باتريك', 'سنجوب', 'بوجي', 'محمد', 'بسنت', 'كابتن ماجد', 'ريمي',
-    'مدغشقر', 'شريك', 'فيونا', 'بوش', 'كورتانا', 'مستر بين', 'توم', 'جيري', 'باباي', 'سانتا',
-    'بياض الثلج', 'سندريلا', 'اورورا', 'اريل', 'بل', 'جميلة', 'ياسمين', 'بوكاهونتاس', 'مولان', 'تارزان',
-    'علاء الدين', 'هيركولز', 'سيمبا', 'نالا', 'موفاسا', 'سكار', 'تيمون', 'بومبا', 'ويني', 'بورو',
-    'لوفي', 'زورو', 'ناروتو', 'ساسوكي', 'ساكورا', 'غوكو', 'بيجيتا', 'سيل', 'فريزا', 'كونان',
-    // إضافات (40)
-    'قلم رصاص', 'قلم حبر', 'مسطرة', 'براية', 'ممحاة', 'دباسة', 'مشبك ورق', 'ملف', 'ظرف', 'طابع بريد',
-    'علم', 'خريطة', 'كرة أرضية', 'بوصلة', 'ساعة يد', 'نظارة', 'عدسة', 'منظار', 'مجهر', 'سماعة طبيب',
-    'ميزان', 'شريط قياس', 'مسدس', 'بندقية', 'سيف', 'خنجر', 'درع', 'خوذة', 'حزام', 'شنطة',
-    'حقيبة', 'صندوق', 'علبة', 'زجاجة', 'كوب', 'فنجان', 'ابريق', 'دلة', 'مبخرة', 'بخور',
-    // الألوان (20)
-    'أحمر', 'أزرق', 'أخضر', 'أصفر', 'برتقالي', 'بنفسجي', 'وردي', 'بني', 'أسود', 'أبيض',
-    'رمادي', 'ذهبي', 'فضي', 'نحاسي', 'فيروزي', 'نيلي', 'ماروني', 'زيتوني', 'كريمي', 'مرجاني'
-];
-
-const pr=new URLSearchParams(location.search),rf=pr.get('room');
-if(rf){rid=rf;document.getElementById('host-screen').style.display='none';document.getElementById('join-screen').style.display='block';ck();}
-else{document.getElementById('host-screen').style.display='block';document.getElementById('join-screen').style.display='none';}
-
-function ck(){get(ref(db,'rooms/'+rid)).then(s=>{if(!s.exists()||!s.val().active){ex()}});}
-function ex(){document.getElementById('join-screen').style.display='none';showMessage('⚠️ انتهت صلاحية الرابط!');setTimeout(()=>{location.href=location.origin+location.pathname},3000);}
-
-window.createRoom=function(m){
-    gm=m;mn='⚔️ SASUKE ⚔️';rid='r'+Date.now().toString(36)+Math.random().toString(36).substr(2,5);mid='h'+Date.now().toString(36);ih=true;
-    set(ref(db,'rooms/'+rid),{gm,phase:'waiting',active:true,si:null,sw:null,vr:{},vl:{},msg:null}).then(()=>{
-        am();sg();document.getElementById('mode-display').textContent=gm==='multi'?'٢':'١';
-        document.getElementById('host-btns').style.display='block';
-        document.getElementById('btn-start').style.display='inline-block';
-        document.getElementById('room-link').style.display='block';
-        document.getElementById('link-text').innerText=location.origin+location.pathname+'?room='+rid;
-        la();showMessage('✅ تم إنشاء الغرفة!');
-    }).catch(err=>{showMessage('❌ خطأ: '+err.message);});
-};
-
-window.joinRoom=function(){
-    let n=document.getElementById('player-name').value.trim();
-    if(!n) return showMessage('⚠️ اكتب اسمك!');
-    if(n.length>15) return showMessage('⚠️ الاسم طويل قوي!');
-    mn=n;mid='p'+Date.now().toString(36)+Math.random().toString(36).substr(2,5);ih=false;
-    
-    function tryJoin(retry=0){
-        get(ref(db,'rooms/'+rid)).then(s=>{
-            if(s.exists() && s.val().active){
-                am();sg();
-                document.getElementById('host-btns').style.display='none';
-                document.getElementById('room-link').style.display='none';
-                la();
-                showMessage('👋 مرحباً '+n+'!');
-            } else {
-                if(retry<3){setTimeout(()=>tryJoin(retry+1),1000);}
-                else{ex();}
-            }
-        }).catch(()=>{
-            if(retry<3){setTimeout(()=>tryJoin(retry+1),1000);}
-            else{ex();}
-        });
-    }
-    tryJoin();
-};
-
-function am(){set(ref(db,'rooms/'+rid+'/players/'+mid),{id:mid,name:mn,ih,eliminated:false});}
-function la(){lp();lg();lmsg();lvl();startVoteCounter();}
-function sg(){
-    if(!ih){
-        document.getElementById('btn-start').style.display='none';
-        document.getElementById('btn-show-vote').style.display='none';
-    }
-    document.getElementById('host-screen').style.display='none';
-    document.getElementById('join-screen').style.display='none';
-    document.getElementById('game-screen').style.display='block';
-}
-
-function lp(){
-    onValue(ref(db,'rooms/'+rid+'/players'),s=>{
-        let p=s.val()||{};ap=p;
-        let h='';Object.keys(p).forEach(i=>{h+=`<li>${p[i].name}${p[i].ih?' 👑':''}${p[i].eliminated?' 👀 مشاهدة':''}</li>`});
-        document.getElementById('player-list').innerHTML=h;
-        
-        let kickDiv=document.getElementById('kick-section');
-        if(ih&&ph==='waiting'){
-            let k='<strong>🚫 طرد لاعب:</strong><br>';
-            let has=false;
-            Object.keys(p).forEach(i=>{
-                if(i!==mid && !p[i].eliminated){
-                    k+=`<button onclick="kick('${i}')">❌ ${p[i].name}</button> `;
-                    has=true;
-                }
-            });
-            kickDiv.innerHTML=has?k:'';
-            kickDiv.style.display=has?'block':'none';
-        }else{kickDiv.innerHTML='';kickDiv.style.display='none';}
-        
-        let activeCount = Object.values(p).filter(pl => !pl.eliminated).length;
-        if(gm==='multi' && ph === 'playing' && activeCount <= 2){
-            endGameDueToLowPlayers(ap[si]?.name||'???', sw);
-        }
-    });
-}
-
-function lvl(){onValue(ref(db,'rooms/'+rid+'/vl'),s=>{let l=s.val()||{};let h='';Object.values(l).forEach(x=>{h+=`<div class="vote-log-item">🗳️ ${x.v} ➡️ ${x.t}</div>`});document.getElementById('vote-log').innerHTML=h||'لا تصويتات بعد';});}
-
-window.kick=function(id){remove(ref(db,'rooms/'+rid+'/players/'+id));showMessage('✅ تم طرد اللاعب');};
-window.copyLink=function(){navigator.clipboard.writeText(document.getElementById('link-text').innerText);showMessage('📋 تم نسخ الرابط!');document.getElementById('room-link').style.display='none';};
-
-function startVoteCounter(){
-    if(voteCounterInterval) clearInterval(voteCounterInterval);
-    voteCounterInterval = setInterval(()=>{
-        if(ph === 'voting'){
-            get(ref(db,'rooms/'+rid+'/players')).then(ps=>{
-                let players=ps.val()||{};
-                let activeCount=Object.values(players).filter(p=>!p.eliminated).length;
-                get(ref(db,'rooms/'+rid+'/vr')).then(vs=>{
-                    let votes=vs.val()||{};
-                    document.getElementById('vote-count').textContent=Object.keys(votes).length;
-                    document.getElementById('total-voters').textContent=activeCount;
-                    document.getElementById('vote-counter-container').style.display='block';
-                });
-            });
-        } else {
-            document.getElementById('vote-counter-container').style.display='none';
-        }
-    }, 500);
-}
-
-function lg(){onValue(ref(db,'rooms/'+rid),s=>{if(!s.exists()){if(!ih){showMessage('👑 غادر الهوست');setTimeout(()=>{location.href=location.origin+location.pathname},2000);}return}let d=s.val();if(!d.active&&!ih&&d.phase!=='finished'){showMessage('⚠️ انتهت اللعبة');setTimeout(()=>{location.href=location.origin+location.pathname},2000);return}si=d.si;sw=d.sw;if(d.phase!==ph){ph=d.phase;hp(d)}});}
-
-function lmsg(){onValue(ref(db,'rooms/'+rid+'/msg'),s=>{let m=s.val();if(!m)return;showMessage(m.html);});}
-
-function swd(d){
-    let wd=document.getElementById('word-display');
-    if(!wd)return;
-    wd.style.display='block';
-    if(ap[mid]?.eliminated){wd.innerHTML='👀 أنت في وضع المشاهدة';wd.style.background='rgba(100,100,100,.3)';return;}
-    if(mid===d.si){wd.style.background='rgba(200,0,0,.3)';wd.innerHTML='🕵️ أنت الجاسوس! 🤫';}
-    else{wd.style.background='rgba(0,150,0,.3)';wd.innerHTML='🔍 الكلمة: '+d.sw;}
-}
-
-function hp(d){
-    if(d.phase==='finished')return;
-    document.getElementById('vote-section').style.display='none';
-    document.getElementById('waiting-votes').style.display='none';
-    document.getElementById('vote-log-section').style.display='none';
-    let mo=document.getElementById('mo');if(mo)mo.remove();
-    let go=document.getElementById('go');if(go)go.remove();
-    
-    if(d.phase==='playing'){
-        swd(d);
-        if(ih){
-            document.getElementById('btn-start').style.display='none';
-            let playersCount = Object.keys(ap).length;
-            if(gm==='normal' && playersCount>=2){document.getElementById('btn-show-vote').style.display='inline-block';}
-            if(gm==='multi' && playersCount>=3){document.getElementById('btn-show-vote').style.display='inline-block';}
-        }
-    }
-    if(d.phase==='voting'){
-        svu();
-        if(ih)document.getElementById('btn-show-vote').style.display='none';
-        document.getElementById('vote-log-section').style.display='block';
-    }
-    if(d.phase==='spyGuess'){
-        document.getElementById('vote-log-section').style.display='block';
-        document.getElementById('vote-counter-container').style.display='none';
-        if(mid===si){
-            if(gm==='normal'){
-                showSpyGuessInput();
-            } else {
-                showSpyChoiceScreen();
-            }
-        }
-    }
-}
-
-window.startGame=function(){
-    get(ref(db,'rooms/'+rid+'/players')).then(s=>{
-        let p=s.val(),ids=Object.keys(p);
-        if(gm==='normal' && ids.length<2) return showMessage('⚠️ لازم على الأقل 2 لاعبين!');
-        if(gm==='multi' && ids.length<3) return showMessage('⚠️ لازم على الأقل 3 لاعبين للجاسوس 2!');
-        ids.forEach(i=>update(ref(db,'rooms/'+rid+'/players/'+i),{eliminated:false}
+</body>
+</html>
