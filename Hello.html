@@ -32,8 +32,8 @@
     <div id="host-screen">
         <h1><span class="title-spy">🕵️ لعبة الجاسوس</span></h1>
         <div class="host-box"><p>👑 أنت الهوست</p><p>اسمك: <span class="host-name-display">⚔️ S A S U K E ⚔️</span></p></div>
-        <button class="game-select-btn" id="btn-normal">🎮 لعبة الجاسوس ١</button>
-        <button class="game-select-btn btn-gold" id="btn-multi">🎯 لعبة الجاسوس ٢</button>
+        <button class="game-select-btn" onclick="createRoom('normal')">🎮 لعبة الجاسوس ١</button>
+        <button class="game-select-btn btn-gold" onclick="createRoom('multi')">🎯 لعبة الجاسوس ٢</button>
     </div>
     <div id="join-screen" style="display:none">
         <h1><span class="title-spy">🕵️ لعبة الجاسوس</span></h1>
@@ -49,8 +49,8 @@
         </div>
         <div id="word-display" style="display:none;padding:20px;border-radius:15px;margin:10px 0;font-size:28px;font-weight:bold"></div>
         <div id="host-btns" style="display:none">
-            <button id="btn-start">🚀 ابدأ اللعبة</button>
-            <button id="btn-show-vote" style="display:none;background:#f39c12">🗳️ إظهار التصويت</button>
+            <button id="btn-start" onclick="startGame()">🚀 ابدأ اللعبة</button>
+            <button id="btn-show-vote" onclick="showVoting()" style="display:none;background:#f39c12">🗳️ إظهار التصويت</button>
         </div>
         <h3>👥 اللاعبون:</h3><ul id="player-list"></ul>
         <div id="vote-section" style="display:none"><h3>🗳️ صوت على الجاسوس:</h3><div id="vote-btns"></div></div>
@@ -60,7 +60,7 @@
 </div>
 
 <script>
-// إنشاء النجوم المتساقطة
+// إنشاء النجوم
 (function(){let c=document.getElementById('starsContainer');for(let i=0;i<60;i++){let s=document.createElement('div');s.className='star';let z=Math.random()*3+1;s.style.width=z+'px';s.style.height=z+'px';s.style.left=Math.random()*100+'%';s.style.animationDuration=(Math.random()*4+3)+'s';s.style.animationDelay=Math.random()*5+'s';s.style.opacity=Math.random()*.7+.3;c.appendChild(s);}})();
 </script>
 
@@ -79,10 +79,7 @@ const params=new URLSearchParams(location.search),ridFromUrl=params.get('room');
 if(ridFromUrl){rid=ridFromUrl;document.getElementById('host-screen').style.display='none';document.getElementById('join-screen').style.display='block'}
 else{document.getElementById('host-screen').style.display='block';document.getElementById('join-screen').style.display='none'}
 
-document.getElementById('btn-normal').addEventListener('click',()=>createRoom('normal'));
-document.getElementById('btn-multi').addEventListener('click',()=>createRoom('multi'));
-
-function createRoom(mode){
+window.createRoom=function(mode){
     gmode=mode;mname='⚔️ SASUKE ⚔️';rid='r'+Date.now().toString(36);mid='h'+Date.now().toString(36);isHost=true;finished=false;
     set(ref(db,'rooms/'+rid),{gmode,phase:'waiting',active:true,spyId:null,sword:null,voteResults:{},overlay:null}).then(()=>{
         addMe();showGame();document.getElementById('mode-display').textContent=gmode==='multi'?'٢':'١';
@@ -91,11 +88,9 @@ function createRoom(mode){
         document.getElementById('btn-show-vote').style.display='none';
         document.getElementById('room-link').style.display='block';
         document.getElementById('link-text').textContent=location.origin+location.pathname+'?room='+rid;
-        document.getElementById('btn-start').onclick=startGame;
-        document.getElementById('btn-show-vote').onclick=showVoting;
         listenAll();setupDC();notify('✅ تم!');
     });
-}
+};
 
 window.joinRoom=function(){
     let n=document.getElementById('player-name').value.trim();if(!n)return notify('⚠️ اسمك!');
@@ -126,16 +121,16 @@ function handlePhase(d){
 
 function showWord(d){let w=document.getElementById('word-display');w.style.display='block';w.style.background=mid===d.spyId?'rgba(200,0,0,.3)':'rgba(0,150,0,.3)';w.innerHTML=mid===d.spyId?'🕵️ أنت الجاسوس!':'🔑 '+d.sword;}
 
-function startGame(){
+window.startGame=function(){
     get(ref(db,'rooms/'+rid+'/players')).then(s=>{let p=s.val(),ids=Object.keys(p);if(ids.length<2)return notify('⚠️ محتاج لاعبين!');
         let spy=ids[Math.floor(Math.random()*ids.length)],sw=words[Math.floor(Math.random()*words.length)];
         ids.forEach(i=>update(ref(db,'rooms/'+rid+'/players/'+i),{eliminated:false}));
         update(ref(db,'rooms/'+rid),{phase:'playing',spyId:spy,sword:sw,voteResults:{}});
         document.getElementById('btn-start').style.display='none';document.getElementById('btn-show-vote').style.display='inline-block';
     });
-}
+};
 
-function showVoting(){update(ref(db,'rooms/'+rid),{phase:'voting'});}
+window.showVoting=function(){update(ref(db,'rooms/'+rid),{phase:'voting'});}
 
 function showVoteUI(){
     document.getElementById('vote-section').style.display='block';
