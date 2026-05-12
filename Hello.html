@@ -37,7 +37,6 @@
         .link-text{word-break:break-all;font-size:12px;color:#aaa}
         .copy-btn{background:#2ecc71;padding:5px 15px;font-size:12px}
         .copy-btn:hover{background:#27ae60}
-        .hidden{display:none}
     </style>
 </head>
 <body>
@@ -148,7 +147,17 @@ function ex(){document.getElementById('join-screen').style.display='none';ov('�
 
 window.createRoom=function(m){
     gm=m;mn='⚔️ SASUKE ⚔️';rid='r'+Date.now().toString(36)+Math.random().toString(36).substr(2,5);mid='h'+Date.now().toString(36);ih=true;
-    set(ref(db,'rooms/'+rid),{gm,phase:'waiting',active:true,si:null,sw:null,vr:{},vl:{},msg:null}).then(()=>{
+    // إنشاء غرفة جديدة مع فلترة كاملة للبيانات القديمة
+    set(ref(db,'rooms/'+rid),{
+        gm: gm,
+        phase: 'waiting',
+        active: true,
+        si: null,
+        sw: null,
+        vr: {},   // ← تصفير الأصوات
+        vl: {},   // ← تصفير سجل التصويت
+        msg: null
+    }).then(()=>{
         am();sg();document.getElementById('mode-display').textContent=gm==='multi'?'٢':'١';
         document.getElementById('host-btns').style.display='block';document.getElementById('btn-start').style.display='inline-block';
         document.getElementById('btn-show-vote').style.display='none';
@@ -221,7 +230,16 @@ function lp(){
     });
 }
 
-function lvl(){onValue(ref(db,'rooms/'+rid+'/vl'),s=>{let l=s.val()||{};let h='';Object.values(l).forEach(x=>{h+=`<div class="vote-log-item">🗳️ ${x.v} ➡️ ${x.t}</div>`});document.getElementById('vote-log').innerHTML=h||'لا تصويتات بعد';});}
+function lvl(){
+    onValue(ref(db,'rooms/'+rid+'/vl'),s=>{
+        let l=s.val()||{};
+        let h='';
+        Object.values(l).forEach(x=>{
+            h+=`<div class="vote-log-item">🗳️ ${x.v} ➡️ ${x.t}</div>`;
+        });
+        document.getElementById('vote-log').innerHTML=h||'لا تصويتات بعد';
+    });
+}
 
 window.kick=function(id){remove(ref(db,'rooms/'+rid+'/players/'+id));nt('✅ تم طرد اللاعب');};
 
@@ -307,7 +325,15 @@ window.startGame=function(){
         let sword=w[Math.floor(Math.random()*w.length)];
         if(!sword)sword='تفاحة';
         
-        update(ref(db,'rooms/'+rid),{phase:'playing',si:spy,sw:sword,vr:{},vl:{}});
+        // مهم: تصفير الأصوات وسجل التصويت قبل كل لعبة جديدة
+        update(ref(db,'rooms/'+rid),{
+            phase:'playing',
+            si:spy,
+            sw:sword,
+            vr: {},   // ← تصفير الأصوات
+            vl: {}    // ← تصفير سجل التصويت
+        });
+        
         document.getElementById('btn-start').style.display='none';
         document.getElementById('btn-show-vote').style.display='inline-block';
         nt('🎮 بدأت اللعبة! جاسوس واحد بينكم');
