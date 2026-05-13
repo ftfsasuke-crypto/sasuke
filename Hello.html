@@ -6,49 +6,101 @@
 
 <style>
 body {
-  font-family: Arial;
-  background: #111;
+  margin: 0;
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #5f2c82, #49a09d);
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: white;
+}
+
+.container {
   text-align: center;
 }
-.box {
-  background: #222;
-  padding: 20px;
-  margin: 20px auto;
+
+.card {
+  background: rgba(255,255,255,0.1);
+  padding: 30px;
+  border-radius: 20px;
+  backdrop-filter: blur(15px);
+  box-shadow: 0 0 30px rgba(0,0,0,0.3);
   width: 300px;
+}
+
+h1 {
+  margin-bottom: 10px;
+}
+
+input {
+  width: 90%;
+  padding: 12px;
+  border-radius: 20px;
+  border: none;
+  margin: 10px 0;
+  text-align: center;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: 0.3s;
+}
+
+.btn-main {
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  color: white;
+}
+
+.btn-main:hover {
+  transform: scale(1.05);
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  background: rgba(255,255,255,0.1);
+  margin: 5px;
+  padding: 8px;
   border-radius: 10px;
 }
-button {
-  padding: 10px;
-  margin: 5px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-}
-.green { background: green; color: white; }
-.red { background: red; }
 </style>
 
 </head>
 <body>
 
-<h1>🕵️ لعبة الجاسوس</h1>
+<div class="container">
 
-<div id="home" class="box">
-  <input id="name" placeholder="اسمك"><br><br>
-  <button onclick="createRoom()">👑 إنشاء غرفة</button>
-  <button onclick="joinRoom()">🚪 انضمام</button>
+<div id="home" class="card">
+  <h1>🕵️ لعبة الجاسوس</h1>
+  <p>هل تستطيع اكتشاف الجاسوس؟</p>
+
+  <input id="name" placeholder="اكتب اسمك">
+
+  <button class="btn-main" onclick="createRoom()">👑 إنشاء غرفة</button>
+  <button class="btn-main" onclick="joinRoom()">🚪 انضمام</button>
 </div>
 
-<div id="room" class="box" style="display:none;">
+<div id="room" class="card" style="display:none;">
   <h3 id="roomCode"></h3>
   <p id="link"></p>
   <ul id="players"></ul>
-  <button class="green" onclick="startGame()">🚀 ابدأ</button>
+  <button class="btn-main" onclick="startGame()">🚀 ابدأ</button>
 </div>
 
-<div id="game" class="box" style="display:none;">
+<div id="game" class="card" style="display:none;">
   <h2 id="role"></h2>
+</div>
+
 </div>
 
 <!-- Firebase -->
@@ -69,7 +121,6 @@ const db = firebase.database();
 let room = "";
 let playerId = "";
 
-// إنشاء غرفة
 function createRoom() {
   const name = document.getElementById("name").value;
   room = "r" + Date.now();
@@ -85,7 +136,6 @@ function createRoom() {
   openRoom();
 }
 
-// دخول غرفة
 function joinRoom() {
   const name = document.getElementById("name").value;
   room = prompt("اكتب كود الغرفة");
@@ -98,16 +148,13 @@ function joinRoom() {
   openRoom();
 }
 
-// فتح الغرفة
 function openRoom() {
   document.getElementById("home").style.display = "none";
   document.getElementById("room").style.display = "block";
 
   document.getElementById("roomCode").innerText = "كود الغرفة: " + room;
-  document.getElementById("link").innerText =
-    location.href + "?room=" + room;
+  document.getElementById("link").innerText = location.href + "?room=" + room;
 
-  // تحديث اللاعبين
   db.ref("rooms/" + room + "/players").on("value", snap => {
     const data = snap.val();
     let html = "";
@@ -119,13 +166,11 @@ function openRoom() {
     document.getElementById("players").innerHTML = html;
   });
 
-  // بدء اللعبة
   db.ref("rooms/" + room + "/phase").on("value", snap => {
     if (snap.val() === "playing") showRole();
   });
 }
 
-// بدء اللعبة
 function startGame() {
   db.ref("rooms/" + room + "/players").once("value").then(snap => {
     const players = Object.keys(snap.val());
@@ -142,7 +187,6 @@ function startGame() {
   });
 }
 
-// عرض الدور
 function showRole() {
   document.getElementById("room").style.display = "none";
   document.getElementById("game").style.display = "block";
@@ -153,8 +197,7 @@ function showRole() {
     if (playerId === data.spy) {
       document.getElementById("role").innerHTML = "🕵️ أنت الجاسوس!";
     } else {
-      document.getElementById("role").innerHTML =
-        "🔍 الكلمة: " + data.word;
+      document.getElementById("role").innerHTML = "🔍 الكلمة: " + data.word;
     }
   });
 }
