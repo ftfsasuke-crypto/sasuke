@@ -3,257 +3,156 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-<title>🕵️ لعبة الجاسوس</title>
+<title>لعبة الجاسوس</title>
 <style>
-body{
-margin:0;
-font-family:'Cairo',sans-serif;
-background: linear-gradient(135deg,#1e3c72,#2a5298);
-color:white;
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
+body {
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  background: linear-gradient(135deg, #1f1c2c, #928dab);
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin:0;
 }
-#app{
-width:90%;
-max-width:500px;
-background:rgba(255,255,255,0.08);
-padding:25px;
-border-radius:25px;
-backdrop-filter:blur(20px);
-text-align:center;
-}
-button{
-background: linear-gradient(90deg,#667eea,#764ba2);
-border:none;
-padding:14px;
-margin:8px;
-border-radius:25px;
-color:white;
-font-size:16px;
-cursor:pointer;
-width:90%;
-transition:.3s;
-}
-button:hover{transform:scale(1.05)}
-input{
-padding:14px;
-width:85%;
-border-radius:25px;
-border:none;
-margin:10px;
-text-align:center;
-}
-ul{list-style:none;padding:0}
-li{
-background:rgba(255,255,255,.1);
-margin:6px;
-padding:12px;
-border-radius:12px;
-}
-.overlay{
-position:fixed;
-top:0;left:0;
-width:100%;height:100%;
-background:rgba(0,0,0,.9);
-display:flex;
-justify-content:center;
-align-items:center;
-}
-.popup{
-background:#1a1a3e;
-padding:25px;
-border-radius:20px;
-width:90%;
-max-width:400px;
-}
-#word{
-font-size:26px;
-margin-top:20px;
-color:#fff;
-}
-#linkBox{margin:10px 0;}
-#startBtn{display:none;}
+button {cursor:pointer;border:none;border-radius:12px;padding:12px 24px;margin:6px;font-size:16px;}
+.overlay {position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;z-index:1000;}
+.overlay-box {background:#2c2c44;padding:30px;border-radius:20px;max-width:400px;width:90%;text-align:center;}
+input {width:80%;padding:12px;border-radius:12px;border:none;margin:10px auto;display:block;text-align:center;font-size:16px;}
+h2,h3{margin-bottom:16px;}
+.room-btn{background:linear-gradient(90deg,#6a5acd,#8a2be2);color:#fff;width:80%;margin:auto;display:block;}
 </style>
 </head>
 <body>
-<div id="app">
-<div id="home">
-<h2>🕵️ لعبة الجاسوس</h2>
-<button onclick="createRoom()">🎮 لعبة الجاسوس 1</button>
-</div>
-<div id="room" style="display:none;">
-<div id="linkBox">
-<p id="link"></p>
-<button onclick="copyLink()">📋 نسخ الرابط</button>
-</div>
-<ul id="players"></ul>
-<button id="startBtn" onclick="startGame()">🚀 بدء اللعبة</button>
-</div>
-<div id="game" style="display:none;">
-<h2 id="word"></h2>
-<button id="leaveBtn" onclick="leaveGame()">🚪 مغادرة</button>
-</div>
+
+<!-- هوست -->
+<div id="hostOverlay" class="overlay" style="display:none;">
+  <div class="overlay-box">
+    <h2>👑 𝐒𝐀𝐒𝐔𝐊𝐄 👑</h2>
+    <button id="createRoomBtn" class="room-btn">🎮 لعبة الجاسوس 1</button>
+    <div id="roomLinkDiv" style="margin-top:20px;display:none;">
+      <button id="copyLinkBtn" class="room-btn">نسخ الرابط 📋</button>
+    </div>
+    <button id="startGameBtn" class="room-btn" style="display:none;margin-top:20px;">🚀 بدء اللعبة</button>
+  </div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<!-- لاعبين -->
+<div id="joinOverlay" class="overlay" style="display:none;">
+  <div class="overlay-box">
+    <h2>✍️ اكتب اسمك</h2>
+    <input id="playerNameInput" placeholder="اسمك">
+    <button id="joinBtn" class="room-btn">🚪 انضم</button>
+  </div>
+</div>
 
-<script>
+<!-- اللعبة -->
+<div id="gameOverlay" class="overlay" style="display:none;">
+  <div class="overlay-box">
+    <h3 id="wordDisplay">🔍 الكلمة: </h3>
+    <ul id="playersList"></ul>
+    <button id="startVoteBtn" style="display:none;" class="room-btn">🗳️ بدء التصويت</button>
+    <button id="leaveBtn" class="room-btn" style="margin-top:20px;background:#e74c3c;">🚪 مغادرة</button>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get, update, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
 const firebaseConfig = {
-apiKey: "AIzaSyDTyJqVntFqKe3I-zntb_rMx9Qcv7Nqi94",
-databaseURL: "https://spy-game-1d774-default-rtdb.firebaseio.com"
+  apiKey: "AIzaSyDTyJqVntFqKe3I-zntb_rMx9Qcv7Nqi94",
+  authDomain: "spy-game-1d774.firebaseapp.com",
+  databaseURL: "https://spy-game-1d774-default-rtdb.firebaseio.com/",
+  projectId: "spy-game-1d774"
 };
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
 
-let room="", playerId="", players={}, isHost=false, spyId="", word="";
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-// دخول من رابط
-let params=new URLSearchParams(location.search);
-if(params.get("room")){
-room=params.get("room");
-showJoin();
-}
+let roomId, playerId, playerName, isHost=false, gameStarted=false;
 
-function showJoin(){
-let div=document.createElement("div");
-div.className="overlay";
-div.innerHTML=`
-<div class="popup">
-<h3>✍️ اكتب اسمك</h3>
-<input id="name" placeholder="اسمك">
-<button onclick="join()">🚪 انضمام</button>
-</div>`;
-document.body.appendChild(div);
-}
+// تصنيفات وكلمات لكل تصنيف (200 كلمة كمثال)
+const categories = {
+  'اكلات': Array.from({length:200},(_,i)=>`طعام${i+1}`),
+  'فواكه': Array.from({length:200},(_,i)=>`فاكهة${i+1}`),
+  'خضروات': Array.from({length:200},(_,i)=>`خضار${i+1}`),
+  'حيوانات': Array.from({length:200},(_,i)=>`حيوان${i+1}`),
+  'أجهزة': Array.from({length:200},(_,i)=>`جهاز${i+1}`),
+  'مواصلات': Array.from({length:200},(_,i)=>`مواصلات${i+1}`),
+  'رياضة': Array.from({length:200},(_,i)=>`رياضة${i+1}`),
+  'منزل': Array.from({length:200},(_,i)=>`منزل${i+1}`),
+  'دول': Array.from({length:200},(_,i)=>`دولة${i+1}`),
+  'كرتون وانمي': Array.from({length:200},(_,i)=>`شخصية${i+1}`)
+};
 
-async function join(){
-let name=document.getElementById("name").value.trim();
-if(!name) return;
+// واجهة البداية
+const params = new URLSearchParams(location.search);
+const roomParam = params.get('room');
 
-// تحقق من حالة اللعبة
-let phaseSnap = await db.ref('rooms/'+room+'/phase').get();
-if(phaseSnap.exists() && phaseSnap.val() && phaseSnap.val() !== 'waiting'){
-alert("⚠️ اللعبة قد بدأت بالفعل لا يمكنك الدخول");
-return;
-}
-
-playerId="p"+Date.now();
-isHost=false;
-
-// سجل خروج أي جلسة قديمة لنفس الـ playerId
-let playersSnap = await db.ref('rooms/'+room+'/players').get();
-playersSnap.forEach(child=>{
-if(child.val().name===name){
-db.ref('rooms/'+room+'/players/'+child.key).update({active:false});
-}
-});
-
-// سجل اللاعب الجديد
-db.ref("rooms/"+room+"/players/"+playerId).set({name:name, active:true});
-
-document.querySelector(".overlay").remove();
-openRoom();
-}
-
-// إنشاء غرفة (هوست فقط)
-function createRoom(){
-room="r"+Date.now();
-playerId="h"+Date.now();
-isHost=true;
-
-db.ref("rooms/"+room).set({
-players:{
-[playerId]:{name:"👑 𝐒𝐀𝐒𝐔𝐊𝐄 👑", active:true}
-},
-phase:"waiting"
-});
-
-openRoom();
-
-document.getElementById("link").innerText=
-location.origin+location.pathname+"?room="+room;
-}
-
-// فتح الغرفة
-function openRoom(){
-document.getElementById("home").style.display="none";
-document.getElementById("room").style.display="block";
-
-// رابط الغرفة فقط للهوست
-if(!isHost) document.getElementById("linkBox").style.display="none";
-
-db.ref("rooms/"+room+"/players").on("value",snap=>{
-players=snap.val()||{};
-let html="";
-for(let id in players){
-let status = players[id].active?"":"👀";
-html+=`<li>${players[id].name} ${status}</li>`;
-}
-document.getElementById("players").innerHTML=html;
-
-// زر بدء اللعبة عند 3 لاعبين أو أكثر
-if(isHost && Object.keys(players).filter(p=>players[p].active).length>=3){
-document.getElementById("startBtn").style.display="block";
-}
-});
-
-// تسجيل خروج اللاعب عند غلق التاب
-window.addEventListener("beforeunload",()=>{
-if(playerId && room){
-db.ref("rooms/"+room+"/players/"+playerId).update({active:false});
-}
-});
-}
-
-// نسخ الرابط للهوست
-function copyLink(){
-navigator.clipboard.writeText(document.getElementById("link").innerText);
-document.getElementById("linkBox").style.display="none";
-}
-
-// بدء اللعبة (اختيار جاسوس وكلمة)
-function startGame(){
-document.getElementById("startBtn").style.display="none";
-
-// اختيار جاسوس عشوائي
-let ids=Object.keys(players).filter(p=>players[p].active);
-spyId=ids[Math.floor(Math.random()*ids.length)];
-
-// اختيار كلمة عشوائية
-let words=["تفاح","بيتزا","أسد","كمبيوتر","ناروتو"];
-word=words[Math.floor(Math.random()*words.length)];
-
-// حفظ في Firebase لكل اللاعبين
-db.ref("rooms/"+room).update({spy:spyId, word:word, phase:"playing"});
-
-// عرض الدور
-showRole();
-}
-
-// عرض الدور لكل لاعب
-function showRole(){
-document.getElementById("room").style.display="none";
-document.getElementById("game").style.display="block";
-
-if(playerId===spyId){
-document.getElementById("word").innerText="🕵️ أنت الجاسوس!";
+if(!roomParam){
+  // الهوست
+  isHost=true;
+  document.getElementById('hostOverlay').style.display='flex';
 }else{
-document.getElementById("word").innerText="🔍 "+word;
-}
+  roomId = roomParam;
+  document.getElementById('joinOverlay').style.display='flex';
 }
 
-// زر مغادرة
-function leaveGame(){
-db.ref("rooms/"+room+"/players/"+playerId).update({active:false});
-alert("لقد غادرت المباراة");
-document.getElementById("game").style.display="none";
-document.getElementById("home").style.display="block";
+// إنشاء الغرفة
+document.getElementById('createRoomBtn').onclick = async ()=>{
+  roomId='r'+Date.now();
+  playerId='host';
+  isHost=true;
+  await set(ref(db,'rooms/'+roomId),{host:playerId,players:{[playerId]:{name:'𝐒𝐀𝐒𝐔𝐊𝐄',left:false}},phase:'waiting'});
+  document.getElementById('roomLinkDiv').style.display='block';
+  document.getElementById('copyLinkBtn').onclick=()=>{
+    navigator.clipboard.writeText(`${location.origin}${location.pathname}?room=${roomId}`);
+    document.getElementById('copyLinkBtn').style.display='none';
+  };
+};
+
+// انضمام لاعب
+document.getElementById('joinBtn').onclick = async ()=>{
+  const nameInput = document.getElementById('playerNameInput').value.trim();
+  if(!nameInput) return alert("ادخل اسمك");
+  playerName=nameInput;
+  playerId='p'+Date.now();
+  await set(ref(db,'rooms/'+roomId+'/players/'+playerId),{name:playerName,left:false});
+  document.getElementById('joinOverlay').style.display='none';
+  document.getElementById('gameOverlay').style.display='flex';
+  listenPlayers();
+};
+
+// الاستماع لتحديثات اللاعبين
+function listenPlayers(){
+  onValue(ref(db,'rooms/'+roomId+'/players'),snap=>{
+    const players=snap.val()||{};
+    const list=document.getElementById('playersList');
+    list.innerHTML='';
+    Object.values(players).forEach(p=>{
+      const li=document.createElement('li');
+      li.textContent=p.name;
+      list.appendChild(li);
+    });
+  });
 }
+
+// مغادرة
+document.getElementById('leaveBtn').onclick=async()=>{
+  if(playerId) await update(ref(db,'rooms/'+roomId+'/players/'+playerId),{left:true});
+  alert('لقد غادرت المباراة');
+  location.reload();
+};
+
+// حماية الانضمام بعد بدء اللعبة
+onValue(ref(db,'rooms/'+roomId),snap=>{
+  const data=snap.val();
+  if(data?.phase==='playing' && !isHost && !playerId){
+    alert("اللعبة قد بدأت بالفعل لا يمكنك الدخول");
+    location.href=location.origin+location.pathname;
+  }
+});
 </script>
-
 </body>
 </html>
