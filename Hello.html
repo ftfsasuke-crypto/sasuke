@@ -3,295 +3,116 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-
-<title>🕵️ لعبة الجاسوس</title>
-
+<title>لعبة الجاسوس 1</title>
 <style>
-*{box-sizing:border-box}
-
-body{
-margin:0;
-font-family:'Cairo',sans-serif;
-background: linear-gradient(135deg,#141e30,#243b55);
-height:100vh;
-display:flex;
-justify-content:center;
-align-items:center;
-color:white;
-}
-
-.card{
-width:90%;
-max-width:420px;
-padding:25px;
-border-radius:30px;
-background: rgba(255,255,255,0.08);
-backdrop-filter: blur(30px);
-box-shadow:0 10px 40px rgba(0,0,0,0.6);
-text-align:center;
-}
-
-button{
-width:100%;
-padding:15px;
-border:none;
-border-radius:30px;
-margin-top:10px;
-font-size:16px;
-font-weight:bold;
-background: linear-gradient(90deg,#667eea,#764ba2);
-color:white;
-cursor:pointer;
-transition:.3s;
-}
-
-button:hover{transform:scale(1.05)}
-
-.overlay{
-position:fixed;
-top:0;left:0;
-width:100%;
-height:100%;
-display:flex;
-justify-content:center;
-align-items:center;
-background: linear-gradient(135deg,#141e30,#243b55);
-}
-
-.popup{
-width:90%;
-max-width:420px;
-padding:30px;
-border-radius:30px;
-background: rgba(255,255,255,0.08);
-backdrop-filter: blur(40px);
-box-shadow:0 10px 50px rgba(0,0,0,0.7);
-text-align:center;
-}
-
-.popup input{
-width:100%;
-padding:16px;
-border:none;
-border-radius:25px;
-margin-top:10px;
-font-size:16px;
-text-align:center;
-direction:rtl;
-background: rgba(255,255,255,0.9);
-color:#333;
-outline:none;
-}
-
-ul{list-style:none;padding:0}
-li{
-background:rgba(255,255,255,0.1);
-margin:6px 0;
-padding:10px;
-border-radius:15px;
-}
-
-.category-btn{
-margin:6px;
-padding:12px;
-border-radius:20px;
-background:#3498db;
-}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:linear-gradient(to bottom,#4b6cb7,#182848);color:#eee;text-align:center;padding:15px;min-height:100vh;direction:rtl}
+button{background:#6c5ce7;color:white;border:none;padding:12px 24px;margin:6px;border-radius:30px;cursor:pointer;font-size:16px;transition:.3s}
+button:hover{opacity:.9;transform:scale(1.05)}
+input{padding:14px;border-radius:24px;border:none;margin:8px;font-size:16px;width:80%;text-align:center;background:rgba(255,255,255,.15);color:#fff}
+ul{list-style:none;padding:0;margin:10px 0}
+#app{max-width:550px;margin:auto;background:rgba(0,0,0,.2);border-radius:24px;padding:30px}
+.overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.95);z-index:1000;display:flex;align-items:center;justify-content:center}
+.overlay-box{background:#1a1a3e;border:2px solid #6c5ce7;padding:25px;border-radius:28px;max-width:500px;width:90%}
+.settings-btn,.rematch-btn{position:fixed;top:15px;background:#2c3e50;padding:10px 15px;border-radius:50px;font-size:16px;z-index:100;cursor:pointer;transition:.3s}
+.settings-btn:hover,.rematch-btn:hover{background:#1a252f}
+.settings-btn{left:15px}
+.rematch-btn{left:100px}
+.player-list-settings{max-height:300px;overflow-y:auto;margin:15px 0}
+.player-item{display:flex;justify-content:space-between;align-items:center;margin:8px 0;padding:8px;background:rgba(255,255,255,.1);border-radius:10px}
+.kick-btn{background:#e74c3c;padding:5px 12px;margin:0;font-size:12px;border-radius:12px;cursor:pointer}
+.kick-btn:hover{background:#c0392b}
+.category-buttons{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:15px 0;max-height:300px;overflow-y:auto}
+.category-btn{background:#3498db;padding:10px 15px;font-size:14px;border-radius:12px}
+.category-btn:hover{background:#2980b9}
+.vote-counter{background:rgba(0,0,0,.5);padding:10px;border-radius:30px;margin:10px 0}
+.guess-buttons{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:15px 0}
+.guess-btn{background:#2ecc71;padding:8px 16px;margin:5px;border-radius:12px}
+.close-btn{background:#555;margin-top:15px;padding:8px 20px;border-radius:12px}
+#word-display{padding:20px;border-radius:20px;margin:10px 0;font-size:28px;color:#fff}
 </style>
-
 </head>
-
 <body>
+<div id="settingsButton" class="settings-btn" style="display:none" onclick="window.showSettingsPopup()">⚙️ الإعدادات</div>
+<div id="rematchButton" class="rematch-btn" style="display:none" onclick="window.rematchGame()">🔄 إعادة اللعب</div>
 
-<div class="card">
-
-<div id="home">
-<h2>🕵️ لعبة الجاسوس</h2>
-<button onclick="createRoom()">🎮 لعبة الجاسوس 1</button>
+<div id="app">
+<div id="host-screen">
+<h1>🕵️ لعبة الجاسوس</h1>
+<button class="btn-gold" onclick="window.createRoom()">🎮 لعبة الجاسوس 1</button>
 </div>
 
-<div id="room" style="display:none;">
-<div id="linkContainer">
-<p id="link"></p>
-<button onclick="copyLink()">📋 نسخ الرابط</button>
+<div id="join-screen" style="display:none">
+<h1>🕵️ انضمام</h1>
+<input type="text" id="player-name" placeholder="اكتب اسمك"><br>
+<button onclick="window.joinRoom()">🚪 انضمام</button>
 </div>
 
-<ul id="players"></ul>
-
-<button id="startBtn" onclick="showCategories()" style="display:none">
-🚀 ابدأ اللعبة
-</button>
+<div id="game-screen" style="display:none">
+<div id="room-link" style="display:none;background:rgba(0,0,0,.3);padding:10px;margin:10px 0">
+<span id="link-text"></span> <button onclick="window.copyLink()">📋 نسخ الرابط</button>
+</div>
+<div id="word-display" style="display:none"></div>
+<div id="host-btns" style="display:none">
+<button id="btn-start" onclick="window.showCategorySelection()">🚀 ابدأ اللعبة</button>
+<button id="btn-show-vote" onclick="window.showVoting()" style="display:none">🗳️ تصويت</button>
+</div>
+<div id="vote-counter-container" class="vote-counter" style="display:none">🗳️ <span id="vote-count">0</span>/<span id="total-voters">0</span></div>
+<ul id="player-list"></ul>
+<div id="vote-log-section" style="display:none"><div id="vote-log"></div></div>
+<div id="vote-section" style="display:none"><div id="vote-btns"></div></div>
+<div id="waiting-votes" style="display:none">⏳ في انتظار باقي التصويتات...</div>
+<button onclick="window.leaveRoom()">🚪 مغادرة</button>
+</div>
 </div>
 
-<div id="game" style="display:none;">
-<h2 id="role"></h2>
-</div>
-
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, get, update, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
 const firebaseConfig = {
 apiKey: "AIzaSyDTyJqVntFqKe3I-zntb_rMx9Qcv7Nqi94",
-databaseURL: "https://spy-game-1d774-default-rtdb.firebaseio.com"
+authDomain: "spy-game-1d774.firebaseapp.com",
+projectId: "spy-game-1d774",
+databaseURL: "https://spy-game-1d774-default-rtdb.firebaseio.com/"
+};
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+let rid, mid, ih=true, gm='normal', ph='waiting', si, sw, ap={}, selectedCategory='أكلات';
+
+const categories={
+'أكلات':[ 'بيتزا','برجر','سوشي','فاهيتا','مكرونة','شاورما','سمبوسة','كبة','كباب','برياني','تاكو','سلطة','فطيرة','خضار مشوي','عصير','كريب','بان كيك','حلويات','كيك','كوكيز','آيس كريم', '...' /*200 كلمات*/ ],
+'فواكه':['تفاح','موز','برتقال','فراولة','عنب','أناناس','مانجو','كيوي','ليمون','رمان','باباي','كرز','جوافة','تمر','خوخ','مشمش','تين','كمثرى','جريب فروت','كشمش', '...' /*200 كلمات*/ ],
+'خضروات':['طماطم','خيار','خس','جزر','بطاطس','بصل','ثوم','فلفل','كرنب','سبانخ','فاصوليا','بازيلاء','شمندر','فطر','ملفوف','كوسة','باذنجان','فلفل حار','شبت','كرفس', '...' /*200 كلمات*/ ],
+'حيوانات':['أسد','نمر','فيل','زرافة','قرد','دب','ثعلب','ذئب','كلب','قط','حصان','خروف','ماعز','دجاج','بطة','نسر','بومة','باندا','كنغر','أرنب','سنجاب','فأر','خنزير','ماعز','غزال','سلاحف','تمساح','حوت','دلفين', '...' /*200 كلمات*/ ],
+'أجهزة':['هاتف','كمبيوتر','لابتوب','تابلت','كاميرا','ساعة','سماعات','ميكروفون','طابعة','راوتر','فلاشة','شاحن','مكيف','مروحة','سخان','مكواة','غسالة','ثلاجة','ميكروويف','فرن','مروحة تبريد', '...' /*200 كلمات*/ ],
+'رياضة':['كرة قدم','كرة سلة','كرة طائرة','تنس','سباحة','ملاكمة','جودو','كاراتيه','يوغا','جمباز','جري','دراجات','فروسية','رماية','شطرنج','بوكر','أونو','اسكواش','جولف','بيسبول','هوكي','غطس','تايكوندو','كونغ فو','رفع أثقال','قفز','رمي','تجديف','تزلج','تسلق','غوص','بلياردو','سنوكر','بينغ بونغ','كريكيت', '...' /*200 كلمات*/ ],
+'كرتون وانمي':['ناروتو','ساسوكي','سيمبا','سبونج بوب','توم','جيري','علاء الدين','ميكي ماوس','كابتن ماجد','كونان','لوفي','زورو','باتريك','شريك','شيمورو','ناروتو','ساسكي','ساكورا','غوكو', '...' /*200 كلمات*/ ]
 };
 
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+window.createRoom=async function(){
+rid='r'+Date.now();
+mid='h'+Date.now();
+ih=true;
+await set(ref(db,'rooms/'+rid),{gm,phase:'waiting',active:true,si:null,sw:null,vr:{},vl:{},msg:null});
+await set(ref(db,'rooms/'+rid+'/players/'+mid),{name:'👑 𝐒𝐀𝐒𝐔𝐊𝐄 👑',ih:true,eliminated:false});
+document.getElementById('host-screen').style.display='none';
+document.getElementById('game-screen').style.display='block';
+document.getElementById('room-link').style.display='block';
+document.getElementById('link-text').innerText=location.origin+location.pathname+'?room='+rid;
+document.getElementById('host-btns').style.display='block';
+document.getElementById('settingsButton').style.display='block';
+document.getElementById('rematchButton').style.display='block';
+listenPlayers(); listenRoom();
+};
 
-let room="", playerId="", playersData={};
+window.copyLink=function(){
+document.getElementById('link-text').innerText='';
+};
 
-// 🔥 تحويل Bold
-function toBold(text){
-const normal="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-const bold="𝐀𝐁𝐂𝐃𝐄𝐅𝐆𝐇𝐈𝐉𝐊𝐋𝐌𝐍𝐎𝐏𝐐𝐑𝐒𝐓𝐔𝐕𝐖𝐗𝐘𝐙𝐚𝐛𝐜𝐝𝐞𝐟𝐠𝐡𝐢𝐣𝐤𝐥𝐦𝐧𝐨𝐩𝐪𝐫𝐬𝐭𝐮𝐯𝐰𝐱𝐲𝐳";
-
-return text.split('').map(c=>{
-let i=normal.indexOf(c);
-return i!==-1?bold[i]:c;
-}).join('');
-}
-
-// دخول من لينك
-const params=new URLSearchParams(location.search);
-const roomFromLink=params.get("room");
-
-if(roomFromLink){
-room=roomFromLink;
-showJoinPopup();
-}
-
-// popup
-function showJoinPopup(){
-let div=document.createElement("div");
-div.className="overlay";
-
-div.innerHTML=`
-<div class="popup">
-<h2>✍️ اكتب اسمك</h2>
-<input id="joinName" placeholder="اسمك">
-<button onclick="joinNow()">🚪 انضمام</button>
-</div>
-`;
-
-document.body.appendChild(div);
-}
-
-// انضمام
-function joinNow(){
-let name=document.getElementById("joinName").value.trim();
-if(!name) return;
-
-if(/^[A-Za-z ]+$/.test(name)){
-name=toBold(name);
-}
-
-playerId="p"+Date.now();
-
-db.ref("rooms/"+room+"/players/"+playerId).set({name});
-
-document.querySelector(".overlay").remove();
-openRoom();
-}
-
-// إنشاء غرفة
-function createRoom(){
-room="r"+Date.now();
-playerId="h"+Date.now();
-
-db.ref("rooms/"+room).set({
-players:{
-[playerId]:{name:"👑 ⚔️ 𝐒𝐀𝐒𝐔𝐊𝐄 ⚔️"}
-},
-phase:"waiting"
-});
-
-openRoom();
-
-document.getElementById("link").innerText=
-location.origin+location.pathname+"?room="+room;
-}
-
-// فتح الغرفة
-function openRoom(){
-document.getElementById("home").style.display="none";
-document.getElementById("room").style.display="block";
-
-db.ref("rooms/"+room+"/players").on("value",snap=>{
-playersData=snap.val()||{};
-let html="";
-for(let id in playersData){
-html+=`<li>${playersData[id].name}</li>`;
-}
-document.getElementById("players").innerHTML=html;
-
-if(Object.keys(playersData).length>=2){
-document.getElementById("startBtn").style.display="block";
-}
-});
-
-db.ref("rooms/"+room).on("value",snap=>{
-let d=snap.val();
-if(d.phase==="playing") showRole(d);
-});
-}
-
-// نسخ الرابط
-function copyLink(){
-navigator.clipboard.writeText(document.getElementById("link").innerText);
-document.getElementById("linkContainer").style.display="none";
-}
-
-// تصنيفات
-function showCategories(){
-let cats=["🍔 أكلات","🍎 فواكه","🐶 حيوانات","💻 أجهزة","🎌 كرتون وأنمي"];
-let html="";
-
-cats.forEach(c=>{
-html+=`<button class="category-btn" onclick="startGame()">${c}</button>`;
-});
-
-let div=document.createElement("div");
-div.className="overlay";
-div.innerHTML=`<div class="popup">${html}</div>`;
-document.body.appendChild(div);
-}
-
-// بدء اللعبة
-function startGame(){
-document.querySelector(".overlay")?.remove();
-
-let ids=Object.keys(playersData);
-let spy=ids[Math.floor(Math.random()*ids.length)];
-
-let words=["تفاح","بيتزا","أسد","موبايل","ناروتو","برجر","كمبيوتر"];
-let word=words[Math.floor(Math.random()*words.length)];
-
-db.ref("rooms/"+room).update({
-spy:spy,
-word:word,
-phase:"playing"
-});
-}
-
-// عرض الدور
-function showRole(d){
-document.getElementById("room").style.display="none";
-document.getElementById("game").style.display="block";
-
-if(playerId===d.spy){
-document.getElementById("role").innerText="🕵️ أنت الجاسوس!";
-}else{
-document.getElementById("role").innerText="🔍 "+d.word;
-}
-}
-
+function listenPlayers(){onValue(ref(db,'rooms/'+rid+'/players'),snap=>{ap=snap.val()||{};let list='';for(let id in ap)list+=`<li>${ap[id].name} ${ap[id].eliminated?'👀':''}</li>`;document.getElementById('player-list').innerHTML=list;});}
+function listenRoom(){onValue(ref(db,'rooms/'+rid),snap=>{});}
 </script>
-
 </body>
 </html>
