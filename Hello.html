@@ -8,8 +8,8 @@
 <style>
 body{
     margin:0;
-    font-family:Tahoma;
-    background:linear-gradient(135deg,#2b2f5b,#485185);
+    font-family:Tajawal, sans-serif;
+    background:linear-gradient(135deg,#1e2a78,#3c4fa3);
     display:flex;
     justify-content:center;
     align-items:center;
@@ -18,47 +18,54 @@ body{
 }
 
 .box{
-    background:rgba(0,0,0,0.3);
-    padding:30px;
+    background:rgba(0,0,0,0.35);
+    padding:25px;
     border-radius:25px;
     text-align:center;
     width:90%;
     max-width:400px;
 }
 
+h1,h2{margin-bottom:15px;}
+
 input{
     width:100%;
-    padding:12px;
+    padding:14px;
     border:none;
     border-radius:15px;
     margin-top:10px;
     font-size:16px;
+    text-align:center;
 }
 
 button{
     width:100%;
-    padding:15px;
+    padding:14px;
     border:none;
-    border-radius:25px;
+    border-radius:20px;
     font-size:18px;
     color:white;
     cursor:pointer;
-    margin-top:10px;
+    margin-top:12px;
 }
 
 .main-btn{
-    background:linear-gradient(to right,#8e44ad,#9b59b6);
+    background:linear-gradient(to right,#8e2de2,#4a00e0);
 }
 
 .copy-btn{
-    background:linear-gradient(to right,#3498db,#9b59b6);
+    background:linear-gradient(to right,#00c6ff,#0072ff);
+}
+
+.join-btn{
+    background:linear-gradient(to right,#ff7e5f,#feb47b);
 }
 
 .player{
     background:rgba(255,255,255,0.1);
     padding:10px;
-    border-radius:15px;
-    margin-top:8px;
+    border-radius:12px;
+    margin-top:6px;
 }
 
 .hidden{display:none;}
@@ -67,16 +74,15 @@ button{
 
 <body>
 
-<!-- الصفحة الرئيسية -->
+<!-- الرئيسية -->
 <div class="box" id="home">
 <h1>👑 𝐒𝐀𝐒𝐔𝐊𝐄 👑</h1>
-<button class="main-btn" onclick="startGame()">🎮 لعبة الجاسوس 1</button>
+<button class="main-btn" onclick="startGame()">🎮 لعبة الجاسوس</button>
 </div>
 
 <!-- غرفة الهوست -->
 <div class="box hidden" id="room">
 <h2>🔥 تم إنشاء الغرفة</h2>
-<p>انسخ الرابط وابعته لصحابك</p>
 
 <button class="copy-btn" onclick="copyLink()">📋 نسخ الرابط</button>
 
@@ -84,33 +90,38 @@ button{
 <div id="players"></div>
 </div>
 
-<!-- صفحة الانضمام -->
+<!-- الانضمام -->
 <div class="box hidden" id="join">
 <h2>✍️ اكتب اسمك</h2>
 <input id="nameInput" placeholder="اسمك">
-<button onclick="joinGame()">🚪 انضمام</button>
+<button class="join-btn" onclick="joinGame()">🚪 انضمام</button>
+</div>
+
+<!-- الانتظار -->
+<div class="box hidden" id="waiting">
+<h2>⏳ في انتظار بدء اللعبة</h2>
+<p id="yourName"></p>
+
+<h3>اللاعبين:</h3>
+<div id="players2"></div>
 </div>
 
 <script>
 
 let roomId = null;
 
-// هل داخل من رابط؟
+// هل داخل من رابط
 const params = new URLSearchParams(window.location.search);
 if(params.get("room")){
     roomId = params.get("room");
-    document.getElementById("join").classList.remove("hidden");
-    document.getElementById("home").classList.add("hidden");
+    show("join");
 }
 
 // إنشاء غرفة
 function startGame(){
     roomId = Math.floor(Math.random()*100000);
     localStorage.setItem("room_"+roomId, JSON.stringify([]));
-
-    document.getElementById("home").classList.add("hidden");
-    document.getElementById("room").classList.remove("hidden");
-
+    show("room");
     updatePlayers();
 }
 
@@ -121,28 +132,53 @@ function copyLink(){
     alert("تم نسخ الرابط ✅");
 }
 
-// انضمام لاعب
+// انضمام
 function joinGame(){
-    let name = document.getElementById("nameInput").value;
+    let name = document.getElementById("nameInput").value.trim();
     if(!name) return alert("اكتب اسمك");
 
     let players = JSON.parse(localStorage.getItem("room_"+roomId)) || [];
     players.push(name);
     localStorage.setItem("room_"+roomId, JSON.stringify(players));
 
-    alert("تم الانضمام ✅");
+    document.getElementById("yourName").innerText = "اسمك: " + name;
+
+    show("waiting");
+    updatePlayers2();
 }
 
-// تحديث قائمة اللاعبين
+// تحديث عند الهوست
 function updatePlayers(){
-    let playersDiv = document.getElementById("players");
     setInterval(()=>{
         let players = JSON.parse(localStorage.getItem("room_"+roomId)) || [];
-        playersDiv.innerHTML = "";
+        let div = document.getElementById("players");
+        div.innerHTML = "";
         players.forEach(p=>{
-            playersDiv.innerHTML += `<div class="player">${p}</div>`;
+            div.innerHTML += `<div class="player">${p}</div>`;
         });
     },1000);
+}
+
+// تحديث عند اللاعب
+function updatePlayers2(){
+    setInterval(()=>{
+        let players = JSON.parse(localStorage.getItem("room_"+roomId)) || [];
+        let div = document.getElementById("players2");
+        div.innerHTML = "";
+        players.forEach(p=>{
+            div.innerHTML += `<div class="player">${p}</div>`;
+        });
+    },1000);
+}
+
+// تغيير الشاشة
+function show(id){
+    document.getElementById("home").classList.add("hidden");
+    document.getElementById("room").classList.add("hidden");
+    document.getElementById("join").classList.add("hidden");
+    document.getElementById("waiting").classList.add("hidden");
+
+    document.getElementById(id).classList.remove("hidden");
 }
 
 </script>
