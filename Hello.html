@@ -26,15 +26,6 @@ body{
     max-width:400px;
 }
 
-input{
-    width:100%;
-    padding:14px;
-    border:none;
-    border-radius:15px;
-    margin-top:10px;
-    text-align:center;
-}
-
 button{
     width:100%;
     padding:14px;
@@ -78,9 +69,6 @@ button{
 <!-- الرئيسية -->
 <div class="box" id="home">
 <h1>👑 𝐒𝐀𝐒𝐔𝐊𝐄 👑</h1>
-
-<input id="hostName" placeholder="اكتب اسمك كهوست">
-
 <button class="main-btn" onclick="startGame()">🎮 لعبة الجاسوس</button>
 </div>
 
@@ -123,13 +111,10 @@ if(params.get("room")){
 
 // إنشاء غرفة
 function startGame(){
-    let hostName = document.getElementById("hostName").value.trim();
-    if(!hostName) return alert("اكتب اسمك الأول");
-
     roomId = Math.floor(Math.random()*100000);
 
     let players = [{
-        name: hostName,
+        name: "𝐒𝐀𝐒𝐔𝐊𝐄 👑",
         host: true
     }];
 
@@ -175,7 +160,7 @@ function updatePlayers(){
 
         players.forEach(p=>{
             if(p.host){
-                div.innerHTML += `<div class="player host">👑 ${p.name} (Host)</div>`;
+                div.innerHTML += `<div class="player host">${p.name}</div>`;
             }else{
                 div.innerHTML += `<div class="player">${p.name}</div>`;
             }
@@ -193,7 +178,7 @@ function updatePlayers2(){
 
         players.forEach(p=>{
             if(p.host){
-                div.innerHTML += `<div class="player host">👑 ${p.name} (Host)</div>`;
+                div.innerHTML += `<div class="player host">${p.name}</div>`;
             }else{
                 div.innerHTML += `<div class="player">${p.name}</div>`;
             }
