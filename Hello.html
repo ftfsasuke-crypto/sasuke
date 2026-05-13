@@ -3,97 +3,101 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+
 <title>🕵️ لعبة الجاسوس</title>
 
 <style>
-body {
-  margin:0;
-  font-family:'Cairo', sans-serif;
-  background: linear-gradient(135deg, #1e3c72, #2a5298);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
-  color:white;
-  direction: rtl;
+*{box-sizing:border-box}
+
+body{
+margin:0;
+font-family:'Cairo',sans-serif;
+background: linear-gradient(135deg,#141e30,#243b55);
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+color:white;
 }
 
-/* الكارت */
-.card {
-  width:90%;
-  max-width:400px;
-  background: rgba(255,255,255,0.08);
-  backdrop-filter: blur(25px);
-  border-radius:30px;
-  padding:25px;
-  text-align:center;
+.card{
+width:90%;
+max-width:420px;
+padding:25px;
+border-radius:30px;
+background: rgba(255,255,255,0.08);
+backdrop-filter: blur(30px);
+box-shadow:0 10px 40px rgba(0,0,0,0.6);
+text-align:center;
 }
 
-/* الأزرار */
-button {
-  width:100%;
-  padding:15px;
-  margin-top:12px;
-  border:none;
-  border-radius:30px;
-  background: linear-gradient(90deg,#667eea,#764ba2);
-  color:white;
-  font-size:17px;
-  cursor:pointer;
-  font-weight:bold;
+button{
+width:100%;
+padding:15px;
+border:none;
+border-radius:30px;
+margin-top:10px;
+font-size:16px;
+font-weight:bold;
+background: linear-gradient(90deg,#667eea,#764ba2);
+color:white;
+cursor:pointer;
+transition:.3s;
 }
 
-/* Overlay */
-.overlay {
-  position:fixed;
-  top:0;left:0;
-  width:100%;
-  height:100%;
-  background:linear-gradient(135deg,#1e3c72,#2a5298);
-  display:flex;
-  justify-content:center;
-  align-items:center;
+button:hover{transform:scale(1.05)}
+
+.overlay{
+position:fixed;
+top:0;left:0;
+width:100%;
+height:100%;
+display:flex;
+justify-content:center;
+align-items:center;
+background: linear-gradient(135deg,#141e30,#243b55);
 }
 
-/* Popup */
-.popup {
-  width:90%;
-  max-width:420px;
-  background: rgba(255,255,255,0.1);
-  backdrop-filter: blur(30px);
-  padding:30px;
-  border-radius:30px;
-  text-align:center;
-  box-shadow:0 0 50px rgba(0,0,0,0.5);
+.popup{
+width:90%;
+max-width:420px;
+padding:30px;
+border-radius:30px;
+background: rgba(255,255,255,0.08);
+backdrop-filter: blur(40px);
+box-shadow:0 10px 50px rgba(0,0,0,0.7);
+text-align:center;
 }
 
-/* العنوان */
-.popup h2 {
-  font-size:24px;
-  margin-bottom:20px;
-  font-weight:bold;
+.popup input{
+width:100%;
+padding:16px;
+border:none;
+border-radius:25px;
+margin-top:10px;
+font-size:16px;
+text-align:center;
+direction:rtl;
+background: rgba(255,255,255,0.9);
+color:#333;
+outline:none;
 }
 
-/* input */
-.popup input {
-  width:100%;
-  padding:16px;
-  border:none;
-  border-radius:25px;
-  margin-bottom:15px;
-  font-size:16px;
-  text-align:center;
-  background: rgba(255,255,255,0.9);
-  color:#333;
-  outline:none;
+ul{list-style:none;padding:0}
+li{
+background:rgba(255,255,255,0.1);
+margin:6px 0;
+padding:10px;
+border-radius:15px;
 }
 
-/* تصنيفات */
-.category-btn {
-  margin:6px;
-  padding:12px;
-  border-radius:15px;
-  background:#3498db;
+.category-btn{
+margin:6px;
+padding:12px;
+border-radius:20px;
+background:#3498db;
 }
 </style>
 
@@ -131,15 +135,27 @@ button {
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
 <script>
+
 const firebaseConfig = {
-  apiKey: "AIzaSyDTyJqVntFqKe3I-zntb_rMx9Qcv7Nqi94",
-  databaseURL: "https://spy-game-1d774-default-rtdb.firebaseio.com"
+apiKey: "AIzaSyDTyJqVntFqKe3I-zntb_rMx9Qcv7Nqi94",
+databaseURL: "https://spy-game-1d774-default-rtdb.firebaseio.com"
 };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 let room="", playerId="", playersData={};
+
+// 🔥 تحويل Bold
+function toBold(text){
+const normal="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+const bold="𝐀𝐁𝐂𝐃𝐄𝐅𝐆𝐇𝐈𝐉𝐊𝐋𝐌𝐍𝐎𝐏𝐐𝐑𝐒𝐓𝐔𝐕𝐖𝐗𝐘𝐙𝐚𝐛𝐜𝐝𝐞𝐟𝐠𝐡𝐢𝐣𝐤𝐥𝐦𝐧𝐨𝐩𝐪𝐫𝐬𝐭𝐮𝐯𝐰𝐱𝐲𝐳";
+
+return text.split('').map(c=>{
+let i=normal.indexOf(c);
+return i!==-1?bold[i]:c;
+}).join('');
+}
 
 // دخول من لينك
 const params=new URLSearchParams(location.search);
@@ -150,7 +166,7 @@ room=roomFromLink;
 showJoinPopup();
 }
 
-// 🔥 popup مظبوط
+// popup
 function showJoinPopup(){
 let div=document.createElement("div");
 div.className="overlay";
@@ -166,8 +182,15 @@ div.innerHTML=`
 document.body.appendChild(div);
 }
 
+// انضمام
 function joinNow(){
-let name=document.getElementById("joinName").value;
+let name=document.getElementById("joinName").value.trim();
+if(!name) return;
+
+if(/^[A-Za-z ]+$/.test(name)){
+name=toBold(name);
+}
+
 playerId="p"+Date.now();
 
 db.ref("rooms/"+room+"/players/"+playerId).set({name});
@@ -182,13 +205,15 @@ room="r"+Date.now();
 playerId="h"+Date.now();
 
 db.ref("rooms/"+room).set({
-players:{[playerId]:{name:"⚔️ SASUKE ⚔️"}},
+players:{
+[playerId]:{name:"👑 ⚔️ 𝐒𝐀𝐒𝐔𝐊𝐄 ⚔️"}
+},
 phase:"waiting"
 });
 
 openRoom();
 
-document.getElementById("link").innerText =
+document.getElementById("link").innerText=
 location.origin+location.pathname+"?room="+room;
 }
 
@@ -201,7 +226,7 @@ db.ref("rooms/"+room+"/players").on("value",snap=>{
 playersData=snap.val()||{};
 let html="";
 for(let id in playersData){
-html+="<li>"+playersData[id].name+"</li>";
+html+=`<li>${playersData[id].name}</li>`;
 }
 document.getElementById("players").innerHTML=html;
 
@@ -218,19 +243,17 @@ if(d.phase==="playing") showRole(d);
 
 // نسخ الرابط
 function copyLink(){
-const container = document.getElementById("linkContainer");
-const text = document.getElementById("link").innerText;
-navigator.clipboard.writeText(text);
-container.style.display = "none";
+navigator.clipboard.writeText(document.getElementById("link").innerText);
+document.getElementById("linkContainer").style.display="none";
 }
 
-// عرض التصنيفات
+// تصنيفات
 function showCategories(){
-let html="";
 let cats=["🍔 أكلات","🍎 فواكه","🐶 حيوانات","💻 أجهزة","🎌 كرتون وأنمي"];
+let html="";
 
 cats.forEach(c=>{
-html+=`<button class="category-btn" onclick="startGame('${c}')">${c}</button>`;
+html+=`<button class="category-btn" onclick="startGame()">${c}</button>`;
 });
 
 let div=document.createElement("div");
@@ -240,13 +263,13 @@ document.body.appendChild(div);
 }
 
 // بدء اللعبة
-function startGame(cat){
+function startGame(){
 document.querySelector(".overlay")?.remove();
 
 let ids=Object.keys(playersData);
 let spy=ids[Math.floor(Math.random()*ids.length)];
 
-let words=["تفاح","موز","بيتزا","أسد","موبايل","ناروتو"];
+let words=["تفاح","بيتزا","أسد","موبايل","ناروتو","برجر","كمبيوتر"];
 let word=words[Math.floor(Math.random()*words.length)];
 
 db.ref("rooms/"+room).update({
