@@ -6,201 +6,219 @@
 
 <style>
 body {
-  margin: 0;
-  font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(135deg, #5f2c82, #49a09d);
-  height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
+  margin:0;
+  font-family:'Segoe UI';
+  background: linear-gradient(-45deg, #1d2671, #c33764, #6a11cb, #2575fc);
+  background-size: 400% 400%;
+  animation: bg 10s ease infinite;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  color:white;
 }
 
-.container {
-  text-align: center;
+@keyframes bg {
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
 }
 
 .card {
-  background: rgba(255,255,255,0.1);
-  padding: 30px;
-  border-radius: 20px;
-  backdrop-filter: blur(15px);
-  box-shadow: 0 0 30px rgba(0,0,0,0.3);
-  width: 300px;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(25px);
+  border-radius: 30px;
+  padding: 25px;
+  width: 340px;
+  text-align:center;
 }
 
-h1 {
-  margin-bottom: 10px;
-}
-
-input {
-  width: 90%;
-  padding: 12px;
-  border-radius: 20px;
-  border: none;
-  margin: 10px 0;
-  text-align: center;
+.sasuke {
+  color: gold;
+  text-shadow:0 0 10px gold;
 }
 
 button {
-  width: 100%;
-  padding: 12px;
-  margin-top: 10px;
-  border: none;
-  border-radius: 20px;
-  cursor: pointer;
-  font-size: 16px;
-  transition: 0.3s;
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:25px;
+  cursor:pointer;
+  background: linear-gradient(90deg,#667eea,#764ba2);
+  color:white;
 }
 
-.btn-main {
-  background: linear-gradient(90deg, #667eea, #764ba2);
-  color: white;
+.overlay {
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,0.9);
+  display:flex;
+  justify-content:center;
+  align-items:center;
 }
 
-.btn-main:hover {
-  transform: scale(1.05);
+.popup {
+  background:#111;
+  padding:20px;
+  border-radius:20px;
+  max-height:80%;
+  overflow:auto;
 }
 
-ul {
-  list-style: none;
-  padding: 0;
-}
-
-li {
-  background: rgba(255,255,255,0.1);
-  margin: 5px;
-  padding: 8px;
-  border-radius: 10px;
+.category-btn {
+  display:block;
+  margin:5px;
+  padding:10px;
+  border-radius:15px;
+  background:#3498db;
 }
 </style>
-
 </head>
+
 <body>
 
-<div class="container">
+<div class="card">
 
-<div id="home" class="card">
-  <h1>🕵️ لعبة الجاسوس</h1>
-  <p>هل تستطيع اكتشاف الجاسوس؟</p>
-
-  <input id="name" placeholder="اكتب اسمك">
-
-  <button class="btn-main" onclick="createRoom()">👑 إنشاء غرفة</button>
-  <button class="btn-main" onclick="joinRoom()">🚪 انضمام</button>
+<div id="home">
+<h1>🕵️ لعبة الجاسوس</h1>
+<div class="sasuke">⚔️ SASUKE ⚔️ 👑</div>
+<button onclick="createRoom()">🎮 لعبة الجاسوس 1</button>
 </div>
 
-<div id="room" class="card" style="display:none;">
-  <h3 id="roomCode"></h3>
-  <p id="link"></p>
-  <ul id="players"></ul>
-  <button class="btn-main" onclick="startGame()">🚀 ابدأ</button>
+<div id="room" style="display:none;">
+<div id="linkBox">
+<span id="link"></span>
+<button onclick="copyLink()">📋</button>
+</div>
+<ul id="players"></ul>
 </div>
 
-<div id="game" class="card" style="display:none;">
-  <h2 id="role"></h2>
+<div id="game" style="display:none;">
+<h2 id="role"></h2>
 </div>
 
 </div>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
 <script>
+
 const firebaseConfig = {
   apiKey: "AIzaSyDTyJqVntFqKe3I-zntb_rMx9Qcv7Nqi94",
-  authDomain: "spy-game-1d774.firebaseapp.com",
-  databaseURL: "https://spy-game-1d774-default-rtdb.firebaseio.com",
-  projectId: "spy-game-1d774"
+  databaseURL: "https://spy-game-1d774-default-rtdb.firebaseio.com"
 };
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-let room = "";
-let playerId = "";
+let room="", playerId="";
 
-function createRoom() {
-  const name = document.getElementById("name").value;
-  room = "r" + Date.now();
-  playerId = "p" + Date.now();
 
-  db.ref("rooms/" + room).set({
-    players: {
-      [playerId]: { name: name }
-    },
-    phase: "waiting"
-  });
+// ✅ التصنيفات (شلت ألوان + مهن)
+const categories = {
+  "🍔 أكلات": ["بيتزا","برجر","كشري","مكرونة"],
+  "🍎 فواكه": ["تفاح","موز","عنب","برتقال"],
+  "🥦 خضروات": ["طماطم","خيار","بطاطس"],
+  "🐶 حيوانات": ["أسد","نمر","كلب","قطة"],
+  "💻 أجهزة": ["موبايل","كمبيوتر","لابتوب"],
+  "🚗 مواصلات": ["عربية","طيارة","قطار"],
+  "⚽ رياضة": ["كرة قدم","سباحة","تنس"],
+  "🏠 منزل": ["سرير","كرسي","تلفزيون"],
+  "🌍 دول": ["مصر","فرنسا","اليابان"]
+};
 
-  openRoom();
+
+function createRoom(){
+room="r"+Date.now();
+playerId="h"+Date.now();
+
+db.ref("rooms/"+room).set({
+players:{[playerId]:{name:"⚔️ SASUKE ⚔️"}},
+phase:"waiting"
+});
+
+openRoom();
+showCategories();
 }
 
-function joinRoom() {
-  const name = document.getElementById("name").value;
-  room = prompt("اكتب كود الغرفة");
-  playerId = "p" + Date.now();
 
-  db.ref("rooms/" + room + "/players/" + playerId).set({
-    name: name
-  });
+function showCategories(){
+let html="";
 
-  openRoom();
+for(let c in categories){
+html+=`<button class="category-btn" onclick="startGame('${c}')">${c}</button>`;
 }
 
-function openRoom() {
-  document.getElementById("home").style.display = "none";
-  document.getElementById("room").style.display = "block";
+let div=document.createElement("div");
+div.className="overlay";
+div.innerHTML=`
+<div class="popup">
+<h2>🎯 اختر تصنيف</h2>
+${html}
+</div>`;
 
-  document.getElementById("roomCode").innerText = "كود الغرفة: " + room;
-  document.getElementById("link").innerText = location.href + "?room=" + room;
-
-  db.ref("rooms/" + room + "/players").on("value", snap => {
-    const data = snap.val();
-    let html = "";
-
-    for (let id in data) {
-      html += "<li>" + data[id].name + "</li>";
-    }
-
-    document.getElementById("players").innerHTML = html;
-  });
-
-  db.ref("rooms/" + room + "/phase").on("value", snap => {
-    if (snap.val() === "playing") showRole();
-  });
+document.body.appendChild(div);
 }
 
-function startGame() {
-  db.ref("rooms/" + room + "/players").once("value").then(snap => {
-    const players = Object.keys(snap.val());
-    const spy = players[Math.floor(Math.random() * players.length)];
 
-    const words = ["تفاحة", "موز", "عنب", "برتقال"];
-    const word = words[Math.floor(Math.random() * words.length)];
+function startGame(cat){
+db.ref("rooms/"+room+"/players").once("value").then(snap=>{
+let players=Object.keys(snap.val());
+let spy=players[Math.floor(Math.random()*players.length)];
+let words=categories[cat];
+let word=words[Math.floor(Math.random()*words.length)];
 
-    db.ref("rooms/" + room).update({
-      spy: spy,
-      word: word,
-      phase: "playing"
-    });
-  });
+db.ref("rooms/"+room).update({
+spy:spy,
+word:word,
+phase:"playing"
+});
+});
+
+location.reload();
 }
 
-function showRole() {
-  document.getElementById("room").style.display = "none";
-  document.getElementById("game").style.display = "block";
 
-  db.ref("rooms/" + room).once("value").then(snap => {
-    const data = snap.val();
+function openRoom(){
+document.getElementById("home").style.display="none";
+document.getElementById("room").style.display="block";
 
-    if (playerId === data.spy) {
-      document.getElementById("role").innerHTML = "🕵️ أنت الجاسوس!";
-    } else {
-      document.getElementById("role").innerHTML = "🔍 الكلمة: " + data.word;
-    }
-  });
+document.getElementById("link").innerText=location.href;
+
+db.ref("rooms/"+room+"/players").on("value",snap=>{
+let data=snap.val();
+let html="";
+for(let id in data) html+="<li>"+data[id].name+"</li>";
+document.getElementById("players").innerHTML=html;
+});
+
+db.ref("rooms/"+room).on("value",snap=>{
+let d=snap.val();
+if(d.phase==="playing") showRole(d);
+});
 }
+
+
+function showRole(d){
+document.getElementById("room").style.display="none";
+document.getElementById("game").style.display="block";
+
+if(playerId===d.spy){
+document.getElementById("role").innerText="🕵️ أنت الجاسوس!";
+}else{
+document.getElementById("role").innerText="🔍 "+d.word;
+}
+}
+
+
+function copyLink(){
+navigator.clipboard.writeText(location.href);
+document.getElementById("linkBox").style.display="none";
+}
+
 </script>
 
 </body>
