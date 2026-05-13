@@ -3,11 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
-
 <title>🕵️ لعبة الجاسوس</title>
-
 <style>
 body{
 margin:0;
@@ -19,7 +16,6 @@ justify-content:center;
 align-items:center;
 height:100vh;
 }
-
 #app{
 width:90%;
 max-width:500px;
@@ -29,7 +25,6 @@ border-radius:25px;
 backdrop-filter:blur(20px);
 text-align:center;
 }
-
 button{
 background: linear-gradient(90deg,#667eea,#764ba2);
 border:none;
@@ -42,9 +37,7 @@ cursor:pointer;
 width:90%;
 transition:.3s;
 }
-
 button:hover{transform:scale(1.05)}
-
 input{
 padding:14px;
 width:85%;
@@ -53,7 +46,6 @@ border:none;
 margin:10px;
 text-align:center;
 }
-
 ul{list-style:none;padding:0}
 li{
 background:rgba(255,255,255,.1);
@@ -61,7 +53,6 @@ margin:6px;
 padding:12px;
 border-radius:12px;
 }
-
 .overlay{
 position:fixed;
 top:0;left:0;
@@ -71,7 +62,6 @@ display:flex;
 justify-content:center;
 align-items:center;
 }
-
 .popup{
 background:#1a1a3e;
 padding:25px;
@@ -79,45 +69,33 @@ border-radius:20px;
 width:90%;
 max-width:400px;
 }
-
 #word{
 font-size:26px;
 margin-top:20px;
 color:#fff;
 }
-
 #linkBox{margin:10px 0;}
-
 #startBtn{display:none;}
 </style>
 </head>
-
 <body>
-
 <div id="app">
-
 <div id="home">
 <h2>🕵️ لعبة الجاسوس</h2>
 <button onclick="createRoom()">🎮 لعبة الجاسوس 1</button>
 </div>
-
 <div id="room" style="display:none;">
 <div id="linkBox">
 <p id="link"></p>
 <button onclick="copyLink()">📋 نسخ الرابط</button>
 </div>
-
 <ul id="players"></ul>
-<button id="startBtn" onclick="startGame()">
-🚀 بدء اللعبة
-</button>
+<button id="startBtn" onclick="startGame()">🚀 بدء اللعبة</button>
 </div>
-
 <div id="game" style="display:none;">
 <h2 id="word"></h2>
 <button id="leaveBtn" onclick="leaveGame()">🚪 مغادرة</button>
 </div>
-
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -140,7 +118,6 @@ room=params.get("room");
 showJoin();
 }
 
-// عرض نافذة انضمام
 function showJoin(){
 let div=document.createElement("div");
 div.className="overlay";
@@ -153,13 +130,29 @@ div.innerHTML=`
 document.body.appendChild(div);
 }
 
-function join(){
+async function join(){
 let name=document.getElementById("name").value.trim();
 if(!name) return;
+
+// تحقق من حالة اللعبة
+let phaseSnap = await db.ref('rooms/'+room+'/phase').get();
+if(phaseSnap.exists() && phaseSnap.val() && phaseSnap.val() !== 'waiting'){
+alert("⚠️ اللعبة قد بدأت بالفعل لا يمكنك الدخول");
+return;
+}
 
 playerId="p"+Date.now();
 isHost=false;
 
+// سجل خروج أي جلسة قديمة لنفس الـ playerId
+let playersSnap = await db.ref('rooms/'+room+'/players').get();
+playersSnap.forEach(child=>{
+if(child.val().name===name){
+db.ref('rooms/'+room+'/players/'+child.key).update({active:false});
+}
+});
+
+// سجل اللاعب الجديد
 db.ref("rooms/"+room+"/players/"+playerId).set({name:name, active:true});
 
 document.querySelector(".overlay").remove();
@@ -175,7 +168,8 @@ isHost=true;
 db.ref("rooms/"+room).set({
 players:{
 [playerId]:{name:"👑 𝐒𝐀𝐒𝐔𝐊𝐄 👑", active:true}
-}
+},
+phase:"waiting"
 });
 
 openRoom();
@@ -196,12 +190,13 @@ db.ref("rooms/"+room+"/players").on("value",snap=>{
 players=snap.val()||{};
 let html="";
 for(let id in players){
-html+=`<li>${players[id].name}</li>`;
+let status = players[id].active?"":"👀";
+html+=`<li>${players[id].name} ${status}</li>`;
 }
 document.getElementById("players").innerHTML=html;
 
 // زر بدء اللعبة عند 3 لاعبين أو أكثر
-if(isHost && Object.keys(players).length>=3){
+if(isHost && Object.keys(players).filter(p=>players[p].active).length>=3){
 document.getElementById("startBtn").style.display="block";
 }
 });
@@ -225,7 +220,7 @@ function startGame(){
 document.getElementById("startBtn").style.display="none";
 
 // اختيار جاسوس عشوائي
-let ids=Object.keys(players);
+let ids=Object.keys(players).filter(p=>players[p].active);
 spyId=ids[Math.floor(Math.random()*ids.length)];
 
 // اختيار كلمة عشوائية
@@ -258,7 +253,6 @@ alert("لقد غادرت المباراة");
 document.getElementById("game").style.display="none";
 document.getElementById("home").style.display="block";
 }
-
 </script>
 
 </body>
