@@ -49,6 +49,19 @@ button {
   color:white;
 }
 
+/* 🔥 أزرار فوق */
+.top-btn {
+  position:fixed;
+  top:15px;
+  padding:8px 14px;
+  border-radius:20px;
+  background:#222;
+  cursor:pointer;
+}
+
+#settingsBtn { left:10px; }
+#rematchBtn { left:80px; display:none; }
+
 .overlay {
   position:fixed;
   top:0;left:0;
@@ -67,6 +80,19 @@ button {
   overflow:auto;
 }
 
+.player-item {
+  display:flex;
+  justify-content:space-between;
+  margin:5px 0;
+}
+
+.kick {
+  background:red;
+  padding:5px 10px;
+  border-radius:10px;
+  cursor:pointer;
+}
+
 .category-btn {
   display:block;
   margin:5px;
@@ -78,6 +104,9 @@ button {
 </head>
 
 <body>
+
+<div id="settingsBtn" class="top-btn" onclick="openSettings()">⚙️</div>
+<div id="rematchBtn" class="top-btn" onclick="rematch()">🔄</div>
 
 <div class="card">
 
@@ -114,14 +143,11 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-let room="", playerId="";
+let room="", playerId="", playersData={};
 
-
-// ✅ التصنيفات (شلت ألوان + مهن)
 const categories = {
   "🍔 أكلات": ["بيتزا","برجر","كشري","مكرونة"],
   "🍎 فواكه": ["تفاح","موز","عنب","برتقال"],
-  "🥦 خضروات": ["طماطم","خيار","بطاطس"],
   "🐶 حيوانات": ["أسد","نمر","كلب","قطة"],
   "💻 أجهزة": ["موبايل","كمبيوتر","لابتوب"],
   "🚗 مواصلات": ["عربية","طيارة","قطار"],
@@ -129,7 +155,6 @@ const categories = {
   "🏠 منزل": ["سرير","كرسي","تلفزيون"],
   "🌍 دول": ["مصر","فرنسا","اليابان"]
 };
-
 
 function createRoom(){
 room="r"+Date.now();
@@ -144,27 +169,21 @@ openRoom();
 showCategories();
 }
 
-
 function showCategories(){
 let html="";
-
 for(let c in categories){
 html+=`<button class="category-btn" onclick="startGame('${c}')">${c}</button>`;
 }
 
 let div=document.createElement("div");
 div.className="overlay";
-div.innerHTML=`
-<div class="popup">
-<h2>🎯 اختر تصنيف</h2>
-${html}
-</div>`;
-
+div.innerHTML=`<div class="popup"><h2>🎯 اختر تصنيف</h2>${html}</div>`;
 document.body.appendChild(div);
 }
 
-
 function startGame(cat){
+document.querySelector(".overlay")?.remove();
+
 db.ref("rooms/"+room+"/players").once("value").then(snap=>{
 let players=Object.keys(snap.val());
 let spy=players[Math.floor(Math.random()*players.length)];
@@ -178,9 +197,8 @@ phase:"playing"
 });
 });
 
-location.reload();
+document.getElementById("rematchBtn").style.display="block";
 }
-
 
 function openRoom(){
 document.getElementById("home").style.display="none";
@@ -189,9 +207,11 @@ document.getElementById("room").style.display="block";
 document.getElementById("link").innerText=location.href;
 
 db.ref("rooms/"+room+"/players").on("value",snap=>{
-let data=snap.val();
+playersData=snap.val()||{};
 let html="";
-for(let id in data) html+="<li>"+data[id].name+"</li>";
+for(let id in playersData){
+html+=`<li>${playersData[id].name}</li>`;
+}
 document.getElementById("players").innerHTML=html;
 });
 
@@ -200,7 +220,6 @@ let d=snap.val();
 if(d.phase==="playing") showRole(d);
 });
 }
-
 
 function showRole(d){
 document.getElementById("room").style.display="none";
@@ -213,10 +232,37 @@ document.getElementById("role").innerText="🔍 "+d.word;
 }
 }
 
-
 function copyLink(){
 navigator.clipboard.writeText(location.href);
 document.getElementById("linkBox").style.display="none";
+}
+
+/* ⚙️ الإعدادات */
+function openSettings(){
+let html=`<h3>👥 عدد اللاعبين: ${Object.keys(playersData).length}</h3>`;
+
+for(let id in playersData){
+html+=`
+<div class="player-item">
+<span>${playersData[id].name}</span>
+<div class="kick" onclick="kick('${id}')">طرد</div>
+</div>`;
+}
+
+let div=document.createElement("div");
+div.className="overlay";
+div.innerHTML=`<div class="popup">${html}<button onclick="this.closest('.overlay').remove()">❌</button></div>`;
+document.body.appendChild(div);
+}
+
+function kick(id){
+db.ref("rooms/"+room+"/players/"+id).remove();
+document.querySelector(".overlay")?.remove();
+}
+
+/* 🔄 إعادة اللعب */
+function rematch(){
+showCategories();
 }
 
 </script>
