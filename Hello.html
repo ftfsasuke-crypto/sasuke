@@ -18,12 +18,6 @@ body {
   color:white;
 }
 
-@keyframes bg {
-  0%{background-position:0% 50%}
-  50%{background-position:100% 50%}
-  100%{background-position:0% 50%}
-}
-
 .card {
   background: rgba(255,255,255,0.08);
   backdrop-filter: blur(25px);
@@ -81,10 +75,13 @@ button {
 
 <div id="room" style="display:none;">
 <div id="linkBox">
-<span id="link"></span>
-<button onclick="copyLink()">📋</button>
+<p id="link"></p>
+<button onclick="copyLink()">📋 نسخ الرابط</button>
 </div>
+
 <ul id="players"></ul>
+
+<button id="startBtn" onclick="showCategories()" style="display:none">🚀 ابدأ اللعبة</button>
 </div>
 
 <div id="game" style="display:none;">
@@ -109,17 +106,28 @@ const db = firebase.database();
 let room="", playerId="", playersData={};
 
 const categories = {
-  "🍔 أكلات": ["بيتزا","برجر","كشري","مكرونة","فراخ","رز"],
-  "🍎 فواكه": ["تفاح","موز","عنب","برتقال","مانجو"],
-  "🥦 خضروات": ["طماطم","خيار","بطاطس","بصل"],
+  "🍔 أكلات": ["بيتزا","برجر","كشري","مكرونة"],
+  "🍎 فواكه": ["تفاح","موز","عنب","برتقال"],
   "🐶 حيوانات": ["أسد","نمر","كلب","قطة"],
-  "💻 أجهزة": ["موبايل","كمبيوتر","لابتوب"],
-  "🚗 مواصلات": ["عربية","طيارة","قطار"],
-  "⚽ رياضة": ["كرة قدم","سباحة","تنس"],
-  "🏠 منزل": ["سرير","كرسي","تلفزيون"],
-  "🌍 دول": ["مصر","فرنسا","اليابان"]
+  "💻 أجهزة": ["موبايل","كمبيوتر","لابتوب"]
 };
 
+// 🔥 دخول من الرابط
+const params=new URLSearchParams(location.search);
+const roomFromLink=params.get("room");
+
+if(roomFromLink){
+document.getElementById("home").style.display="none";
+room=roomFromLink;
+playerId="p"+Date.now();
+
+let name=prompt("اكتب اسمك");
+db.ref("rooms/"+room+"/players/"+playerId).set({name:name});
+
+openRoom();
+}
+
+// 🔥 إنشاء غرفة
 function createRoom(){
 room="r"+Date.now();
 playerId="h"+Date.now();
@@ -130,9 +138,46 @@ phase:"waiting"
 });
 
 openRoom();
-showCategories();
+
+// 🔗 حط الرابط
+let fullLink=location.origin+location.pathname+"?room="+room;
+document.getElementById("link").innerText=fullLink;
 }
 
+// عرض الغرفة
+function openRoom(){
+document.getElementById("home").style.display="none";
+document.getElementById("room").style.display="block";
+
+db.ref("rooms/"+room+"/players").on("value",snap=>{
+playersData=snap.val()||{};
+let html="";
+
+for(let id in playersData){
+html+="<li>"+playersData[id].name+"</li>";
+}
+
+document.getElementById("players").innerHTML=html;
+
+// ✅ يظهر زرار ابدأ لو في 2 لاعبين
+if(Object.keys(playersData).length >= 2){
+document.getElementById("startBtn").style.display="block";
+}
+});
+
+db.ref("rooms/"+room).on("value",snap=>{
+let d=snap.val();
+if(d.phase==="playing") showRole(d);
+});
+}
+
+// نسخ الرابط
+function copyLink(){
+navigator.clipboard.writeText(document.getElementById("link").innerText);
+document.getElementById("linkBox").style.display="none";
+}
+
+// اختيار التصنيف
 function showCategories(){
 let html="";
 for(let c in categories){
@@ -145,53 +190,22 @@ div.innerHTML=`<div class="popup"><h2>🎯 اختر تصنيف</h2>${html}</div>
 document.body.appendChild(div);
 }
 
+// بدء اللعبة
 function startGame(cat){
-
-db.ref("rooms/"+room+"/players").once("value").then(snap=>{
-let players=snap.val() || {};
-let ids=Object.keys(players);
-
-if(ids.length < 2){
-alert("⚠️ لازم حد تاني يدخل معاك الأول!");
-return;
-}
-
 document.querySelector(".overlay")?.remove();
 
+let ids=Object.keys(playersData);
 let spy=ids[Math.floor(Math.random()*ids.length)];
-let words=categories[cat];
-let word=words[Math.floor(Math.random()*words.length)];
+let word=categories[cat][Math.floor(Math.random()*categories[cat].length)];
 
 db.ref("rooms/"+room).update({
 spy:spy,
 word:word,
 phase:"playing"
 });
-});
-
 }
 
-function openRoom(){
-document.getElementById("home").style.display="none";
-document.getElementById("room").style.display="block";
-
-document.getElementById("link").innerText=location.href;
-
-db.ref("rooms/"+room+"/players").on("value",snap=>{
-playersData=snap.val()||{};
-let html="";
-for(let id in playersData){
-html+=`<li>${playersData[id].name}</li>`;
-}
-document.getElementById("players").innerHTML=html;
-});
-
-db.ref("rooms/"+room).on("value",snap=>{
-let d=snap.val();
-if(d.phase==="playing") showRole(d);
-});
-}
-
+// عرض الدور
 function showRole(d){
 document.getElementById("room").style.display="none";
 document.getElementById("game").style.display="block";
@@ -201,11 +215,6 @@ document.getElementById("role").innerText="🕵️ أنت الجاسوس!";
 }else{
 document.getElementById("role").innerText="🔍 "+d.word;
 }
-}
-
-function copyLink(){
-navigator.clipboard.writeText(location.href);
-document.getElementById("linkBox").style.display="none";
 }
 
 </script>
