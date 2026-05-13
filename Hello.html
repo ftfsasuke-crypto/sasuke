@@ -18,12 +18,18 @@ body {
   color:white;
 }
 
+@keyframes bg {
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+
 .card {
   background: rgba(255,255,255,0.08);
   backdrop-filter: blur(25px);
   border-radius: 30px;
   padding: 25px;
-  width: 340px;
+  width: 350px;
   text-align:center;
 }
 
@@ -36,6 +42,16 @@ button {
   cursor:pointer;
   background: linear-gradient(90deg,#667eea,#764ba2);
   color:white;
+  font-size:15px;
+}
+
+input{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:20px;
+  margin-top:10px;
+  text-align:center;
 }
 
 .overlay {
@@ -52,6 +68,8 @@ button {
   background:#111;
   padding:20px;
   border-radius:20px;
+  width:300px;
+  text-align:center;
 }
 
 .category-btn {
@@ -105,29 +123,72 @@ const db = firebase.database();
 
 let room="", playerId="", playersData={};
 
+// 🔥 توليد 500 كلمة
+function generateWords(baseList, count=500){
+  let arr=[];
+  for(let i=0;i<count;i++){
+    arr.push(baseList[i % baseList.length]);
+  }
+  return arr;
+}
+
+// 🔥 التصنيفات
 const categories = {
-  "🍔 أكلات": ["بيتزا","برجر","كشري","مكرونة"],
-  "🍎 فواكه": ["تفاح","موز","عنب","برتقال"],
-  "🐶 حيوانات": ["أسد","نمر","كلب","قطة"],
-  "💻 أجهزة": ["موبايل","كمبيوتر","لابتوب"]
+
+"🍔 أكلات": generateWords(["بيتزا","برجر","كشري","مكرونة","فراخ","رز","شاورما","سمك"]),
+"🍎 فواكه": generateWords(["تفاح","موز","عنب","برتقال","مانجو","فراولة"]),
+"🥦 خضروات": generateWords(["طماطم","خيار","بطاطس","بصل","جزر","فلفل"]),
+"🐶 حيوانات": generateWords(["أسد","نمر","فيل","زرافة","كلب","قطة"]),
+"💻 أجهزة": generateWords(["موبايل","كمبيوتر","لابتوب","كاميرا","شاشة"]),
+"🚗 مواصلات": generateWords(["عربية","طيارة","قطار","مترو","سفينة"]),
+"⚽ رياضة": generateWords(["كرة قدم","تنس","سباحة","جري","ملاكمة"]),
+"🏠 منزل": generateWords(["سرير","كرسي","تلفزيون","ثلاجة","كنبة"]),
+"🌍 دول": generateWords(["مصر","فرنسا","أمريكا","اليابان","إيطاليا"]),
+
+"🎌 كرتون وأنمي": generateWords([
+"ناروتو","ساسكي","غوكو","لوفي","زورو",
+"كونان","ميكي","سبونج بوب","توم","جيري",
+"بيكاتشو","ليفاي","إيرين","كاكاشي","ساكورا"
+])
+
 };
 
-// 🔥 دخول من الرابط
+// 🔥 دخول من رابط
 const params=new URLSearchParams(location.search);
 const roomFromLink=params.get("room");
 
 if(roomFromLink){
-document.getElementById("home").style.display="none";
 room=roomFromLink;
+showJoinPopup();
+}
+
+// popup انضمام
+function showJoinPopup(){
+let div=document.createElement("div");
+div.className="overlay";
+div.innerHTML=`
+<div class="popup">
+<h2>✍️ اكتب اسمك</h2>
+<input id="joinName" placeholder="اسمك">
+<button onclick="joinNow()">🚪 انضمام</button>
+</div>
+`;
+document.body.appendChild(div);
+}
+
+function joinNow(){
+let name=document.getElementById("joinName").value.trim();
+if(!name) return alert("اكتب اسمك");
+
 playerId="p"+Date.now();
 
-let name=prompt("اكتب اسمك");
 db.ref("rooms/"+room+"/players/"+playerId).set({name:name});
 
+document.querySelector(".overlay").remove();
 openRoom();
 }
 
-// 🔥 إنشاء غرفة
+// إنشاء غرفة
 function createRoom(){
 room="r"+Date.now();
 playerId="h"+Date.now();
@@ -139,7 +200,6 @@ phase:"waiting"
 
 openRoom();
 
-// 🔗 حط الرابط
 let fullLink=location.origin+location.pathname+"?room="+room;
 document.getElementById("link").innerText=fullLink;
 }
@@ -159,7 +219,6 @@ html+="<li>"+playersData[id].name+"</li>";
 
 document.getElementById("players").innerHTML=html;
 
-// ✅ يظهر زرار ابدأ لو في 2 لاعبين
 if(Object.keys(playersData).length >= 2){
 document.getElementById("startBtn").style.display="block";
 }
@@ -177,7 +236,7 @@ navigator.clipboard.writeText(document.getElementById("link").innerText);
 document.getElementById("linkBox").style.display="none";
 }
 
-// اختيار التصنيف
+// اختيار تصنيف
 function showCategories(){
 let html="";
 for(let c in categories){
