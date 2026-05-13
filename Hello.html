@@ -116,17 +116,7 @@ databaseURL: "https://spy-game-1d774-default-rtdb.firebaseio.com"
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-let room="", playerId="", players={};
-
-// Bold
-function toBold(text){
-const normal="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-const bold="𝐀𝐁𝐂𝐃𝐄𝐅𝐆𝐇𝐈𝐉𝐊𝐋𝐌𝐍𝐎𝐏𝐐𝐑𝐒𝐓𝐔𝐕𝐖𝐗𝐘𝐙𝐚𝐛𝐜𝐝𝐞𝐟𝐠𝐡𝐢𝐣𝐤𝐥𝐦𝐧𝐨𝐩𝐪𝐫𝐬𝐭𝐮𝐯𝐰𝐱𝐲𝐳";
-return text.split('').map(c=>{
-let i=normal.indexOf(c);
-return i!=-1?bold[i]:c;
-}).join('');
-}
+let room="", playerId="", players={}, isHost=false;
 
 // لو داخل من رابط
 let params=new URLSearchParams(location.search);
@@ -151,9 +141,8 @@ function join(){
 let name=document.getElementById("name").value.trim();
 if(!name) return;
 
-if(/^[A-Za-z ]+$/.test(name)) name=toBold(name);
-
 playerId="p"+Date.now();
+isHost=false;
 
 db.ref("rooms/"+room+"/players/"+playerId).set({
 name:name
@@ -167,10 +156,11 @@ openRoom();
 function createRoom(){
 room="r"+Date.now();
 playerId="h"+Date.now();
+isHost=true;
 
 db.ref("rooms/"+room).set({
 players:{
-[playerId]:{name:"👑 𝐒𝐀𝐒𝐔𝐊𝐄 👑"}
+[playerId]:{name:"👑 SASUKE 👑"}
 }
 });
 
@@ -185,6 +175,11 @@ function openRoom(){
 document.getElementById("home").style.display="none";
 document.getElementById("room").style.display="block";
 
+// اخفاء الرابط لغير الهوست
+if(!isHost){
+document.getElementById("linkBox").style.display="none";
+}
+
 db.ref("rooms/"+room+"/players").on("value",snap=>{
 players=snap.val()||{};
 
@@ -194,7 +189,7 @@ html+=`<li>${players[id].name}</li>`;
 }
 document.getElementById("players").innerHTML=html;
 
-// 👇 شرط 3 لاعبين
+// شرط 3 لاعبين
 if(Object.keys(players).length>=3){
 document.getElementById("startBtn").style.display="block";
 }
