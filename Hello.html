@@ -2,15 +2,14 @@
 <html lang="ar">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🕵️ لعبة الجاسوس</title>
 
 <style>
 body {
   margin:0;
   font-family:'Segoe UI';
-  background: linear-gradient(-45deg, #1d2671, #c33764, #6a11cb, #2575fc);
-  background-size: 400% 400%;
-  animation: bg 10s ease infinite;
+  background: linear-gradient(135deg, #1e3c72, #2a5298);
   display:flex;
   justify-content:center;
   align-items:center;
@@ -18,68 +17,73 @@ body {
   color:white;
 }
 
-@keyframes bg {
-  0%{background-position:0% 50%}
-  50%{background-position:100% 50%}
-  100%{background-position:0% 50%}
-}
-
+/* الكارت */
 .card {
+  width:90%;
+  max-width:400px;
   background: rgba(255,255,255,0.08);
-  backdrop-filter: blur(25px);
-  border-radius: 30px;
-  padding: 25px;
-  width: 350px;
+  backdrop-filter: blur(20px);
+  border-radius:25px;
+  padding:20px;
   text-align:center;
 }
 
+/* الأزرار */
 button {
   width:100%;
-  padding:12px;
+  padding:14px;
   margin-top:10px;
   border:none;
   border-radius:25px;
-  cursor:pointer;
   background: linear-gradient(90deg,#667eea,#764ba2);
   color:white;
-  font-size:15px;
+  font-size:16px;
+  cursor:pointer;
 }
 
-input{
-  width:100%;
-  padding:12px;
-  border:none;
-  border-radius:20px;
-  margin-top:10px;
-  text-align:center;
-}
-
+/* Overlay */
 .overlay {
   position:fixed;
   top:0;left:0;
-  width:100%;height:100%;
-  background:rgba(0,0,0,0.9);
+  width:100%;
+  height:100%;
+  background:linear-gradient(135deg,#1e3c72,#2a5298);
   display:flex;
   justify-content:center;
   align-items:center;
 }
 
+/* Popup */
 .popup {
-  background:#111;
-  padding:20px;
+  width:90%;
+  max-width:400px;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(25px);
+  padding:30px;
+  border-radius:25px;
+  text-align:center;
+  box-shadow:0 0 40px rgba(0,0,0,0.5);
+}
+
+.popup input {
+  width:100%;
+  padding:15px;
+  border:none;
   border-radius:20px;
-  width:300px;
+  margin-bottom:15px;
+  font-size:16px;
   text-align:center;
 }
 
+/* تصنيفات */
 .category-btn {
-  display:block;
   margin:5px;
-  padding:10px;
+  padding:12px;
   border-radius:15px;
   background:#3498db;
 }
 </style>
+
 </head>
 
 <body>
@@ -87,19 +91,19 @@ input{
 <div class="card">
 
 <div id="home">
-<h1>🕵️ لعبة الجاسوس</h1>
+<h2>🕵️ لعبة الجاسوس</h2>
 <button onclick="createRoom()">🎮 لعبة الجاسوس 1</button>
 </div>
 
 <div id="room" style="display:none;">
-<div id="linkBox">
 <p id="link"></p>
 <button onclick="copyLink()">📋 نسخ الرابط</button>
-</div>
 
 <ul id="players"></ul>
 
-<button id="startBtn" onclick="showCategories()" style="display:none">🚀 ابدأ اللعبة</button>
+<button id="startBtn" onclick="showCategories()" style="display:none">
+🚀 ابدأ اللعبة
+</button>
 </div>
 
 <div id="game" style="display:none;">
@@ -123,37 +127,24 @@ const db = firebase.database();
 
 let room="", playerId="", playersData={};
 
-// 🔥 توليد 500 كلمة
-function generateWords(baseList, count=500){
-  let arr=[];
-  for(let i=0;i<count;i++){
-    arr.push(baseList[i % baseList.length]);
-  }
-  return arr;
+// كلمات (خفيفة)
+function expandWords(base){
+let arr=[];
+for(let i=0;i<200;i++){
+arr.push(base[i % base.length] + (i>base.length? i:""));
+}
+return arr;
 }
 
-// 🔥 التصنيفات
 const categories = {
-
-"🍔 أكلات": generateWords(["بيتزا","برجر","كشري","مكرونة","فراخ","رز","شاورما","سمك"]),
-"🍎 فواكه": generateWords(["تفاح","موز","عنب","برتقال","مانجو","فراولة"]),
-"🥦 خضروات": generateWords(["طماطم","خيار","بطاطس","بصل","جزر","فلفل"]),
-"🐶 حيوانات": generateWords(["أسد","نمر","فيل","زرافة","كلب","قطة"]),
-"💻 أجهزة": generateWords(["موبايل","كمبيوتر","لابتوب","كاميرا","شاشة"]),
-"🚗 مواصلات": generateWords(["عربية","طيارة","قطار","مترو","سفينة"]),
-"⚽ رياضة": generateWords(["كرة قدم","تنس","سباحة","جري","ملاكمة"]),
-"🏠 منزل": generateWords(["سرير","كرسي","تلفزيون","ثلاجة","كنبة"]),
-"🌍 دول": generateWords(["مصر","فرنسا","أمريكا","اليابان","إيطاليا"]),
-
-"🎌 كرتون وأنمي": generateWords([
-"ناروتو","ساسكي","غوكو","لوفي","زورو",
-"كونان","ميكي","سبونج بوب","توم","جيري",
-"بيكاتشو","ليفاي","إيرين","كاكاشي","ساكورا"
-])
-
+"🍔 أكلات": expandWords(["بيتزا","برجر","كشري","مكرونة","فراخ","رز","شاورما"]),
+"🍎 فواكه": expandWords(["تفاح","موز","عنب","برتقال","مانجو"]),
+"🐶 حيوانات": expandWords(["أسد","نمر","فيل","كلب","قطة"]),
+"💻 أجهزة": expandWords(["موبايل","كمبيوتر","لابتوب","كاميرا"]),
+"🎌 كرتون وأنمي": expandWords(["ناروتو","ساسكي","غوكو","لوفي","كونان"])
 };
 
-// 🔥 دخول من رابط
+// دخول من لينك
 const params=new URLSearchParams(location.search);
 const roomFromLink=params.get("room");
 
@@ -162,10 +153,11 @@ room=roomFromLink;
 showJoinPopup();
 }
 
-// popup انضمام
+// 🔥 popup احترافي
 function showJoinPopup(){
 let div=document.createElement("div");
 div.className="overlay";
+
 div.innerHTML=`
 <div class="popup">
 <h2>✍️ اكتب اسمك</h2>
@@ -173,16 +165,15 @@ div.innerHTML=`
 <button onclick="joinNow()">🚪 انضمام</button>
 </div>
 `;
+
 document.body.appendChild(div);
 }
 
 function joinNow(){
-let name=document.getElementById("joinName").value.trim();
-if(!name) return alert("اكتب اسمك");
-
+let name=document.getElementById("joinName").value;
 playerId="p"+Date.now();
 
-db.ref("rooms/"+room+"/players/"+playerId).set({name:name});
+db.ref("rooms/"+room+"/players/"+playerId).set({name});
 
 document.querySelector(".overlay").remove();
 openRoom();
@@ -200,11 +191,11 @@ phase:"waiting"
 
 openRoom();
 
-let fullLink=location.origin+location.pathname+"?room="+room;
-document.getElementById("link").innerText=fullLink;
+document.getElementById("link").innerText =
+location.origin+location.pathname+"?room="+room;
 }
 
-// عرض الغرفة
+// فتح الغرفة
 function openRoom(){
 document.getElementById("home").style.display="none";
 document.getElementById("room").style.display="block";
@@ -212,14 +203,12 @@ document.getElementById("room").style.display="block";
 db.ref("rooms/"+room+"/players").on("value",snap=>{
 playersData=snap.val()||{};
 let html="";
-
 for(let id in playersData){
 html+="<li>"+playersData[id].name+"</li>";
 }
-
 document.getElementById("players").innerHTML=html;
 
-if(Object.keys(playersData).length >= 2){
+if(Object.keys(playersData).length>=2){
 document.getElementById("startBtn").style.display="block";
 }
 });
@@ -230,22 +219,21 @@ if(d.phase==="playing") showRole(d);
 });
 }
 
-// نسخ الرابط
+// نسخ الرابط + اخفائه
 function copyLink(){
 navigator.clipboard.writeText(document.getElementById("link").innerText);
-document.getElementById("linkBox").style.display="none";
+document.getElementById("link").style.display="none";
 }
 
-// اختيار تصنيف
+// عرض التصنيفات
 function showCategories(){
 let html="";
 for(let c in categories){
 html+=`<button class="category-btn" onclick="startGame('${c}')">${c}</button>`;
 }
-
 let div=document.createElement("div");
 div.className="overlay";
-div.innerHTML=`<div class="popup"><h2>🎯 اختر تصنيف</h2>${html}</div>`;
+div.innerHTML=`<div class="popup">${html}</div>`;
 document.body.appendChild(div);
 }
 
@@ -255,7 +243,8 @@ document.querySelector(".overlay")?.remove();
 
 let ids=Object.keys(playersData);
 let spy=ids[Math.floor(Math.random()*ids.length)];
-let word=categories[cat][Math.floor(Math.random()*categories[cat].length)];
+let wordList=categories[cat];
+let word=wordList[Math.floor(Math.random()*wordList.length)];
 
 db.ref("rooms/"+room).update({
 spy:spy,
