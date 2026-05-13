@@ -3,224 +3,61 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>لعبة الجاسوس</title>
 
 <style>
 body{
-margin:0;
-font-family:Tajawal;
-background:linear-gradient(135deg,#141e30,#243b55);
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
-color:white;
+    margin:0;
+    font-family:Tahoma;
+    background:linear-gradient(135deg,#2b2f5b,#485185);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    color:white;
 }
 
 .box{
-background:rgba(0,0,0,0.5);
-padding:25px;
-border-radius:20px;
-text-align:center;
-width:90%;
-max-width:400px;
+    background:rgba(0,0,0,0.3);
+    padding:30px;
+    border-radius:25px;
+    text-align:center;
+    width:90%;
+    max-width:400px;
 }
 
 button{
-padding:12px 20px;
-border:none;
-border-radius:20px;
-margin:8px;
-cursor:pointer;
-background:linear-gradient(45deg,#ff00cc,#3333ff);
-color:white;
-font-size:16px;
+    width:100%;
+    padding:15px;
+    border:none;
+    border-radius:25px;
+    font-size:18px;
+    color:white;
+    cursor:pointer;
+    background:linear-gradient(to right,#8e44ad,#9b59b6);
 }
 
-.hidden{display:none}
-
-.player{
-background:rgba(255,255,255,0.1);
-padding:10px;
-margin:5px;
-border-radius:10px;
-}
-
-.big{
-font-size:22px;
-margin-top:20px;
-}
+.hidden{display:none;}
 </style>
 </head>
 
 <body>
 
-<div class="box">
-
-<h2>👑 SASUKE 👑</h2>
-
-<button id="createBtn">🎮 لعبة الجاسوس 1</button>
-<button id="copyBtn" class="hidden">📋 نسخ الرابط</button>
-
-<div id="joinBox" class="hidden">
-<h3>اكتب اسمك</h3>
-<input id="nameInput" placeholder="اسمك">
-<button id="joinBtn">انضم</button>
+<div class="box" id="home">
+<h1>👑 𝐒𝐀𝐒𝐔𝐊𝐄 👑</h1>
+<button onclick="startGame()">🎮 لعبة الجاسوس 1</button>
 </div>
 
-<div id="roomBox" class="hidden">
-<h3>اللاعبين</h3>
-<div id="players"></div>
-
-<button id="startBtn">🚀 بدء اللعبة</button>
-<button id="leaveBtn">🚪 مغادرة</button>
-
-<div id="roleBox" class="big hidden"></div>
+<div class="box hidden" id="room">
+<h2>🔥 تم إنشاء الغرفة</h2>
+<p>جاهز نكمل الخطوة اللي بعدها</p>
 </div>
-
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
 <script>
-const firebaseConfig = {
-apiKey: "AIzaSyDTyJqVntFqKe3I-zntb_rMx9Qcv7Nqi94",
-authDomain: "spy-game-1d774.firebaseapp.com",
-databaseURL: "https://spy-game-1d774-default-rtdb.firebaseio.com",
-projectId: "spy-game-1d774"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-let roomId = new URLSearchParams(location.search).get("room");
-let playerId = localStorage.getItem("playerId") || ("p"+Date.now());
-localStorage.setItem("playerId", playerId);
-
-const createBtn = document.getElementById("createBtn");
-const copyBtn = document.getElementById("copyBtn");
-const joinBox = document.getElementById("joinBox");
-const joinBtn = document.getElementById("joinBtn");
-const nameInput = document.getElementById("nameInput");
-const roomBox = document.getElementById("roomBox");
-const playersDiv = document.getElementById("players");
-const startBtn = document.getElementById("startBtn");
-const leaveBtn = document.getElementById("leaveBtn");
-const roleBox = document.getElementById("roleBox");
-
-let isHost = !roomId;
-
-/* إنشاء غرفة */
-createBtn.onclick = ()=>{
-roomId = "r"+Date.now();
-
-db.ref("rooms/"+roomId).set({
-started:false,
-players:{
-[playerId]:{name:"👑 SASUKE 👑"}
+function startGame(){
+    document.getElementById("home").classList.add("hidden");
+    document.getElementById("room").classList.remove("hidden");
 }
-});
-
-createBtn.style.display="none";
-copyBtn.style.display="block";
-roomBox.style.display="block";
-
-copyBtn.onclick = ()=>{
-navigator.clipboard.writeText(location.origin+location.pathname+"?room="+roomId);
-copyBtn.style.display="none";
-alert("تم نسخ الرابط");
-};
-
-listenPlayers();
-};
-
-/* دخول */
-if(roomId){
-createBtn.style.display="none";
-joinBox.style.display="block";
-}
-
-joinBtn.onclick = ()=>{
-let name = nameInput.value.trim();
-if(!name) return alert("اكتب اسمك");
-
-db.ref("rooms/"+roomId).once("value",snap=>{
-if(!snap.exists()) return alert("الغرفة مش موجودة");
-if(snap.val().started) return alert("اللعبة بدأت");
-
-db.ref("rooms/"+roomId+"/players/"+playerId).set({name:name});
-db.ref("rooms/"+roomId+"/players/"+playerId).onDisconnect().remove();
-
-joinBox.style.display="none";
-roomBox.style.display="block";
-
-listenPlayers();
-});
-};
-
-/* عرض اللاعبين */
-function listenPlayers(){
-db.ref("rooms/"+roomId+"/players").on("value",snap=>{
-let data = snap.val() || {};
-playersDiv.innerHTML="";
-Object.values(data).forEach(p=>{
-let div=document.createElement("div");
-div.className="player";
-div.innerText=p.name;
-playersDiv.appendChild(div);
-});
-});
-}
-
-/* بدء اللعبة */
-startBtn.onclick = ()=>{
-db.ref("rooms/"+roomId+"/players").once("value",snap=>{
-let players = snap.val();
-let ids = Object.keys(players);
-
-if(ids.length < 3){
-alert("لازم 3 لاعبين");
-return;
-}
-
-/* اختيار جاسوس */
-let spy = ids[Math.floor(Math.random()*ids.length)];
-let words = ["تفاح","موز","بيتزا","برجر","رز","فراخ"];
-let word = words[Math.floor(Math.random()*words.length)];
-
-/* توزيع */
-ids.forEach(id=>{
-db.ref("rooms/"+roomId+"/players/"+id+"/role").set(
-id === spy ? "🕵️ أنت الجاسوس" : "🍔 الكلمة: "+word
-);
-});
-
-/* تحديث حالة */
-db.ref("rooms/"+roomId+"/started").set(true);
-});
-};
-
-/* استلام الدور */
-db.ref("rooms/"+roomId+"/players/"+playerId+"/role").on("value",snap=>{
-if(snap.exists()){
-roleBox.style.display="block";
-roleBox.innerText = snap.val();
-startBtn.style.display="none";
-}
-});
-
-/* مغادرة */
-leaveBtn.onclick = ()=>{
-db.ref("rooms/"+roomId+"/players/"+playerId).remove();
-alert("غادرت اللعبة");
-};
-
-/* منع الرجوع للقائمة */
-window.onbeforeunload = ()=>{
-if(roomId){
-db.ref("rooms/"+roomId+"/players/"+playerId).remove();
-}
-};
 </script>
 
 </body>
