@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>لعبة الجاسوس</title>
 
 <style>
 body{
@@ -37,17 +36,10 @@ button{
     margin-top:12px;
 }
 
-.main-btn{
-    background:linear-gradient(to right,#8e2de2,#4a00e0);
-}
-
-.copy-btn{
-    background:linear-gradient(to right,#00c6ff,#0072ff);
-}
-
-.join-btn{
-    background:linear-gradient(to right,#ff7e5f,#feb47b);
-}
+.main-btn{background:linear-gradient(to right,#8e2de2,#4a00e0);}
+.copy-btn{background:linear-gradient(to right,#00c6ff,#0072ff);}
+.join-btn{background:linear-gradient(to right,#ff7e5f,#feb47b);}
+.start-btn{background:linear-gradient(to right,#00ff87,#60efff);}
 
 .player{
     background:rgba(255,255,255,0.1);
@@ -66,13 +58,11 @@ button{
 
 <body>
 
-<!-- الرئيسية -->
 <div class="box" id="home">
 <h1>👑 𝐒𝐀𝐒𝐔𝐊𝐄 👑</h1>
 <button class="main-btn" onclick="startGame()">🎮 لعبة الجاسوس</button>
 </div>
 
-<!-- غرفة -->
 <div class="box hidden" id="room">
 <h2>🔥 تم إنشاء الغرفة</h2>
 
@@ -80,41 +70,31 @@ button{
 
 <h3>اللاعبين:</h3>
 <div id="players"></div>
+
+<button id="startBtn" class="start-btn hidden" onclick="beginGame()">🚀 بدء اللعبة</button>
 </div>
 
-<!-- انضمام -->
 <div class="box hidden" id="join">
 <h2>✍️ اكتب اسمك</h2>
 <input id="nameInput" placeholder="اسمك">
 <button class="join-btn" onclick="joinGame()">🚪 انضمام</button>
 </div>
 
-<!-- انتظار -->
-<div class="box hidden" id="waiting">
-<h2>⏳ في انتظار بدء اللعبة</h2>
-<p id="yourName"></p>
-
-<h3>اللاعبين:</h3>
-<div id="players2"></div>
-</div>
-
 <script>
 
 let roomId = null;
 
-// دخول من رابط
 const params = new URLSearchParams(window.location.search);
 if(params.get("room")){
     roomId = params.get("room");
     show("join");
 }
 
-// إنشاء غرفة
 function startGame(){
     roomId = Math.floor(Math.random()*100000);
 
     let players = [{
-        name: "𝐒𝐀𝐒𝐔𝐊𝐄 👑",
+        name: "👑 𝐒𝐀𝐒𝐔𝐊𝐄",
         host: true
     }];
 
@@ -124,14 +104,12 @@ function startGame(){
     updatePlayers();
 }
 
-// نسخ الرابط
 function copyLink(){
     let link = location.href.split("?")[0] + "?room=" + roomId;
     navigator.clipboard.writeText(link);
     alert("تم نسخ الرابط ✅");
 }
 
-// انضمام
 function joinGame(){
     let name = document.getElementById("nameInput").value.trim();
     if(!name) return alert("اكتب اسمك");
@@ -145,13 +123,9 @@ function joinGame(){
 
     localStorage.setItem("room_"+roomId, JSON.stringify(players));
 
-    document.getElementById("yourName").innerText = "اسمك: " + name;
-
-    show("waiting");
-    updatePlayers2();
+    alert("تم الانضمام ✅");
 }
 
-// عرض عند الهوست
 function updatePlayers(){
     setInterval(()=>{
         let players = JSON.parse(localStorage.getItem("room_"+roomId)) || [];
@@ -166,33 +140,23 @@ function updatePlayers(){
             }
         });
 
-    },1000);
-}
-
-// عرض عند اللاعب
-function updatePlayers2(){
-    setInterval(()=>{
-        let players = JSON.parse(localStorage.getItem("room_"+roomId)) || [];
-        let div = document.getElementById("players2");
-        div.innerHTML = "";
-
-        players.forEach(p=>{
-            if(p.host){
-                div.innerHTML += `<div class="player host">${p.name}</div>`;
-            }else{
-                div.innerHTML += `<div class="player">${p.name}</div>`;
-            }
-        });
+        // إظهار زرار البدء
+        if(players.length >= 3){
+            document.getElementById("startBtn").classList.remove("hidden");
+        }
 
     },1000);
 }
 
-// تغيير الشاشة
+// بدء اللعبة
+function beginGame(){
+    alert("🔥 بدأت اللعبة!");
+}
+
 function show(id){
     document.getElementById("home").classList.add("hidden");
     document.getElementById("room").classList.add("hidden");
     document.getElementById("join").classList.add("hidden");
-    document.getElementById("waiting").classList.add("hidden");
 
     document.getElementById(id).classList.remove("hidden");
 }
