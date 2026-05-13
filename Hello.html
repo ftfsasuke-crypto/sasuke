@@ -96,8 +96,10 @@ button {
 </div>
 
 <div id="room" style="display:none;">
+<div id="linkContainer">
 <p id="link"></p>
 <button onclick="copyLink()">📋 نسخ الرابط</button>
+</div>
 
 <ul id="players"></ul>
 
@@ -116,7 +118,6 @@ button {
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
 <script>
-
 const firebaseConfig = {
   apiKey: "AIzaSyDTyJqVntFqKe3I-zntb_rMx9Qcv7Nqi94",
   databaseURL: "https://spy-game-1d774-default-rtdb.firebaseio.com"
@@ -127,7 +128,7 @@ const db = firebase.database();
 
 let room="", playerId="", playersData={};
 
-// كلمات (خفيفة)
+// كلمات لكل تصنيف
 function expandWords(base){
 let arr=[];
 for(let i=0;i<200;i++){
@@ -219,10 +220,12 @@ if(d.phase==="playing") showRole(d);
 });
 }
 
-// نسخ الرابط + اخفائه
+// نسخ الرابط + اخفاء كامل الصندوق
 function copyLink(){
-navigator.clipboard.writeText(document.getElementById("link").innerText);
-document.getElementById("link").style.display="none";
+const container = document.getElementById("linkContainer");
+const text = document.getElementById("link").innerText;
+navigator.clipboard.writeText(text);
+container.style.display = "none"; // يخفي كل شيء
 }
 
 // عرض التصنيفات
