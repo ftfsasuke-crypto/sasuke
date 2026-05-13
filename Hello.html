@@ -4,164 +4,200 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>لعبة الجاسوس</title>
+
 <style>
-    body {
-        margin: 0; padding: 0;
-        font-family: 'Segoe UI', Tahoma, sans-serif;
-        background: linear-gradient(135deg,#2c3e50,#4ca1af);
-        display: flex; justify-content: center; align-items: center;
-        min-height: 100vh; color: #fff;
-    }
-    .center-box {
-        background: rgba(0,0,0,0.5);
-        border-radius: 20px; padding: 30px;
-        display: flex; flex-direction: column;
-        justify-content: center; align-items: center;
-        width: 90%; max-width: 500px;
-        text-align: center;
-    }
-    h1 { margin-bottom: 25px; font-size: 28px; }
-    input { padding: 12px; border-radius: 20px; border: none; width: 80%; margin-bottom: 15px; text-align:center; font-size:16px; }
-    button {
-        padding: 12px 25px; border-radius: 25px; border: none; cursor: pointer;
-        background: linear-gradient(to right,#8e2de2,#4a00e0); color: #fff; font-size:16px; margin:8px 0;
-    }
-    button:disabled { background: #555; cursor: not-allowed; }
-    .hidden { display:none; }
-    ul { list-style:none; padding:0; width: 100%; text-align:center; }
-    li { margin:5px 0; padding:10px; background: rgba(255,255,255,0.1); border-radius:10px; }
+body{
+margin:0;
+font-family:Tajawal, sans-serif;
+background:linear-gradient(135deg,#1e3c72,#2a5298);
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+color:white;
+}
+
+.box{
+background:rgba(0,0,0,0.4);
+padding:30px;
+border-radius:20px;
+text-align:center;
+width:90%;
+max-width:400px;
+}
+
+button{
+padding:14px 25px;
+border:none;
+border-radius:25px;
+margin:10px;
+cursor:pointer;
+background:linear-gradient(45deg,#ff00cc,#3333ff);
+color:white;
+font-size:18px;
+}
+
+input{
+padding:12px;
+width:80%;
+border-radius:15px;
+border:none;
+text-align:center;
+margin:10px;
+}
+
+.hidden{display:none}
+
+.player{
+background:rgba(255,255,255,0.1);
+padding:10px;
+border-radius:10px;
+margin:5px;
+}
 </style>
 </head>
+
 <body>
 
-<div id="app" class="center-box">
-    <h1>👑 SASUKE 👑</h1>
+<div class="box">
 
-    <!-- شاشة الهوست -->
-    <button id="start-game-btn">لعبة الجاسوس 1 🎮</button>
-    <button id="copy-link-btn" class="hidden">نسخ الرابط 📋</button>
+<h2>👑 SASUKE 👑</h2>
 
-    <!-- شاشة الانضمام -->
-    <div id="join-screen" class="hidden">
-        <input type="text" id="player-name" placeholder="اكتب اسمك">
-        <button id="join-btn">انضم 🚪</button>
-    </div>
+<button id="createBtn">🎮 لعبة الجاسوس 1</button>
+<button id="copyBtn" class="hidden">📋 نسخ الرابط</button>
 
-    <!-- شاشة اللعبة -->
-    <div id="game-screen" class="hidden">
-        <div id="category-screen" class="hidden">
-            <h2>اختر تصنيف</h2>
-            <div id="categories"></div>
-        </div>
-        <div id="word-display" class="hidden"></div>
-        <button id="start-vote-btn" class="hidden">بدء التصويت 🗳️</button>
-        <div id="vote-log-section" class="hidden">
-            <ul id="player-list"></ul>
-            <div id="vote-counter">0 / 0</div>
-        </div>
-        <button id="leave-btn">مغادرة 🚪</button>
-    </div>
+<div id="joinBox" class="hidden">
+<h3>✍️ اكتب اسمك</h3>
+<input id="nameInput" placeholder="اسمك">
+<button id="joinBtn">🚪 انضم</button>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, get, update, onValue, remove } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+<div id="roomBox" class="hidden">
+<h3>اللاعبين:</h3>
+<div id="players"></div>
+<button id="startBtn">🚀 بدء اللعبة</button>
+<button id="leaveBtn">🚪 مغادرة</button>
+</div>
 
+</div>
+
+<!-- ⚠️ مهم جداً: خلي السكريبت عادي مش module -->
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
+<script>
 const firebaseConfig = {
-    apiKey: "AIzaSyDTyJqVntFqKe3I-zntb_rMx9Qcv7Nqi94",
-    authDomain: "spy-game-1d774.firebaseapp.com",
-    databaseURL: "https://spy-game-1d774-default-rtdb.firebaseio.com",
-    projectId: "spy-game-1d774"
-};
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-let rid, mid = 'h' + Date.now(), mn = "SASUKE", gm = 'normal', players = {}, spyId, spyWord, phase = 'waiting';
-let categories = {
-    "أكلات": ["تفاح","موز","برتقال","فراولة","عنب","مانجو","اناناس","بطيخ","شمام","كرز"],
-    "فواكه": ["تفاح","موز","برتقال","فراولة","عنب","مانجو","اناناس","بطيخ","شمام","كرز"],
-    "خضروات": ["خس","طماطم","خيار","جزر","بطاطس","بصل","ثوم","فلفل","كوسة","سبانخ"],
-    "حيوانات": ["أسد","نمر","فيل","زرافة","ذئب","ثعلب","كلب","قط","حوت","دلفين"],
-    "أجهزة": ["هاتف","كمبيوتر","لابتوب","تابلت","كاميرا","سماعات","ميكروفون","طابعة","راوتر","سماعة"],
-    "رياضة": ["كرة قدم","تنس","سباحة","جري","جمباز","يوغا","كرة سلة","كرة يد","دراجات","ملاكمة"],
-    "منزل": ["سرير","كرسي","طاولة","خزانة","ستارة","سجادة","وسادة","بطانية","مصباح","ثلاجة"],
-    "دول": ["مصر","السعودية","الإمارات","قطر","الكويت","عمان","البحرين","الأردن","لبنان","سوريا"],
-    "كرتون وأنمي": ["ناروتو","ساسوكي","غوكو","لوفي","سبونج بوب","ميكي ماوس","توم","جيري","شريك","كابتن ماجد"]
+apiKey: "AIzaSyDTyJqVntFqKe3I-zntb_rMx9Qcv7Nqi94",
+authDomain: "spy-game-1d774.firebaseapp.com",
+databaseURL: "https://spy-game-1d774-default-rtdb.firebaseio.com",
+projectId: "spy-game-1d774"
 };
 
-const startBtn = document.getElementById('start-game-btn');
-const copyBtn = document.getElementById('copy-link-btn');
-const joinScreen = document.getElementById('join-screen');
-const joinBtn = document.getElementById('join-btn');
-const playerNameInput = document.getElementById('player-name');
-const categoryScreen = document.getElementById('category-screen');
-const categoriesDiv = document.getElementById('categories');
-const gameScreen = document.getElementById('game-screen');
-const wordDisplay = document.getElementById('word-display');
-const startVoteBtn = document.getElementById('start-vote-btn');
-const leaveBtn = document.getElementById('leave-btn');
-const playerList = document.getElementById('player-list');
-const voteCounter = document.getElementById('vote-counter');
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-function show(el){el.classList.remove('hidden');}
-function hide(el){el.classList.add('hidden');}
+let roomId = new URLSearchParams(location.search).get("room");
+let playerId = localStorage.getItem("playerId") || ("p"+Date.now());
+localStorage.setItem("playerId", playerId);
 
-function createRoom(){
-    rid = 'r'+Date.now();
-    set(ref(db, 'rooms/'+rid), {gm, phase:'waiting', players:{[mid]:{name:mn, ih:true, eliminated:false}}});
-    hide(startBtn); show(copyBtn);
-    copyBtn.onclick = ()=>{
-        navigator.clipboard.writeText(location.href+"?room="+rid);
-        hide(copyBtn);
-        show(joinScreen);
-    };
+const createBtn = document.getElementById("createBtn");
+const copyBtn = document.getElementById("copyBtn");
+const joinBox = document.getElementById("joinBox");
+const joinBtn = document.getElementById("joinBtn");
+const nameInput = document.getElementById("nameInput");
+const roomBox = document.getElementById("roomBox");
+const playersDiv = document.getElementById("players");
+const startBtn = document.getElementById("startBtn");
+const leaveBtn = document.getElementById("leaveBtn");
+
+function show(el){el.classList.remove("hidden")}
+function hide(el){el.classList.add("hidden")}
+
+/* ========== إنشاء غرفة ========== */
+createBtn.onclick = function(){
+roomId = "r"+Date.now();
+
+db.ref("rooms/"+roomId).set({
+started:false,
+players:{
+[playerId]:{name:"👑 SASUKE 👑"}
+}
+});
+
+hide(createBtn);
+show(copyBtn);
+show(roomBox);
+
+copyBtn.onclick = function(){
+navigator.clipboard.writeText(location.origin+location.pathname+"?room="+roomId);
+copyBtn.style.display="none";
+alert("تم نسخ الرابط");
+};
+
+listenPlayers();
+};
+
+/* ========== دخول ========== */
+if(roomId){
+hide(createBtn);
+show(joinBox);
 }
 
-function joinRoom(name){
-    mid = 'p'+Date.now(); mn = name;
-    get(ref(db,'rooms/'+rid)).then(snap=>{
-        if(!snap.exists()||snap.val().phase!=='waiting'){ alert('⚠️ اللعبة قد بدأت بالفعل'); return; }
-        set(ref(db,'rooms/'+rid+'/players/'+mid), {name:mn, ih:false, eliminated:false});
-        hide(joinScreen); show(gameScreen); showCategorySelection();
-    });
+joinBtn.onclick = function(){
+let name = nameInput.value.trim();
+if(!name) return alert("اكتب اسمك");
+
+db.ref("rooms/"+roomId).once("value",snap=>{
+if(!snap.exists()) return alert("الغرفة مش موجودة");
+if(snap.val().started) return alert("اللعبة بدأت");
+
+db.ref("rooms/"+roomId+"/players/"+playerId).set({
+name:name
+});
+
+/* خروج تلقائي */
+db.ref("rooms/"+roomId+"/players/"+playerId).onDisconnect().remove();
+
+hide(joinBox);
+show(roomBox);
+
+listenPlayers();
+});
+};
+
+/* ========== عرض اللاعبين ========== */
+function listenPlayers(){
+db.ref("rooms/"+roomId+"/players").on("value",snap=>{
+let data = snap.val() || {};
+playersDiv.innerHTML="";
+Object.values(data).forEach(p=>{
+let div=document.createElement("div");
+div.className="player";
+div.innerText=p.name;
+playersDiv.appendChild(div);
+});
+});
 }
 
-function showCategorySelection(){
-    categoriesDiv.innerHTML='';
-    Object.keys(categories).forEach(cat=>{
-        let btn=document.createElement('button');
-        btn.textContent = cat;
-        btn.onclick = ()=>startGame(cat);
-        categoriesDiv.appendChild(btn);
-    });
-    show(categoryScreen);
+/* ========== بدء اللعبة ========== */
+startBtn.onclick = function(){
+db.ref("rooms/"+roomId+"/players").once("value",snap=>{
+let players = snap.val();
+if(Object.keys(players).length < 3){
+alert("لازم 3 لاعبين");
+return;
 }
+db.ref("rooms/"+roomId+"/started").set(true);
+alert("🔥 بدأت اللعبة");
+});
+};
 
-function startGame(cat){
-    hide(categoryScreen);
-    get(ref(db,'rooms/'+rid+'/players')).then(snap=>{
-        players = snap.val();
-        let ids = Object.keys(players);
-        spyId = ids[Math.floor(Math.random()*ids.length)];
-        let words = categories[cat];
-        spyWord = words[Math.floor(Math.random()*words.length)];
-        ids.forEach(id=>{
-            update(ref(db,'rooms/'+rid+'/players/'+id), {word: (id===spyId)?null:spyWord});
-        });
-        update(ref(db,'rooms/'+rid), {phase:'playing', spyId, spyWord});
-        showWord();
-    });
-}
-
-function showWord(){
-    let p = players[mid];
-    wordDisplay.textContent = (mid===spyId) ? "أنت الجاسوس!" : "كلمتك: "+p.word;
-    show(wordDisplay);
-}
-
-startBtn.onclick = createRoom;
-joinBtn.onclick = ()=>joinRoom(playerNameInput.value.trim());
-
+/* ========== مغادرة ========== */
+leaveBtn.onclick = function(){
+db.ref("rooms/"+roomId+"/players/"+playerId).remove();
+alert("غادرت");
+location.href = location.pathname;
+};
 </script>
 
 </body>
