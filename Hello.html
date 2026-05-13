@@ -3,13 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>لعبة الجاسوس</title>
 
 <style>
 body{
 margin:0;
-font-family:Tajawal, sans-serif;
-background:linear-gradient(135deg,#1e3c72,#2a5298);
+font-family:Tajawal;
+background:linear-gradient(135deg,#141e30,#243b55);
 display:flex;
 justify-content:center;
 align-items:center;
@@ -18,8 +17,8 @@ color:white;
 }
 
 .box{
-background:rgba(0,0,0,0.4);
-padding:30px;
+background:rgba(0,0,0,0.5);
+padding:25px;
 border-radius:20px;
 text-align:center;
 width:90%;
@@ -27,23 +26,14 @@ max-width:400px;
 }
 
 button{
-padding:14px 25px;
+padding:12px 20px;
 border:none;
-border-radius:25px;
-margin:10px;
+border-radius:20px;
+margin:8px;
 cursor:pointer;
 background:linear-gradient(45deg,#ff00cc,#3333ff);
 color:white;
-font-size:18px;
-}
-
-input{
-padding:12px;
-width:80%;
-border-radius:15px;
-border:none;
-text-align:center;
-margin:10px;
+font-size:16px;
 }
 
 .hidden{display:none}
@@ -51,8 +41,13 @@ margin:10px;
 .player{
 background:rgba(255,255,255,0.1);
 padding:10px;
-border-radius:10px;
 margin:5px;
+border-radius:10px;
+}
+
+.big{
+font-size:22px;
+margin-top:20px;
 }
 </style>
 </head>
@@ -67,21 +62,23 @@ margin:5px;
 <button id="copyBtn" class="hidden">📋 نسخ الرابط</button>
 
 <div id="joinBox" class="hidden">
-<h3>✍️ اكتب اسمك</h3>
+<h3>اكتب اسمك</h3>
 <input id="nameInput" placeholder="اسمك">
-<button id="joinBtn">🚪 انضم</button>
+<button id="joinBtn">انضم</button>
 </div>
 
 <div id="roomBox" class="hidden">
-<h3>اللاعبين:</h3>
+<h3>اللاعبين</h3>
 <div id="players"></div>
+
 <button id="startBtn">🚀 بدء اللعبة</button>
 <button id="leaveBtn">🚪 مغادرة</button>
+
+<div id="roleBox" class="big hidden"></div>
 </div>
 
 </div>
 
-<!-- ⚠️ مهم جداً: خلي السكريبت عادي مش module -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
@@ -109,12 +106,12 @@ const roomBox = document.getElementById("roomBox");
 const playersDiv = document.getElementById("players");
 const startBtn = document.getElementById("startBtn");
 const leaveBtn = document.getElementById("leaveBtn");
+const roleBox = document.getElementById("roleBox");
 
-function show(el){el.classList.remove("hidden")}
-function hide(el){el.classList.add("hidden")}
+let isHost = !roomId;
 
-/* ========== إنشاء غرفة ========== */
-createBtn.onclick = function(){
+/* إنشاء غرفة */
+createBtn.onclick = ()=>{
 roomId = "r"+Date.now();
 
 db.ref("rooms/"+roomId).set({
@@ -124,11 +121,11 @@ players:{
 }
 });
 
-hide(createBtn);
-show(copyBtn);
-show(roomBox);
+createBtn.style.display="none";
+copyBtn.style.display="block";
+roomBox.style.display="block";
 
-copyBtn.onclick = function(){
+copyBtn.onclick = ()=>{
 navigator.clipboard.writeText(location.origin+location.pathname+"?room="+roomId);
 copyBtn.style.display="none";
 alert("تم نسخ الرابط");
@@ -137,13 +134,13 @@ alert("تم نسخ الرابط");
 listenPlayers();
 };
 
-/* ========== دخول ========== */
+/* دخول */
 if(roomId){
-hide(createBtn);
-show(joinBox);
+createBtn.style.display="none";
+joinBox.style.display="block";
 }
 
-joinBtn.onclick = function(){
+joinBtn.onclick = ()=>{
 let name = nameInput.value.trim();
 if(!name) return alert("اكتب اسمك");
 
@@ -151,21 +148,17 @@ db.ref("rooms/"+roomId).once("value",snap=>{
 if(!snap.exists()) return alert("الغرفة مش موجودة");
 if(snap.val().started) return alert("اللعبة بدأت");
 
-db.ref("rooms/"+roomId+"/players/"+playerId).set({
-name:name
-});
-
-/* خروج تلقائي */
+db.ref("rooms/"+roomId+"/players/"+playerId).set({name:name});
 db.ref("rooms/"+roomId+"/players/"+playerId).onDisconnect().remove();
 
-hide(joinBox);
-show(roomBox);
+joinBox.style.display="none";
+roomBox.style.display="block";
 
 listenPlayers();
 });
 };
 
-/* ========== عرض اللاعبين ========== */
+/* عرض اللاعبين */
 function listenPlayers(){
 db.ref("rooms/"+roomId+"/players").on("value",snap=>{
 let data = snap.val() || {};
@@ -179,24 +172,54 @@ playersDiv.appendChild(div);
 });
 }
 
-/* ========== بدء اللعبة ========== */
-startBtn.onclick = function(){
+/* بدء اللعبة */
+startBtn.onclick = ()=>{
 db.ref("rooms/"+roomId+"/players").once("value",snap=>{
 let players = snap.val();
-if(Object.keys(players).length < 3){
+let ids = Object.keys(players);
+
+if(ids.length < 3){
 alert("لازم 3 لاعبين");
 return;
 }
+
+/* اختيار جاسوس */
+let spy = ids[Math.floor(Math.random()*ids.length)];
+let words = ["تفاح","موز","بيتزا","برجر","رز","فراخ"];
+let word = words[Math.floor(Math.random()*words.length)];
+
+/* توزيع */
+ids.forEach(id=>{
+db.ref("rooms/"+roomId+"/players/"+id+"/role").set(
+id === spy ? "🕵️ أنت الجاسوس" : "🍔 الكلمة: "+word
+);
+});
+
+/* تحديث حالة */
 db.ref("rooms/"+roomId+"/started").set(true);
-alert("🔥 بدأت اللعبة");
 });
 };
 
-/* ========== مغادرة ========== */
-leaveBtn.onclick = function(){
+/* استلام الدور */
+db.ref("rooms/"+roomId+"/players/"+playerId+"/role").on("value",snap=>{
+if(snap.exists()){
+roleBox.style.display="block";
+roleBox.innerText = snap.val();
+startBtn.style.display="none";
+}
+});
+
+/* مغادرة */
+leaveBtn.onclick = ()=>{
 db.ref("rooms/"+roomId+"/players/"+playerId).remove();
-alert("غادرت");
-location.href = location.pathname;
+alert("غادرت اللعبة");
+};
+
+/* منع الرجوع للقائمة */
+window.onbeforeunload = ()=>{
+if(roomId){
+db.ref("rooms/"+roomId+"/players/"+playerId).remove();
+}
 };
 </script>
 
