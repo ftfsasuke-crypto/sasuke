@@ -40,7 +40,10 @@ color:white;
 font-size:16px;
 cursor:pointer;
 width:90%;
+transition:.3s;
 }
+
+button:hover{transform:scale(1.05)}
 
 input{
 padding:14px;
@@ -74,8 +77,18 @@ background:#1a1a3e;
 padding:25px;
 border-radius:20px;
 width:90%;
-max-width:350px;
+max-width:400px;
 }
+
+#word{
+font-size:26px;
+margin-top:20px;
+color:#fff;
+}
+
+#linkBox{margin:10px 0;}
+
+#startBtn{display:none;}
 </style>
 </head>
 
@@ -95,10 +108,14 @@ max-width:350px;
 </div>
 
 <ul id="players"></ul>
-
-<button id="startBtn" style="display:none">
+<button id="startBtn" onclick="startGame()">
 🚀 بدء اللعبة
 </button>
+</div>
+
+<div id="game" style="display:none;">
+<h2 id="word"></h2>
+<button id="leaveBtn" onclick="leaveGame()">🚪 مغادرة</button>
 </div>
 
 </div>
@@ -107,31 +124,30 @@ max-width:350px;
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 
 <script>
-
 const firebaseConfig = {
 apiKey: "AIzaSyDTyJqVntFqKe3I-zntb_rMx9Qcv7Nqi94",
 databaseURL: "https://spy-game-1d774-default-rtdb.firebaseio.com"
 };
-
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
-let room="", playerId="", players={}, isHost=false;
+let room="", playerId="", players={}, isHost=false, spyId="", word="";
 
-// لو داخل من رابط
+// دخول من رابط
 let params=new URLSearchParams(location.search);
 if(params.get("room")){
 room=params.get("room");
 showJoin();
 }
 
+// عرض نافذة انضمام
 function showJoin(){
 let div=document.createElement("div");
 div.className="overlay";
 div.innerHTML=`
 <div class="popup">
 <h3>✍️ اكتب اسمك</h3>
-<input id="name">
+<input id="name" placeholder="اسمك">
 <button onclick="join()">🚪 انضمام</button>
 </div>`;
 document.body.appendChild(div);
@@ -144,15 +160,13 @@ if(!name) return;
 playerId="p"+Date.now();
 isHost=false;
 
-db.ref("rooms/"+room+"/players/"+playerId).set({
-name:name
-});
+db.ref("rooms/"+room+"/players/"+playerId).set({name:name, active:true});
 
 document.querySelector(".overlay").remove();
 openRoom();
 }
 
-// إنشاء غرفة
+// إنشاء غرفة (هوست فقط)
 function createRoom(){
 room="r"+Date.now();
 playerId="h"+Date.now();
@@ -160,7 +174,7 @@ isHost=true;
 
 db.ref("rooms/"+room).set({
 players:{
-[playerId]:{name:"👑 SASUKE 👑"}
+[playerId]:{name:"👑 𝐒𝐀𝐒𝐔𝐊𝐄 👑", active:true}
 }
 });
 
@@ -175,31 +189,74 @@ function openRoom(){
 document.getElementById("home").style.display="none";
 document.getElementById("room").style.display="block";
 
-// اخفاء الرابط لغير الهوست
-if(!isHost){
-document.getElementById("linkBox").style.display="none";
-}
+// رابط الغرفة فقط للهوست
+if(!isHost) document.getElementById("linkBox").style.display="none";
 
 db.ref("rooms/"+room+"/players").on("value",snap=>{
 players=snap.val()||{};
-
 let html="";
 for(let id in players){
 html+=`<li>${players[id].name}</li>`;
 }
 document.getElementById("players").innerHTML=html;
 
-// شرط 3 لاعبين
-if(Object.keys(players).length>=3){
+// زر بدء اللعبة عند 3 لاعبين أو أكثر
+if(isHost && Object.keys(players).length>=3){
 document.getElementById("startBtn").style.display="block";
+}
+});
+
+// تسجيل خروج اللاعب عند غلق التاب
+window.addEventListener("beforeunload",()=>{
+if(playerId && room){
+db.ref("rooms/"+room+"/players/"+playerId).update({active:false});
 }
 });
 }
 
-// نسخ الرابط
+// نسخ الرابط للهوست
 function copyLink(){
 navigator.clipboard.writeText(document.getElementById("link").innerText);
 document.getElementById("linkBox").style.display="none";
+}
+
+// بدء اللعبة (اختيار جاسوس وكلمة)
+function startGame(){
+document.getElementById("startBtn").style.display="none";
+
+// اختيار جاسوس عشوائي
+let ids=Object.keys(players);
+spyId=ids[Math.floor(Math.random()*ids.length)];
+
+// اختيار كلمة عشوائية
+let words=["تفاح","بيتزا","أسد","كمبيوتر","ناروتو"];
+word=words[Math.floor(Math.random()*words.length)];
+
+// حفظ في Firebase لكل اللاعبين
+db.ref("rooms/"+room).update({spy:spyId, word:word, phase:"playing"});
+
+// عرض الدور
+showRole();
+}
+
+// عرض الدور لكل لاعب
+function showRole(){
+document.getElementById("room").style.display="none";
+document.getElementById("game").style.display="block";
+
+if(playerId===spyId){
+document.getElementById("word").innerText="🕵️ أنت الجاسوس!";
+}else{
+document.getElementById("word").innerText="🔍 "+word;
+}
+}
+
+// زر مغادرة
+function leaveGame(){
+db.ref("rooms/"+room+"/players/"+playerId).update({active:false});
+alert("لقد غادرت المباراة");
+document.getElementById("game").style.display="none";
+document.getElementById("home").style.display="block";
 }
 
 </script>
