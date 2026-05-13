@@ -26,6 +26,15 @@ body{
     max-width:400px;
 }
 
+input{
+    width:100%;
+    padding:12px;
+    border:none;
+    border-radius:15px;
+    margin-top:10px;
+    font-size:16px;
+}
+
 button{
     width:100%;
     padding:15px;
@@ -45,38 +54,95 @@ button{
     background:linear-gradient(to right,#3498db,#9b59b6);
 }
 
+.player{
+    background:rgba(255,255,255,0.1);
+    padding:10px;
+    border-radius:15px;
+    margin-top:8px;
+}
+
 .hidden{display:none;}
 </style>
 </head>
 
 <body>
 
+<!-- الصفحة الرئيسية -->
 <div class="box" id="home">
 <h1>👑 𝐒𝐀𝐒𝐔𝐊𝐄 👑</h1>
 <button class="main-btn" onclick="startGame()">🎮 لعبة الجاسوس 1</button>
 </div>
 
+<!-- غرفة الهوست -->
 <div class="box hidden" id="room">
 <h2>🔥 تم إنشاء الغرفة</h2>
 <p>انسخ الرابط وابعته لصحابك</p>
 
 <button class="copy-btn" onclick="copyLink()">📋 نسخ الرابط</button>
 
+<h3>اللاعبين:</h3>
+<div id="players"></div>
+</div>
+
+<!-- صفحة الانضمام -->
+<div class="box hidden" id="join">
+<h2>✍️ اكتب اسمك</h2>
+<input id="nameInput" placeholder="اسمك">
+<button onclick="joinGame()">🚪 انضمام</button>
 </div>
 
 <script>
 
-let roomId = Math.floor(Math.random()*100000);
+let roomId = null;
 
-function startGame(){
+// هل داخل من رابط؟
+const params = new URLSearchParams(window.location.search);
+if(params.get("room")){
+    roomId = params.get("room");
+    document.getElementById("join").classList.remove("hidden");
     document.getElementById("home").classList.add("hidden");
-    document.getElementById("room").classList.remove("hidden");
 }
 
+// إنشاء غرفة
+function startGame(){
+    roomId = Math.floor(Math.random()*100000);
+    localStorage.setItem("room_"+roomId, JSON.stringify([]));
+
+    document.getElementById("home").classList.add("hidden");
+    document.getElementById("room").classList.remove("hidden");
+
+    updatePlayers();
+}
+
+// نسخ الرابط
 function copyLink(){
-    let link = location.href + "?room=" + roomId;
+    let link = location.href.split("?")[0] + "?room=" + roomId;
     navigator.clipboard.writeText(link);
     alert("تم نسخ الرابط ✅");
+}
+
+// انضمام لاعب
+function joinGame(){
+    let name = document.getElementById("nameInput").value;
+    if(!name) return alert("اكتب اسمك");
+
+    let players = JSON.parse(localStorage.getItem("room_"+roomId)) || [];
+    players.push(name);
+    localStorage.setItem("room_"+roomId, JSON.stringify(players));
+
+    alert("تم الانضمام ✅");
+}
+
+// تحديث قائمة اللاعبين
+function updatePlayers(){
+    let playersDiv = document.getElementById("players");
+    setInterval(()=>{
+        let players = JSON.parse(localStorage.getItem("room_"+roomId)) || [];
+        playersDiv.innerHTML = "";
+        players.forEach(p=>{
+            playersDiv.innerHTML += `<div class="player">${p}</div>`;
+        });
+    },1000);
 }
 
 </script>
