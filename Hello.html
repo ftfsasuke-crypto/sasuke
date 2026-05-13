@@ -34,7 +34,15 @@ button{
     font-size:18px;
     color:white;
     cursor:pointer;
+    margin-top:10px;
+}
+
+.main-btn{
     background:linear-gradient(to right,#8e44ad,#9b59b6);
+}
+
+.copy-btn{
+    background:linear-gradient(to right,#3498db,#9b59b6);
 }
 
 .hidden{display:none;}
@@ -45,19 +53,32 @@ button{
 
 <div class="box" id="home">
 <h1>👑 𝐒𝐀𝐒𝐔𝐊𝐄 👑</h1>
-<button onclick="startGame()">🎮 لعبة الجاسوس 1</button>
+<button class="main-btn" onclick="startGame()">🎮 لعبة الجاسوس 1</button>
 </div>
 
 <div class="box hidden" id="room">
 <h2>🔥 تم إنشاء الغرفة</h2>
-<p>جاهز نكمل الخطوة اللي بعدها</p>
+<p>انسخ الرابط وابعته لصحابك</p>
+
+<button class="copy-btn" onclick="copyLink()">📋 نسخ الرابط</button>
+
 </div>
 
 <script>
+
+let roomId = Math.floor(Math.random()*100000);
+
 function startGame(){
     document.getElementById("home").classList.add("hidden");
     document.getElementById("room").classList.remove("hidden");
 }
+
+function copyLink(){
+    let link = location.href + "?room=" + roomId;
+    navigator.clipboard.writeText(link);
+    alert("تم نسخ الرابط ✅");
+}
+
 </script>
 
 </body>
