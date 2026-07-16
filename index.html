@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghost Script - Key System</title>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* Base Styles & Background */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #050b14; /* Deep dark blue */
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden; /* Hide scrollbars for falling stars */
+            position: relative;
+        }
+
+        /* Falling Stars Background Effect */
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: fall linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-100px); opacity: 1; }
+            80% { opacity: 1; }
+            100% { transform: translateY(100vh); opacity: 0; }
+        }
+
+        /* Container Styles */
+        .container {
+            background-color: #0b1320; /* Slightly lighter blue for the box */
+            padding: 40px;
+            border-radius: 12px;
+            border: 1px solid #1c2b42;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            text-align: center;
+            max-width: 450px;
+            width: 90%;
+            z-index: 1; /* Keep above stars */
+            position: relative;
+        }
+
+        /* Step 1: Wait Screen Styles */
+        #step1 {
+            display: block; /* Visible by default */
+        }
+        
+        #step1 h1 {
+            font-size: 26px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        #step1 p {
+            color: #8b9bb4;
+            font-size: 15px;
+            margin-bottom: 30px;
+        }
+
+        .wait-btn {
+            background-color: #3b4b66; /* Disabled gray/blue */
+            color: #a0aabf;
+            border: none;
+            padding: 15px;
+            font-size: 16px;
+            border-radius: 8px;
+            width: 100%;
+            cursor: not-allowed;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .wait-btn.active {
+            background-color: #ffffff;
+            color: #000000;
+            cursor: pointer;
+        }
+        
+        .wait-btn.active:hover {
+            background-color: #e0e0e0;
+        }
+
+        .spinner {
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top: 2px solid #a0aabf;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+        }
+        
+        .wait-btn.active .spinner {
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Step 2: Success Screen Styles */
+        #step2 {
+            display: none; /* Hidden by default */
+        }
+
+        .success-icon {
+            color: #2ecca6; /* Mint green */
+            font-size: 40px;
+            margin-bottom: 15px;
+            animation: bounceIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        #step2 h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        #step2 p {
+            color: #8b9bb4;
+            font-size: 14px;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .countdown-text {
+            color: #2ecca6; /* Mint green for time */
+            font-weight: bold;
+        }
+
+        .key-box {
+            background-color: #050b14; /* Darker inside box */
+            border: 1px solid #1c2b42;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .key-input {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-size: 15px;
+            width: 100%;
+            outline: none;
+            font-family: monospace;
+            resize: none;
+            overflow: hidden;
+            word-wrap: break-word;
+        }
+
+        .copy-btn {
+            background-color: #ffffff;
+            color: #000000;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 8px;
+            width: 100%;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background-color: #e0e0e0;
+        }
+        
+        .copy-btn.copied {
+            background-color: #2ecca6;
+            color: #ffffff;
+        }
+
+        /* Footer Links */
+        .footer-links {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #5a6b8a;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .footer-links a {
+            color: #5a6b8a;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .footer-links a:hover {
+            text-decoration: underline;
+            color: #8b9bb4;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Star Background -->
+    <div class="stars" id="stars-container"></div>
+
+    <div class="container">
+        
+        <!-- Step 1: Wait Screen -->
+        <div id="step1">
+            <h1>Create your key</h1>
+            <p>Please wait and click continue to get whitelisted.</p>
+            
+            <button id="waitBtn" class="wait-btn" disabled>
+                <div class="spinner"></div>
+                <span id="waitText">Please wait 5 seconds</span>
+            </button>
+            
+            <div class="footer-links">
+                <a href="#">Report</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Privacy Policy</a>
+            </div>
+        </div>
+
+        <!-- Step 2: Success Screen -->
+        <div id="step2">
+            <i class="fa-solid fa-certificate success-icon"></i>
+            <h1>Successfully whitelisted!</h1>
+            <p>Please return to the service for access, you have <span id="countdown" class="countdown-text">23 hours and 59 minutes</span> left.</p>
+            
+            <div class="key-box">
+                <textarea id="keyDisplay" class="key-input" rows="2" readonly>Generating...</textarea>
+            </div>
+            
+            <button id="copyBtn" class="copy-btn" onclick="copyKey()">
+                <i class="fa-regular fa-copy"></i> Copy
+            </button>
+            
+            <div class="footer-links">
+                <a href="#">Report</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Privacy Policy</a>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Falling Stars Effect ---
+        function createStars() {
+            const container = document.getElementById('stars-container');
+            for (let i = 0; i < 50; i++) {
+                const star = document.createElement('div');
+                star.classList.add('star');
+                
+                // Randomize size, position, and animation duration
+                const size = Math.random() * 3 + 1; // 1px to 4px
+                const left = Math.random() * 100; // 0% to 100%
+                const duration = Math.random() * 3 + 2; // 2s to 5s
+                const delay = Math.random() * 5; // 0s to 5s delay
+                
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                star.style.left = left + '%';
+                star.style.animationDuration = duration + 's';
+                star.style.animationDelay = delay + 's';
+                
+                container.appendChild(star);
+            }
+        }
+        createStars();
+
+
+        // --- Timer Logic (Step 1) ---
+        let waitTime = 5;
+        const waitBtn = document.getElementById('waitBtn');
+        const waitText = document.getElementById('waitText');
+        const step1 = document.getElementById('step1');
+        const step2 = document.getElementById('step2');
+
+        const timerInterval = setInterval(() => {
+            waitTime--;
+            if (waitTime > 0) {
+                waitText.innerText = `Please wait ${waitTime} seconds`;
+            } else {
+                clearInterval(timerInterval);
+                waitBtn.classList.add('active');
+                waitBtn.removeAttribute('disabled');
+                waitText.innerText = "Continue";
+                // Change click event to proceed
+                waitBtn.onclick = function() {
+                    showSuccessScreen();
+                };
+            }
+        }, 1000);
+
+
+        // --- Firebase Setup & Key Generation (Step 2) ---
+        
+        // ** ضع إعدادات مشروعك الحقيقية هنا مرة أخرى **
+        const firebaseConfig = {
+            apiKey: "AIzaSyCxUR492CJN8S41WEWXXtnwAYhFyPHsda4",
+            authDomain: "ghost-key-system.firebaseapp.com",
+            databaseURL: "https://ghost-key-system-default-rtdb.firebaseio.com", 
+            projectId: "ghost-key-system",
+            storageBucket: "ghost-key-system.firebasestorage.app",
+            messagingSenderId: "723734231121",
+            appId: "1:723734231121:web:61cc3519985b7f771f6070",
+            measurementId: "G-YZZDGGG9C5"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let generatedKey = "";
+        let expirationTime = 0;
+
+        function generateRandomKey() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = 'GHOST_';
+            for (let i = 0; i < 20; i++) { // Made key slightly longer to look like the image
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        function showSuccessScreen() {
+            // Hide step 1, show step 2
+            step1.style.display = 'none';
+            step2.style.display = 'block';
+
+            // Generate and save key
+            generatedKey = generateRandomKey();
+            const currentTime = Date.now();
+            expirationTime = currentTime + (24 * 60 * 60 * 1000); // 24 hours
+
+            db.ref('Keys/' + generatedKey).set({
+                createdAt: currentTime,
+                expiresAt: expirationTime,
+                status: "active"
+            }).then(() => {
+                document.getElementById('keyDisplay').value = generatedKey;
+                startCountdown(); // Start the 24h countdown
+            }).catch((error) => {
+                document.getElementById('keyDisplay').value = "Connection Error!";
+                console.error("Firebase Error:", error);
+            });
+        }
+
+        // --- 24 Hour Countdown Logic ---
+        function startCountdown() {
+            const countdownEl = document.getElementById('countdown');
+            
+            // Update every minute (no need for seconds to match the image style "23 hours and 59 minutes")
+            const updateTimer = () => {
+                const now = Date.now();
+                const diff = expirationTime - now;
+
+                if (diff <= 0) {
+                    countdownEl.innerText = "0 hours and 0 minutes";
+                    return;
+                }
+
+                const hours = Math.floor(diff / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                
+                countdownEl.innerText = `${hours} hours and ${minutes} minutes`;
+            };
+
+            updateTimer(); // Initial call
+            setInterval(updateTimer, 60000); // Update every minute
+        }
+
+        // --- Copy Button Logic ---
+        function copyKey() {
+            const copyText = document.getElementById("keyDisplay");
+            if(copyText.value === "Generating..." || copyText.value === "Connection Error!") return;
+            
+            copyText.select();
+            document.execCommand("copy");
+            
+            const btn = document.getElementById("copyBtn");
+            btn.classList.add('copied');
+            btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+            
+            setTimeout(() => {
+                btn.classList.remove('copied');
+                btn.innerHTML = '<i class="fa-regular fa-copy"></i> Copy';
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
