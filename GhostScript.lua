@@ -1,5 +1,5 @@
 -- ==========================================
--- GHOST SCRIPT - KEY SYSTEM (PRO HUB + ANIMATIONS + POTATO FPS)
+-- GHOST SCRIPT - KEY SYSTEM (PRO HUB + SMART STICKY AIMBOT)
 -- ==========================================
 
 -- [المفتاح الدائم السري] 
@@ -126,7 +126,6 @@ local function LoadMainScript(expireTimestamp)
     TopBarLine.BorderSizePixel = 0
     TopBarLine.Parent = TopBar
 
-    -- [تم التعديل] إضافة التوقيع / by sasuke
     local Title = Instance.new("TextLabel")
     Title.Size = UDim2.new(0, 150, 1, 0)
     Title.Position = UDim2.new(0, 15, 0, 0)
@@ -263,7 +262,6 @@ local function LoadMainScript(expireTimestamp)
     local CategoryBtn_Random, AccentLine_Random = CreateCategoryButton("سكربتات عشوائيه", 1, true)
     local CategoryBtn_Blox, AccentLine_Blox = CreateCategoryButton("بلوكس فروت", 2, false)
     local CategoryBtn_Keyboard, AccentLine_Key = CreateCategoryButton("ماب الكيبورد", 3, false)
-    -- [تم التعديل] ضمان إن الزرار ده يفضل آخر واحد تحت دايماً
     local CategoryBtn_Info, AccentLine_Info = CreateCategoryButton("معلومات عن صاحب السكربت", 999, false)
 
     local function CreateContentFrame(isVisible)
@@ -346,8 +344,7 @@ local function LoadMainScript(expireTimestamp)
     local space2 = Instance.new("Frame"); space2.Size = UDim2.new(1,0,0,15); space2.BackgroundTransparency = 1; space2.Parent = ContentFrame_Info
 
     AddInfoLabel(ContentFrame_Info, "للتواصل بخصوص مشكلة في السكربت:", Color3.fromRGB(255, 50, 50))
-    -- [تم التعديل] تصحيح اليوزر لـ 4_7v زي الصورة
-    AddInfoLabel(ContentFrame_Info, "يوزري ديسكورد: 4_7v", textColor) 
+    AddInfoLabel(ContentFrame_Info, "يوزري ديسكورد: 4_7v", textColor)
     AddInfoLabel(ContentFrame_Info, "يوزري تيليجرام: @sasuke195p", textColor)
 
     UIS.InputBegan:Connect(function(input, gpe)
@@ -361,7 +358,7 @@ local function LoadMainScript(expireTimestamp)
     end)
 
     -- =========================================================
-    -- واجهة الايمبوت الاحترافية الشاملة مع الأنيميشن السحري
+    -- واجهة الايمبوت الاحترافية الشاملة مع الأنيميشن السحري وحل مشكلة البحث المستمر
     -- =========================================================
     local function LaunchAimbotGUI()
         if CoreGui:FindFirstChild("GhostAimbotGUI") then return end
@@ -372,7 +369,6 @@ local function LoadMainScript(expireTimestamp)
         
         local Frame = Instance.new("Frame")
         Frame.Size = UDim2.new(0, 260, 0, 420)
-        -- [الأنيميشن] البداية من برة الشاشة خالص ناحية الشمال
         Frame.Position = UDim2.new(-0.5, 0, 0.5, -150) 
         Frame.BackgroundColor3 = Color3.fromRGB(15, 15, 15) 
         Frame.Active = true
@@ -383,7 +379,6 @@ local function LoadMainScript(expireTimestamp)
         stroke.Thickness = 1
         Frame.Parent = Gui
         
-        -- تشغيل الأنيميشن للدخول بنعومة لجنب الشاشة الشمال
         TS:Create(Frame, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2.new(0, 20, 0.5, -150)}):Play()
         
         local TitleBar = Instance.new("Frame")
@@ -435,7 +430,6 @@ local function LoadMainScript(expireTimestamp)
             game:GetService("Lighting").GlobalShadows = true
             if fpsBoostLoop then fpsBoostLoop:Disconnect() fpsBoostLoop = nil end
             
-            -- [الأنيميشن] خروج بنعومة لبرة الشاشة قبل ما يتقفل
             local closeAnim = TS:Create(Frame, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {Position = UDim2.new(-0.5, 0, Frame.Position.Y.Scale, Frame.Position.Y.Offset)})
             closeAnim:Play()
             closeAnim.Completed:Wait()
@@ -883,14 +877,14 @@ local function LoadMainScript(expireTimestamp)
                 return closest
             end
             
+            -- [تحديث مهم] فحص مستمر للهدف
             UIS.InputBegan:Connect(function(input, gpe)
                 if not gpe and input.KeyCode == GhostAimbotState.Key then
                     if GhostAimbotState.Mode == "Hold" then
                         isTargeting = true
-                        if GhostAimbotState.Enabled then currentTarget = GetClosestTarget() end
                     else
                         isTargeting = not isTargeting
-                        if isTargeting and GhostAimbotState.Enabled then currentTarget = GetClosestTarget() else currentTarget = nil end
+                        if not isTargeting then currentTarget = nil end
                     end
                 end
             end)
@@ -941,20 +935,34 @@ local function LoadMainScript(expireTimestamp)
                     end
                 end
                 
-                if GhostAimbotState.Enabled and isTargeting and currentTarget then
-                    if currentTarget.Character and currentTarget.Character:FindFirstChild(GhostAimbotState.LockPart) and currentTarget.Character:FindFirstChild("Humanoid") and currentTarget.Character.Humanoid.Health > 0 then
+                -- [حل مشكلة البحث المستمر للايمبوت]
+                if GhostAimbotState.Enabled and isTargeting then
+                    if currentTarget then
+                        local char = currentTarget.Character
+                        if not char or not char:FindFirstChild("Humanoid") or char.Humanoid.Health <= 0 or not char:FindFirstChild(GhostAimbotState.LockPart) then
+                            currentTarget = nil
+                        end
+                    end
+                    
+                    if not currentTarget then
+                        currentTarget = GetClosestTarget()
+                    end
+                    
+                    if currentTarget and currentTarget.Character then
                         local targetPos = currentTarget.Character[GhostAimbotState.LockPart].Position
                         local cam = workspace.CurrentCamera
                         local smoothFactor = GhostAimbotState.Smoothness / 10
                         cam.CFrame = cam.CFrame:Lerp(CFrame.new(cam.CFrame.Position, targetPos), smoothFactor)
                     end
+                else
+                    currentTarget = nil
                 end
             end)
         end
     end
 
     -- =========================================================
-    -- إنشاء السكربتات والأزرار في القائمة الجانبية (مع الأنيميشن لباقي الواجهات)
+    -- إنشاء السكربتات والأزرار في القائمة الجانبية
     -- =========================================================
     local function CreateScriptButton(parent, text, scriptUrl)
         local Btn = Instance.new("TextButton")
@@ -1005,7 +1013,7 @@ local function LoadMainScript(expireTimestamp)
                     local F = Instance.new("Frame")
                     F.Parent = SG
                     F.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-                    F.Position = UDim2.new(0.5, -110, 0, -150) -- بداية الأنيميشن من فوق
+                    F.Position = UDim2.new(0.5, -110, 0, -150)
                     F.Size = UDim2.new(0, 240, 0, 140) 
                     F.Active = true
                     F.Draggable = true
@@ -1165,7 +1173,7 @@ local function LoadMainScript(expireTimestamp)
                     local F = Instance.new("Frame")
                     F.Parent = SG
                     F.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-                    F.Position = UDim2.new(0, 20, 1, 50) -- من تحت
+                    F.Position = UDim2.new(0, 20, 1, 50)
                     F.Size = UDim2.new(0, 160, 0, 90)
                     F.Active = true
                     F.Draggable = true
@@ -1379,7 +1387,7 @@ local function LoadMainScript(expireTimestamp)
                     local F = Instance.new("Frame")
                     F.Parent = SG
                     F.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-                    F.Position = UDim2.new(1, 50, 0.5, 140) -- من اليمين
+                    F.Position = UDim2.new(1, 50, 0.5, 140)
                     F.Size = UDim2.new(0, 160, 0, 75)
                     F.Active = true
                     F.Draggable = true
