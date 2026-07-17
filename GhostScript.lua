@@ -1,5 +1,5 @@
 -- ==========================================
--- GHOST SCRIPT - KEY SYSTEM (PRO HUB + FIXED TELEPORT & CTRL KEY)
+-- GHOST SCRIPT - KEY SYSTEM (PRO HUB + ANIMATIONS + POTATO FPS)
 -- ==========================================
 
 -- [المفتاح الدائم السري] 
@@ -26,7 +26,7 @@ local HWID = game:GetService("RbxAnalyticsService"):GetClientId() .. "_" .. exec
 local requestFunc = (syn and syn.request) or (http and http.request) or http_request or request
 
 -- ==========================================
--- إعدادات الايمبوت المدمج الاحترافي
+-- إعدادات الايمبوت المدمج والبوست
 -- ==========================================
 local GhostAimbotState = {
     Enabled = false,
@@ -39,7 +39,9 @@ local GhostAimbotState = {
     SmartTarget = false,
     ESP = false,
     ESPColor = Color3.fromRGB(255, 215, 0), 
-    ESPOutlineOnly = false 
+    ESPOutlineOnly = false,
+    FPSBoost = false,
+    FPSCap = 60
 }
 
 -- ==========================================
@@ -124,16 +126,28 @@ local function LoadMainScript(expireTimestamp)
     TopBarLine.BorderSizePixel = 0
     TopBarLine.Parent = TopBar
 
+    -- [تم التعديل] إضافة التوقيع / by sasuke
     local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(0, 120, 1, 0)
+    Title.Size = UDim2.new(0, 150, 1, 0)
     Title.Position = UDim2.new(0, 15, 0, 0)
     Title.BackgroundTransparency = 1
-    Title.Text = "Ghost Script" 
+    Title.Text = "Ghost Script"
     Title.TextColor3 = textColor
     Title.Font = Enum.Font.GothamBold
     Title.TextSize = 14
     Title.TextXAlignment = Enum.TextXAlignment.Left
     Title.Parent = TopBar
+    
+    local SubTitle = Instance.new("TextLabel")
+    SubTitle.Size = UDim2.new(0, 100, 1, 0)
+    SubTitle.Position = UDim2.new(0, 105, 0, 0)
+    SubTitle.BackgroundTransparency = 1
+    SubTitle.Text = " / by sasuke"
+    SubTitle.TextColor3 = accentColor
+    SubTitle.Font = Enum.Font.GothamSemibold
+    SubTitle.TextSize = 11
+    SubTitle.TextXAlignment = Enum.TextXAlignment.Left
+    SubTitle.Parent = TopBar
 
     local TimerLabel = Instance.new("TextLabel")
     TimerLabel.Size = UDim2.new(0, 200, 1, 0)
@@ -240,7 +254,7 @@ local function LoadMainScript(expireTimestamp)
         Accent.Parent = Btn
 
         local AccentCorner = Instance.new("UICorner")
-        AccentCorner.CornerRadius = UDim.new(1, 0)
+        Corner.CornerRadius = UDim.new(1, 0)
         AccentCorner.Parent = Accent
 
         return Btn, Accent
@@ -249,6 +263,8 @@ local function LoadMainScript(expireTimestamp)
     local CategoryBtn_Random, AccentLine_Random = CreateCategoryButton("سكربتات عشوائيه", 1, true)
     local CategoryBtn_Blox, AccentLine_Blox = CreateCategoryButton("بلوكس فروت", 2, false)
     local CategoryBtn_Keyboard, AccentLine_Key = CreateCategoryButton("ماب الكيبورد", 3, false)
+    -- [تم التعديل] ضمان إن الزرار ده يفضل آخر واحد تحت دايماً
+    local CategoryBtn_Info, AccentLine_Info = CreateCategoryButton("معلومات عن صاحب السكربت", 999, false)
 
     local function CreateContentFrame(isVisible)
         local Frame = Instance.new("ScrollingFrame")
@@ -278,8 +294,62 @@ local function LoadMainScript(expireTimestamp)
     local ContentFrame_Random, Layout_Random = CreateContentFrame(true)
     local ContentFrame_Blox, Layout_Blox = CreateContentFrame(false)
     local ContentFrame_Keyboard, Layout_Key = CreateContentFrame(false)
+    local ContentFrame_Info, Layout_Info = CreateContentFrame(false)
 
-    -- [تأكيد للمرة المليون] كود إخفاء واجهة الايمبوت ودائرته فقطططط عبر (Right Control)
+    -- =========================================================
+    -- محتوى قسم "معلومات عن صاحب السكربت"
+    -- =========================================================
+    local function AddInfoLabel(parent, text, color)
+        local lbl = Instance.new("TextLabel")
+        lbl.Size = UDim2.new(1, 0, 0, 25)
+        lbl.BackgroundTransparency = 1
+        lbl.Text = text
+        lbl.TextColor3 = color or textColor
+        lbl.Font = Enum.Font.GothamSemibold
+        lbl.TextSize = 13
+        lbl.TextXAlignment = Enum.TextXAlignment.Center
+        lbl.Parent = parent
+        return lbl
+    end
+
+    local function AddCopyButton(parent, title, copyText)
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, 0, 0, 35)
+        btn.BackgroundColor3 = elementColor
+        btn.Text = title
+        btn.TextColor3 = accentColor
+        btn.Font = Enum.Font.GothamBold
+        btn.TextSize = 13
+        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+        Instance.new("UIStroke", btn).Color = Color3.fromRGB(50, 50, 50)
+        btn.Parent = parent
+
+        btn.MouseButton1Click:Connect(function()
+            pcall(function() setclipboard(copyText) end)
+            local oldText = btn.Text
+            btn.Text = "تم النسخ بنجاح!"
+            btn.TextColor3 = Color3.fromRGB(46, 204, 166)
+            task.wait(1.5)
+            btn.Text = oldText
+            btn.TextColor3 = accentColor
+        end)
+    end
+
+    AddInfoLabel(ContentFrame_Info, "قناة التيليجرام:", textColor)
+    AddCopyButton(ContentFrame_Info, "اضغط هنا لنسخ رابط التيليجرام", "https://t.me/sasuke1212z")
+    
+    local space1 = Instance.new("Frame"); space1.Size = UDim2.new(1,0,0,5); space1.BackgroundTransparency = 1; space1.Parent = ContentFrame_Info
+    
+    AddInfoLabel(ContentFrame_Info, "قناة اليوتيوب:", textColor)
+    AddCopyButton(ContentFrame_Info, "اضغط هنا لنسخ رابط اليوتيوب", "https://youtube.com/@mx_sasike?si=Nm7T3NKUZx1Fj4EJ")
+    
+    local space2 = Instance.new("Frame"); space2.Size = UDim2.new(1,0,0,15); space2.BackgroundTransparency = 1; space2.Parent = ContentFrame_Info
+
+    AddInfoLabel(ContentFrame_Info, "للتواصل بخصوص مشكلة في السكربت:", Color3.fromRGB(255, 50, 50))
+    -- [تم التعديل] تصحيح اليوزر لـ 4_7v زي الصورة
+    AddInfoLabel(ContentFrame_Info, "يوزري ديسكورد: 4_7v", textColor) 
+    AddInfoLabel(ContentFrame_Info, "يوزري تيليجرام: @sasuke195p", textColor)
+
     UIS.InputBegan:Connect(function(input, gpe)
         if not gpe and input.KeyCode == Enum.KeyCode.RightControl then
             local aimbotGui = CoreGui:FindFirstChild("GhostAimbotGUI")
@@ -291,7 +361,7 @@ local function LoadMainScript(expireTimestamp)
     end)
 
     -- =========================================================
-    -- واجهة الايمبوت الاحترافية الشاملة
+    -- واجهة الايمبوت الاحترافية الشاملة مع الأنيميشن السحري
     -- =========================================================
     local function LaunchAimbotGUI()
         if CoreGui:FindFirstChild("GhostAimbotGUI") then return end
@@ -302,7 +372,8 @@ local function LoadMainScript(expireTimestamp)
         
         local Frame = Instance.new("Frame")
         Frame.Size = UDim2.new(0, 260, 0, 420)
-        Frame.Position = UDim2.new(0.5, 30, 0.5, -150)
+        -- [الأنيميشن] البداية من برة الشاشة خالص ناحية الشمال
+        Frame.Position = UDim2.new(-0.5, 0, 0.5, -150) 
         Frame.BackgroundColor3 = Color3.fromRGB(15, 15, 15) 
         Frame.Active = true
         Frame.Draggable = true
@@ -311,6 +382,9 @@ local function LoadMainScript(expireTimestamp)
         stroke.Color = Color3.fromRGB(50, 50, 50)
         stroke.Thickness = 1
         Frame.Parent = Gui
+        
+        -- تشغيل الأنيميشن للدخول بنعومة لجنب الشاشة الشمال
+        TS:Create(Frame, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2.new(0, 20, 0.5, -150)}):Play()
         
         local TitleBar = Instance.new("Frame")
         TitleBar.Size = UDim2.new(1, 0, 0, 30)
@@ -346,12 +420,25 @@ local function LoadMainScript(expireTimestamp)
         CloseBtn.TextSize = 13
         CloseBtn.Parent = TitleBar
         
+        local fpsBoostLoop = nil 
+        
         CloseBtn.MouseButton1Click:Connect(function() 
             GhostAimbotState.Enabled = false
             GhostAimbotState.ShowFOV = false
             GhostAimbotState.ESP = false
             GhostAimbotState.SmartTarget = false
             GhostAimbotState.ESPOutlineOnly = false
+            GhostAimbotState.FPSBoost = false
+            GhostAimbotState.FPSCap = 60
+            
+            pcall(function() if setfpscap then setfpscap(60) end end)
+            game:GetService("Lighting").GlobalShadows = true
+            if fpsBoostLoop then fpsBoostLoop:Disconnect() fpsBoostLoop = nil end
+            
+            -- [الأنيميشن] خروج بنعومة لبرة الشاشة قبل ما يتقفل
+            local closeAnim = TS:Create(Frame, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {Position = UDim2.new(-0.5, 0, Frame.Position.Y.Scale, Frame.Position.Y.Offset)})
+            closeAnim:Play()
+            closeAnim.Completed:Wait()
             Gui:Destroy() 
         end)
         
@@ -378,7 +465,7 @@ local function LoadMainScript(expireTimestamp)
         Pad.PaddingTop = UDim.new(0, 5)
         Pad.Parent = Scroll
         
-        local function AddToggle(text, stateKey)
+        local function AddToggle(text, stateKey, callback)
             local btn = Instance.new("TextButton")
             btn.Size = UDim2.new(1, 0, 0, 32)
             btn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
@@ -402,6 +489,7 @@ local function LoadMainScript(expireTimestamp)
             btn.MouseButton1Click:Connect(function()
                 GhostAimbotState[stateKey] = not GhostAimbotState[stateKey]
                 TS:Create(indicator, TweenInfo.new(0.2), {BackgroundColor3 = GhostAimbotState[stateKey] and accentColor or Color3.fromRGB(50, 50, 50)}):Play()
+                if callback then callback(GhostAimbotState[stateKey]) end
             end)
         end
         
@@ -522,7 +610,7 @@ local function LoadMainScript(expireTimestamp)
             end)
         end
         
-        local function AddSlider(text, min, max, stateKey)
+        local function AddSlider(text, min, max, stateKey, callback)
             local frame = Instance.new("Frame")
             frame.Size = UDim2.new(1, 0, 0, 45)
             frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
@@ -589,6 +677,7 @@ local function LoadMainScript(expireTimestamp)
                     GhostAimbotState[stateKey] = val
                     fill.Size = UDim2.new(pos, 0, 1, 0)
                     valLbl.Text = tostring(val) .. "/" .. tostring(max)
+                    if callback then callback(val) end
                 end
             end)
         end
@@ -680,8 +769,73 @@ local function LoadMainScript(expireTimestamp)
         Instance.new("UICorner", rejoinBtn).CornerRadius = UDim.new(0, 6)
         rejoinBtn.Parent = Scroll
         rejoinBtn.MouseButton1Click:Connect(function()
-            local ts = game:GetService("TeleportService")
-            ts:TeleportToPlaceInstance(game.PlaceId, game.JobId, Player)
+            if typeof(rejoingame) == "function" then
+                rejoingame()
+            else
+                local ts = game:GetService("TeleportService")
+                local p = game.Players.LocalPlayer
+                local success, err = pcall(function()
+                    ts:TeleportToPlaceInstance(game.PlaceId, game.JobId, p)
+                end)
+                if not success then
+                    p:Kick("\nRejoining...")
+                    task.wait()
+                    ts:Teleport(game.PlaceId, p)
+                end
+            end
+        end)
+
+        local function wipeDetails(v)
+            if v:IsA("BasePart") and not v:IsA("MeshPart") then
+                v.Material = Enum.Material.SmoothPlastic
+                v.Reflectance = 0
+                v.CastShadow = false
+            elseif v:IsA("MeshPart") then
+                v.Material = Enum.Material.SmoothPlastic
+                v.Reflectance = 0
+                v.CastShadow = false
+            elseif v:IsA("Decal") or v:IsA("Texture") or v:IsA("SurfaceAppearance") then
+                pcall(function() v:Destroy() end)
+            elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Beam") or v:IsA("Fire") or v:IsA("Smoke") or v:IsA("Sparkles") then
+                v.Enabled = false
+            end
+        end
+
+        AddToggle("FPS Boost (Potato Mode)", "FPSBoost", function(state)
+            local Lighting = game:GetService("Lighting")
+            local Terrain = workspace:FindFirstChildOfClass("Terrain")
+            
+            if state then
+                pcall(function()
+                    Lighting.GlobalShadows = false
+                    Lighting.FogEnd = 9e9
+                    Lighting.ShadowSoftness = 0
+                    if sethiddenproperty then
+                        pcall(function() sethiddenproperty(Lighting, "Technology", Enum.Technology.Compatibility) end)
+                    end
+                    
+                    if Terrain then
+                        Terrain.WaterWaveSize = 0
+                        Terrain.WaterWaveSpeed = 0
+                        Terrain.WaterReflectance = 0
+                        Terrain.WaterTransparency = 0
+                        pcall(function() Terrain.Decoration = false end)
+                    end
+                    
+                    for _, v in pairs(workspace:GetDescendants()) do wipeDetails(v) end
+                    
+                    fpsBoostLoop = workspace.DescendantAdded:Connect(function(v) wipeDetails(v) end)
+                end)
+            else
+                pcall(function() Lighting.GlobalShadows = true end)
+                if fpsBoostLoop then fpsBoostLoop:Disconnect() fpsBoostLoop = nil end
+            end
+        end)
+
+        AddSlider("FPS Cap", 60, 700, "FPSCap", function(val)
+            pcall(function()
+                if setfpscap then setfpscap(val) end
+            end)
         end)
         
         if not CoreGui:FindFirstChild("GhostFOVCircle") then
@@ -800,7 +954,7 @@ local function LoadMainScript(expireTimestamp)
     end
 
     -- =========================================================
-    -- إنشاء السكربتات والأزرار في القائمة الجانبية
+    -- إنشاء السكربتات والأزرار في القائمة الجانبية (مع الأنيميشن لباقي الواجهات)
     -- =========================================================
     local function CreateScriptButton(parent, text, scriptUrl)
         local Btn = Instance.new("TextButton")
@@ -840,9 +994,9 @@ local function LoadMainScript(expireTimestamp)
             if scriptUrl == "BUILTIN_AIMBOT" then
                 LaunchAimbotGUI()
             elseif scriptUrl == "CUSTOM_GHOST_TELEPORT" then
-                -- [تم التعديل] واجهة التيليبورت الجديدة الأكبر والمنظمة
                 local tpScriptCode = [[
                     local p = game.Players.LocalPlayer
+                    local TS = game:GetService("TweenService")
                     local SG = Instance.new("ScreenGui")
                     SG.Name = "GhostTeleportGUI"
                     if game.CoreGui:FindFirstChild("GhostTeleportGUI") then game.CoreGui.GhostTeleportGUI:Destroy() end
@@ -851,12 +1005,14 @@ local function LoadMainScript(expireTimestamp)
                     local F = Instance.new("Frame")
                     F.Parent = SG
                     F.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-                    F.Position = UDim2.new(0, 20, 0.5, 200)
-                    F.Size = UDim2.new(0, 220, 0, 140) -- تكبير حجم الواجهة
+                    F.Position = UDim2.new(0.5, -110, 0, -150) -- بداية الأنيميشن من فوق
+                    F.Size = UDim2.new(0, 240, 0, 140) 
                     F.Active = true
                     F.Draggable = true
                     Instance.new("UICorner", F).CornerRadius = UDim.new(0, 8)
                     Instance.new("UIStroke", F).Color = Color3.fromRGB(255, 215, 0)
+                    
+                    TS:Create(F, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -110, 0.5, -70)}):Play()
                     
                     local T = Instance.new("TextLabel")
                     T.Parent = F
@@ -887,7 +1043,7 @@ local function LoadMainScript(expireTimestamp)
                     SearchBox.Text = ""
                     SearchBox.TextColor3 = Color3.fromRGB(255, 255, 255)
                     SearchBox.TextSize = 13
-                    SearchBox.ClearTextOnFocus = false -- عشان الكلام ميتمسحش لما تضغط عليه
+                    SearchBox.ClearTextOnFocus = false 
                     Instance.new("UICorner", SearchBox).CornerRadius = UDim.new(0, 6)
                     
                     local TpBtn = Instance.new("TextButton")
@@ -896,7 +1052,7 @@ local function LoadMainScript(expireTimestamp)
                     TpBtn.Position = UDim2.new(0.65, 0, 0, 40)
                     TpBtn.Size = UDim2.new(0.3, 0, 0, 35)
                     TpBtn.Font = Enum.Font.GothamBold
-                    TpBtn.Text = "Teleport" -- تغيير كلمة TP لـ Teleport
+                    TpBtn.Text = "Teleport" 
                     TpBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
                     TpBtn.TextSize = 13
                     Instance.new("UICorner", TpBtn).CornerRadius = UDim.new(0, 6)
@@ -952,7 +1108,7 @@ local function LoadMainScript(expireTimestamp)
                         DropBtn.Text = isListOpen and "Select Player ▲" or "Select Player ▼"
                         
                         if isListOpen then
-                            F.Size = UDim2.new(0, 220, 0, 260)
+                            F.Size = UDim2.new(0, 240, 0, 260)
                             for _, child in pairs(ListFrame:GetChildren()) do
                                 if child:IsA("TextButton") then child:Destroy() end
                             end
@@ -979,17 +1135,20 @@ local function LoadMainScript(expireTimestamp)
                                         isListOpen = false
                                         ListFrame.Visible = false
                                         DropBtn.Text = "Select Player ▼"
-                                        F.Size = UDim2.new(0, 220, 0, 140)
+                                        F.Size = UDim2.new(0, 240, 0, 140)
                                     end)
                                 end
                             end
                             ListFrame.CanvasSize = UDim2.new(0, 0, 0, count * 30)
                         else
-                            F.Size = UDim2.new(0, 220, 0, 140)
+                            F.Size = UDim2.new(0, 240, 0, 140)
                         end
                     end)
                     
                     X.MouseButton1Click:Connect(function()
+                        local closeAnim = TS:Create(F, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0.5, -110, 0, -150)})
+                        closeAnim:Play()
+                        closeAnim.Completed:Wait()
                         SG:Destroy()
                     end)
                 ]]
@@ -997,6 +1156,7 @@ local function LoadMainScript(expireTimestamp)
             elseif scriptUrl == "CUSTOM_GHOST_SPEED" then
                 local speedScriptCode = [[
                     local p = game.Players.LocalPlayer
+                    local TS = game:GetService("TweenService")
                     local SG = Instance.new("ScreenGui")
                     SG.Name = "GhostCustomSpeed"
                     if game.CoreGui:FindFirstChild("GhostCustomSpeed") then game.CoreGui.GhostCustomSpeed:Destroy() end
@@ -1005,7 +1165,7 @@ local function LoadMainScript(expireTimestamp)
                     local F = Instance.new("Frame")
                     F.Parent = SG
                     F.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-                    F.Position = UDim2.new(0, 20, 0.5, -50)
+                    F.Position = UDim2.new(0, 20, 1, 50) -- من تحت
                     F.Size = UDim2.new(0, 160, 0, 90)
                     F.Active = true
                     F.Draggable = true
@@ -1013,6 +1173,8 @@ local function LoadMainScript(expireTimestamp)
                     local stroke = Instance.new("UIStroke", F)
                     stroke.Color = Color3.fromRGB(255, 215, 0)
                     stroke.Thickness = 1
+                    
+                    TS:Create(F, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(0, 20, 0.5, -50)}):Play()
                     
                     local T = Instance.new("TextLabel")
                     T.Parent = F
@@ -1092,6 +1254,9 @@ local function LoadMainScript(expireTimestamp)
                     
                     X.MouseButton1Click:Connect(function()
                         SetSpeed(16) 
+                        local closeAnim = TS:Create(F, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0, 20, 1, 50)})
+                        closeAnim:Play()
+                        closeAnim.Completed:Wait()
                         SG:Destroy()
                     end)
                 ]]
@@ -1099,6 +1264,7 @@ local function LoadMainScript(expireTimestamp)
             elseif scriptUrl == "CUSTOM_GHOST_NOCLIP" then
                 local noclipScriptCode = [[
                     local p = game.Players.LocalPlayer
+                    local TS = game:GetService("TweenService")
                     local SG = Instance.new("ScreenGui")
                     SG.Name = "GhostNoclipGUI"
                     if game.CoreGui:FindFirstChild("GhostNoclipGUI") then game.CoreGui.GhostNoclipGUI:Destroy() end
@@ -1107,12 +1273,14 @@ local function LoadMainScript(expireTimestamp)
                     local F = Instance.new("Frame")
                     F.Parent = SG
                     F.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-                    F.Position = UDim2.new(0, 20, 0.5, 50)
+                    F.Position = UDim2.new(0.5, -80, 0, -100)
                     F.Size = UDim2.new(0, 160, 0, 75)
                     F.Active = true
                     F.Draggable = true
                     Instance.new("UICorner", F).CornerRadius = UDim.new(0, 8)
                     Instance.new("UIStroke", F).Color = Color3.fromRGB(255, 215, 0)
+                    
+                    TS:Create(F, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -80, 0.5, -40)}):Play()
                     
                     local T = Instance.new("TextLabel")
                     T.Parent = F
@@ -1192,6 +1360,9 @@ local function LoadMainScript(expireTimestamp)
                                 end
                             end
                         end
+                        local closeAnim = TS:Create(F, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0.5, -80, 0, -100)})
+                        closeAnim:Play()
+                        closeAnim.Completed:Wait()
                         SG:Destroy()
                     end)
                 ]]
@@ -1199,6 +1370,7 @@ local function LoadMainScript(expireTimestamp)
             elseif scriptUrl == "CUSTOM_GHOST_INVISIBLE" then
                 local invScriptCode = [[
                     local p = game.Players.LocalPlayer
+                    local TS = game:GetService("TweenService")
                     local SG = Instance.new("ScreenGui")
                     SG.Name = "GhostInvisibleGUI"
                     if game.CoreGui:FindFirstChild("GhostInvisibleGUI") then game.CoreGui.GhostInvisibleGUI:Destroy() end
@@ -1207,12 +1379,14 @@ local function LoadMainScript(expireTimestamp)
                     local F = Instance.new("Frame")
                     F.Parent = SG
                     F.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-                    F.Position = UDim2.new(0, 20, 0.5, 140)
+                    F.Position = UDim2.new(1, 50, 0.5, 140) -- من اليمين
                     F.Size = UDim2.new(0, 160, 0, 75)
                     F.Active = true
                     F.Draggable = true
                     Instance.new("UICorner", F).CornerRadius = UDim.new(0, 8)
                     Instance.new("UIStroke", F).Color = Color3.fromRGB(255, 215, 0)
+                    
+                    TS:Create(F, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(1, -180, 0.5, 140)}):Play()
                     
                     local T = Instance.new("TextLabel")
                     T.Parent = F
@@ -1319,6 +1493,9 @@ local function LoadMainScript(expireTimestamp)
                                 if skyPlatform then skyPlatform:Destroy() end
                             end
                         end)
+                        local closeAnim = TS:Create(F, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(1, 50, 0.5, 140)})
+                        closeAnim:Play()
+                        closeAnim.Completed:Wait()
                         SG:Destroy()
                     end)
                 ]]
@@ -1390,7 +1567,8 @@ local function LoadMainScript(expireTimestamp)
     local tabs = {
         {btn = CategoryBtn_Random, accent = AccentLine_Random, content = ContentFrame_Random, layout = Layout_Random},
         {btn = CategoryBtn_Blox, accent = AccentLine_Blox, content = ContentFrame_Blox, layout = Layout_Blox},
-        {btn = CategoryBtn_Keyboard, accent = AccentLine_Key, content = ContentFrame_Keyboard, layout = Layout_Key}
+        {btn = CategoryBtn_Keyboard, accent = AccentLine_Key, content = ContentFrame_Keyboard, layout = Layout_Key},
+        {btn = CategoryBtn_Info, accent = AccentLine_Info, content = ContentFrame_Info, layout = Layout_Info}
     }
 
     local function SwitchTab(activeTab)
@@ -1413,6 +1591,7 @@ local function LoadMainScript(expireTimestamp)
     CategoryBtn_Random.MouseButton1Click:Connect(function() SwitchTab(tabs[1]) end)
     CategoryBtn_Blox.MouseButton1Click:Connect(function() SwitchTab(tabs[2]) end)
     CategoryBtn_Keyboard.MouseButton1Click:Connect(function() SwitchTab(tabs[3]) end)
+    CategoryBtn_Info.MouseButton1Click:Connect(function() SwitchTab(tabs[4]) end)
 
     CloseBtn.MouseButton1Click:Connect(function()
         local closeTween = TS:Create(MainFrame, tweenInfoClose, {
@@ -1586,14 +1765,14 @@ end)
 
 local function VerifyKey(key)
     if key == "" then
-        StatusLabel.Text = "Please enter a key!"
+        StatusLabel.Text = "الرجاء إدخال المفتاح!"
         StatusLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
         return
     end
 
     if key == VIP_KEY then
-        StatusLabel.Text = "VIP Key Detected! Loading..."
-        StatusLabel.TextColor3 = Color3.fromRGB(255, 255, 0) 
+        StatusLabel.Text = "تم تفعيل مفتاح الـ VIP بنجاح!"
+        StatusLabel.TextColor3 = Color3.fromRGB(255, 215, 0) 
         if writefile then writefile("GhostKey.txt", key) end
         task.wait(1.5)
         KeyScreenGui:Destroy()
@@ -1601,7 +1780,7 @@ local function VerifyKey(key)
         return
     end
 
-    StatusLabel.Text = "Checking Key..."
+    StatusLabel.Text = "جاري التحقق من المفتاح..."
     StatusLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
     
     local success, response = pcall(function() return game:HttpGet(FirebaseURL .. key .. ".json") end)
@@ -1617,26 +1796,24 @@ local function VerifyKey(key)
                     requestFunc({Url = FirebaseURL .. key .. ".json", Method = "PATCH", Headers = {["Content-Type"] = "application/json"}, Body = patchData})
                 end
             elseif data.hwid ~= HWID then
-                StatusLabel.Text = "BLACKLIST: Key bound to another device or Executor!"
+                StatusLabel.Text = "هذا المفتاح مرتبط بجهاز آخر!"
                 StatusLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
-                task.wait(2)
-                Player:Kick("Ghost Script: This key is bound to another Executor or device! Please get your own key.")
                 return
             end
 
-            StatusLabel.Text = "Valid Key! Loading Script..."
+            StatusLabel.Text = "تم التحقق بنجاح!"
             StatusLabel.TextColor3 = Color3.fromRGB(46, 204, 166)
             if writefile then writefile("GhostKey.txt", key) end
             task.wait(1.5)
             KeyScreenGui:Destroy()
             LoadMainScript(data.expiresAt)
         else
-            StatusLabel.Text = "Key Expired! Get a new one."
+            StatusLabel.Text = "لقد تم استخدام المفتاح بالفعل"
             StatusLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
             if delfile and isfile("GhostKey.txt") then delfile("GhostKey.txt") end
         end
     else
-        StatusLabel.Text = "Invalid Key!"
+        StatusLabel.Text = "هذا المفتاح ليس موجود"
         StatusLabel.TextColor3 = Color3.fromRGB(255, 50, 50)
     end
 end
