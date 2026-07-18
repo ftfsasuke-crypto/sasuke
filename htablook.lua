@@ -16,7 +16,7 @@ local elementColor = Color3.fromRGB(25, 40, 70)
 local textColor = Color3.fromRGB(240, 240, 240)
 local accentColor = Color3.fromRGB(255, 215, 0) 
 
--- تنظيف الواجهة لو شغالة قبل كده عشان ميتكررش
+-- تنظيف الواجهة 
 if CoreGui:FindFirstChild("GhostAimbotGUI_Standalone") then CoreGui.GhostAimbotGUI_Standalone:Destroy() end
 if CoreGui:FindFirstChild("GhostFOVCircle_Standalone") then CoreGui.GhostFOVCircle_Standalone:Destroy() end
 
@@ -52,7 +52,6 @@ stroke.Color = Color3.fromRGB(40, 55, 80)
 stroke.Thickness = 1
 Frame.Parent = Gui
 
--- أنيميشن الدخول السلس
 TS:Create(Frame, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2.new(0, 20, 0.5, -150)}):Play()
 
 local TitleBar = Instance.new("Frame")
@@ -104,6 +103,7 @@ local fpsBoostLoop = nil
 local aimbotConnection = nil
 local inputBeganConnection = nil
 local inputEndedConnection = nil
+local keybindConnection = nil
 
 local function CleanUpAimbot()
     GhostAimbotState.Enabled = false
@@ -121,6 +121,7 @@ local function CleanUpAimbot()
     if aimbotConnection then aimbotConnection:Disconnect() aimbotConnection = nil end
     if inputBeganConnection then inputBeganConnection:Disconnect() inputBeganConnection = nil end
     if inputEndedConnection then inputEndedConnection:Disconnect() inputEndedConnection = nil end
+    if keybindConnection then keybindConnection:Disconnect() keybindConnection = nil end
     
     local fovGui = CoreGui:FindFirstChild("GhostFOVCircle_Standalone")
     if fovGui then fovGui:Destroy() end
@@ -163,7 +164,8 @@ Pad.PaddingRight = UDim.new(0, 10)
 Pad.PaddingTop = UDim.new(0, 5)
 Pad.Parent = Scroll
 
--- دوال بناء الواجهة
+local UIElements = {} 
+
 local function AddToggle(text, stateKey, callback)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, 0, 0, 32)
@@ -184,6 +186,8 @@ local function AddToggle(text, stateKey, callback)
     indicator.BackgroundColor3 = GhostAimbotState[stateKey] and accentColor or Color3.fromRGB(20, 30, 50)
     Instance.new("UICorner", indicator).CornerRadius = UDim.new(0, 3)
     indicator.Parent = btn
+    
+    UIElements[stateKey] = indicator 
     
     btn.MouseButton1Click:Connect(function()
         GhostAimbotState[stateKey] = not GhostAimbotState[stateKey]
@@ -211,6 +215,8 @@ local function AddDropdown(text, options, stateKey)
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
     Instance.new("UIStroke", btn).Color = Color3.fromRGB(40, 55, 80)
     btn.Parent = container
+
+    UIElements[stateKey] = btn 
 
     local arrow = Instance.new("TextLabel")
     arrow.Size = UDim2.new(0, 30, 1, 0)
@@ -294,13 +300,15 @@ local function AddKeybind(text, stateKey)
     valText.TextSize = 13
     valText.Parent = btn
     
+    UIElements[stateKey] = valText
+    
     local binding = false
     btn.MouseButton1Click:Connect(function()
         binding = true
         valText.Text = "[ ... ]"
     end)
     
-    inputBeganConnection = UIS.InputBegan:Connect(function(input)
+    keybindConnection = UIS.InputBegan:Connect(function(input)
         if binding and input.UserInputType == Enum.UserInputType.Keyboard then
             binding = false
             GhostAimbotState[stateKey] = input.KeyCode
@@ -352,6 +360,9 @@ local function AddSlider(text, min, max, stateKey, callback)
     Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
     fill.Parent = bar
     
+    UIElements[stateKey.."_Lbl"] = valLbl
+    UIElements[stateKey.."_Fill"] = fill
+
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, 0, 1, 0)
     btn.BackgroundTransparency = 1
@@ -444,7 +455,7 @@ local function AddColorBoard(text)
     end
 end
 
--- الإضافات
+-- واجهة الإضافات
 AddToggle("Aimlock", "Enabled")
 AddDropdown("Mode", {"Hold", "Toggle"}, "Mode")
 AddKeybind("Aimlock Key", "Key")
@@ -459,7 +470,7 @@ AddToggle("ESP Outline Only (White)", "ESPOutlineOnly")
 
 local space = Instance.new("Frame"); space.Size = UDim2.new(1,0,0,5); space.BackgroundTransparency = 1; space.Parent = Scroll
 
--- [1. زر الريجوين - Infinite Yield]
+-- [1. زر الريجوين مع التشغيل التلقائي للايمبوت]
 local rejoinBtn = Instance.new("TextButton")
 rejoinBtn.Size = UDim2.new(1, 0, 0, 35)
 rejoinBtn.BackgroundColor3 = elementColor
@@ -473,6 +484,9 @@ rejoinBtn.Parent = Scroll
 rejoinBtn.MouseButton1Click:Connect(function()
     rejoinBtn.Text = "Rejoining..."
     rejoinBtn.TextColor3 = accentColor
+    
+    if writefile then pcall(function() writefile("GhostAutoLaunchAimbot.txt", "1") end) end
+    
     task.spawn(function()
         local ts = game:GetService("TeleportService")
         local p = game.Players.LocalPlayer
@@ -531,7 +545,45 @@ hopBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
--- [3. الـ FPS Boost من غير ما يكسر الـ ESP]
+local space3 = Instance.new("Frame"); space3.Size = UDim2.new(1,0,0,5); space3.BackgroundTransparency = 1; space3.Parent = Scroll
+
+-- [3. زر الإعدادات الأسطورية السريعة]
+local quickSettingsBtn = Instance.new("TextButton")
+quickSettingsBtn.Size = UDim2.new(1, 0, 0, 35)
+quickSettingsBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 166)
+quickSettingsBtn.Text = "⚡ إعدادات أسطورية"
+quickSettingsBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
+quickSettingsBtn.Font = Enum.Font.GothamBold
+quickSettingsBtn.TextSize = 13
+Instance.new("UICorner", quickSettingsBtn).CornerRadius = UDim.new(0, 6)
+quickSettingsBtn.Parent = Scroll
+
+quickSettingsBtn.MouseButton1Click:Connect(function()
+    GhostAimbotState.Enabled = true
+    if UIElements["Enabled"] then UIElements["Enabled"].BackgroundColor3 = accentColor end
+    
+    GhostAimbotState.Mode = "Toggle"
+    if UIElements["Mode"] then UIElements["Mode"].Text = "   Mode: Toggle" end
+    
+    GhostAimbotState.Key = Enum.KeyCode.R
+    if UIElements["Key"] then UIElements["Key"].Text = "[ R ]" end
+    
+    GhostAimbotState.LockPart = "HumanoidRootPart"
+    if UIElements["LockPart"] then UIElements["LockPart"].Text = "   Lock Part: HumanoidRootPart" end
+    
+    GhostAimbotState.Smoothness = 10
+    if UIElements["Smoothness_Fill"] then UIElements["Smoothness_Fill"].Size = UDim2.new(1, 0, 1, 0) end
+    if UIElements["Smoothness_Lbl"] then UIElements["Smoothness_Lbl"].Text = "10/10" end
+    
+    GhostAimbotState.SmartTarget = true
+    if UIElements["SmartTarget"] then UIElements["SmartTarget"].BackgroundColor3 = accentColor end
+    
+    quickSettingsBtn.Text = "تم التفعيل!"
+    task.wait(1)
+    quickSettingsBtn.Text = "⚡ إعدادات أسطورية"
+end)
+
+-- [4. الـ FPS Boost من غير ما يكسر الـ ESP]
 local function wipeDetails(v)
     if v:IsA("BasePart") and not v:IsA("MeshPart") then
         v.Material = Enum.Material.SmoothPlastic
@@ -630,7 +682,8 @@ end
 
 inputBeganConnection = UIS.InputBegan:Connect(function(input, gpe)
     if not gpe and input.KeyCode == GhostAimbotState.Key then
-        if GhostAimbotState.Mode == "Hold" then isTargeting = true
+        if GhostAimbotState.Mode == "Hold" then 
+            isTargeting = true
         else
             isTargeting = not isTargeting
             if not isTargeting then currentTarget = nil end
@@ -733,3 +786,9 @@ UIS.InputChanged:Connect(function(input)
         Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
 end)
+
+-- لو اللاعب عمل ريجوين عن طريق السكربت، الايمبوت هيفتح لوحده
+if isfile and isfile("GhostAutoLaunchAimbot.txt") then
+    pcall(function() delfile("GhostAutoLaunchAimbot.txt") end)
+    -- السكربت هيفتح الواجهة تلقائياً عشان هو Standalone 
+end
