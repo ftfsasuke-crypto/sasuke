@@ -1,5 +1,5 @@
 -- ==========================================
--- GHOST SCRIPT - KEY SYSTEM (PRO HUB + SMART STICKY AIMBOT)
+-- GHOST SCRIPT - KEY SYSTEM (PRO HUB + SMART STICKY AIMBOT & ULTIMATE HOP)
 -- ==========================================
 
 -- [المفتاح الدائم السري] 
@@ -368,7 +368,7 @@ local function LoadMainScript(expireTimestamp)
         Gui.Parent = CoreGui
         
         local Frame = Instance.new("Frame")
-        Frame.Size = UDim2.new(0, 260, 0, 420)
+        Frame.Size = UDim2.new(0, 260, 0, 460) 
         Frame.Position = UDim2.new(-0.5, 0, 0.5, -150) 
         Frame.BackgroundColor3 = Color3.fromRGB(15, 15, 15) 
         Frame.Active = true
@@ -753,6 +753,7 @@ local function LoadMainScript(expireTimestamp)
         
         local space = Instance.new("Frame"); space.Size = UDim2.new(1,0,0,5); space.BackgroundTransparency = 1; space.Parent = Scroll
         
+        -- زر الريجوين الحديث
         local rejoinBtn = Instance.new("TextButton")
         rejoinBtn.Size = UDim2.new(1, 0, 0, 35)
         rejoinBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
@@ -762,21 +763,106 @@ local function LoadMainScript(expireTimestamp)
         rejoinBtn.TextSize = 13
         Instance.new("UICorner", rejoinBtn).CornerRadius = UDim.new(0, 6)
         rejoinBtn.Parent = Scroll
+
         rejoinBtn.MouseButton1Click:Connect(function()
-            if typeof(rejoingame) == "function" then
-                rejoingame()
+            local ts = game:GetService("TeleportService")
+            local isVIP = (game.PrivateServerId ~= "" or game.PrivateServerOwnerId ~= 0)
+            
+            if isVIP then
+                local rFunc = getgenv and getgenv().rejoingame or (typeof(rejoingame) == "function" and rejoingame)
+                if rFunc then
+                    pcall(rFunc)
+                else
+                    pcall(function() ts:TeleportToPlaceInstance(game.PlaceId, game.JobId, Player) end)
+                end
             else
-                local ts = game:GetService("TeleportService")
-                local p = game.Players.LocalPlayer
-                local success, err = pcall(function()
-                    ts:TeleportToPlaceInstance(game.PlaceId, game.JobId, p)
-                end)
-                if not success then
-                    p:Kick("\nRejoining...")
+                if #game.Players:GetPlayers() <= 1 then
+                    Player:Kick("\nRejoining...")
                     task.wait()
-                    ts:Teleport(game.PlaceId, p)
+                    ts:Teleport(game.PlaceId, Player)
+                else
+                    pcall(function()
+                        ts:TeleportToPlaceInstance(game.PlaceId, game.JobId, Player)
+                    end)
                 end
             end
+        end)
+
+        local space2 = Instance.new("Frame"); space2.Size = UDim2.new(1,0,0,5); space2.BackgroundTransparency = 1; space2.Parent = Scroll
+
+        -- زر السيرفر هوب البريميوم المحدث
+        local hopBtn = Instance.new("TextButton")
+        hopBtn.Size = UDim2.new(1, 0, 0, 35)
+        hopBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+        hopBtn.Text = "Server Hop"
+        hopBtn.TextColor3 = textColor
+        hopBtn.Font = Enum.Font.GothamBold
+        hopBtn.TextSize = 13
+        Instance.new("UICorner", hopBtn).CornerRadius = UDim.new(0, 6)
+        hopBtn.Parent = Scroll
+
+        hopBtn.MouseButton1Click:Connect(function()
+            hopBtn.Text = "Hopping..."
+            hopBtn.TextColor3 = accentColor
+            
+            task.spawn(function()
+                local HttpService = game:GetService("HttpService")
+                local TeleportService = game:GetService("TeleportService")
+                local req = request or http_request or (syn and syn.request) or (fluxus and fluxus.request)
+                local servers = {}
+                
+                local apis = {
+                    "https://games.roblox.com/v1/games/" .. tostring(game.PlaceId) .. "/servers/Public?sortOrder=Desc&limit=100",
+                    "https://games.roproxy.com/v1/games/" .. tostring(game.PlaceId) .. "/servers/Public?sortOrder=Desc&limit=100",
+                    "https://roblox.plus/v1/games/" .. tostring(game.PlaceId) .. "/servers/Public?sortOrder=Desc&limit=100"
+                }
+
+                local function fetchServers()
+                    for _, apiUrl in ipairs(apis) do
+                        local res = nil
+                        pcall(function()
+                            if req then
+                                local response = req({Url = apiUrl, Method = "GET"})
+                                if response.StatusCode == 200 then res = response.Body end
+                            end
+                        end)
+                        if not res then
+                            pcall(function() res = game:HttpGet(apiUrl) end)
+                        end
+                        if res then
+                            local success, decoded = pcall(function() return HttpService:JSONDecode(res) end)
+                            if success and decoded and decoded.data then
+                                return decoded.data
+                            end
+                        end
+                    end
+                    return nil
+                end
+
+                local data = fetchServers()
+                if data then
+                    for _, v in pairs(data) do
+                        if type(v) == "table" and v.playing and v.maxPlayers and v.playing < v.maxPlayers and v.id ~= game.JobId then
+                            table.insert(servers, v.id)
+                        end
+                    end
+                end
+
+                if #servers > 0 then
+                    local randomServer = servers[math.random(1, #servers)]
+                    pcall(function()
+                        TeleportService:TeleportToPlaceInstance(game.PlaceId, randomServer, Player)
+                    end)
+                else
+                    pcall(function()
+                        TeleportService:Teleport(game.PlaceId, Player)
+                    end)
+                end
+                
+                task.wait(3)
+                hopBtn.Text = "Server Hop"
+                hopBtn.TextColor3 = textColor
+            end)
         end)
 
         local function wipeDetails(v)
@@ -798,7 +884,6 @@ local function LoadMainScript(expireTimestamp)
         AddToggle("FPS Boost (Potato Mode)", "FPSBoost", function(state)
             local Lighting = game:GetService("Lighting")
             local Terrain = workspace:FindFirstChildOfClass("Terrain")
-            
             if state then
                 pcall(function()
                     Lighting.GlobalShadows = false
@@ -807,7 +892,6 @@ local function LoadMainScript(expireTimestamp)
                     if sethiddenproperty then
                         pcall(function() sethiddenproperty(Lighting, "Technology", Enum.Technology.Compatibility) end)
                     end
-                    
                     if Terrain then
                         Terrain.WaterWaveSize = 0
                         Terrain.WaterWaveSpeed = 0
@@ -815,9 +899,7 @@ local function LoadMainScript(expireTimestamp)
                         Terrain.WaterTransparency = 0
                         pcall(function() Terrain.Decoration = false end)
                     end
-                    
                     for _, v in pairs(workspace:GetDescendants()) do wipeDetails(v) end
-                    
                     fpsBoostLoop = workspace.DescendantAdded:Connect(function(v) wipeDetails(v) end)
                 end)
             else
@@ -877,7 +959,6 @@ local function LoadMainScript(expireTimestamp)
                 return closest
             end
             
-            -- [تحديث مهم] فحص مستمر للهدف
             UIS.InputBegan:Connect(function(input, gpe)
                 if not gpe and input.KeyCode == GhostAimbotState.Key then
                     if GhostAimbotState.Mode == "Hold" then
@@ -935,7 +1016,6 @@ local function LoadMainScript(expireTimestamp)
                     end
                 end
                 
-                -- [حل مشكلة البحث المستمر للايمبوت]
                 if GhostAimbotState.Enabled and isTargeting then
                     if currentTarget then
                         local char = currentTarget.Character
