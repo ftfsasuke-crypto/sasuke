@@ -1,5 +1,5 @@
 -- ==========================================
--- GHOST AIMBOT (STANDALONE FULL VERSION)
+-- GHOST AIMBOT (STANDALONE FULL VERSION - BLUE EDITION)
 -- Includes: Aimbot, ESP (Auto-Update), Rejoin, Server Hop, FPS Boost
 -- ==========================================
 
@@ -9,12 +9,16 @@ local TS = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
 
+-- الألوان
+local bgColor = Color3.fromRGB(15, 25, 45)       
+local topBarColor = Color3.fromRGB(10, 15, 30)   
+local elementColor = Color3.fromRGB(25, 40, 70)  
+local textColor = Color3.fromRGB(240, 240, 240)
+local accentColor = Color3.fromRGB(255, 215, 0) 
+
 -- تنظيف الواجهة لو شغالة قبل كده عشان ميتكررش
 if CoreGui:FindFirstChild("GhostAimbotGUI_Standalone") then CoreGui.GhostAimbotGUI_Standalone:Destroy() end
 if CoreGui:FindFirstChild("GhostFOVCircle_Standalone") then CoreGui.GhostFOVCircle_Standalone:Destroy() end
-
-local textColor = Color3.fromRGB(240, 240, 240)
-local accentColor = Color3.fromRGB(255, 215, 0) 
 
 local GhostAimbotState = {
     Enabled = false,
@@ -39,12 +43,12 @@ Gui.Parent = CoreGui
 local Frame = Instance.new("Frame")
 Frame.Size = UDim2.new(0, 260, 0, 480)
 Frame.Position = UDim2.new(-0.5, 0, 0.5, -150)
-Frame.BackgroundColor3 = Color3.fromRGB(15, 15, 15) 
+Frame.BackgroundColor3 = bgColor 
 Frame.Active = true
 Frame.Draggable = true
 Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 6)
 local stroke = Instance.new("UIStroke", Frame)
-stroke.Color = Color3.fromRGB(50, 50, 50)
+stroke.Color = Color3.fromRGB(40, 55, 80)
 stroke.Thickness = 1
 Frame.Parent = Gui
 
@@ -53,7 +57,7 @@ TS:Create(Frame, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection
 
 local TitleBar = Instance.new("Frame")
 TitleBar.Size = UDim2.new(1, 0, 0, 30)
-TitleBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+TitleBar.BackgroundColor3 = topBarColor
 Instance.new("UICorner", TitleBar).CornerRadius = UDim.new(0, 6)
 TitleBar.Parent = Frame
 
@@ -75,6 +79,17 @@ Title.TextSize = 13
 Title.TextXAlignment = Enum.TextXAlignment.Left
 Title.Parent = TitleBar
 
+local SubTitle = Instance.new("TextLabel")
+SubTitle.Size = UDim2.new(0, 100, 1, 0)
+SubTitle.Position = UDim2.new(0, 145, 0, 0)
+SubTitle.BackgroundTransparency = 1
+SubTitle.Text = " / standalone"
+SubTitle.TextColor3 = accentColor
+SubTitle.Font = Enum.Font.GothamSemibold
+SubTitle.TextSize = 11
+SubTitle.TextXAlignment = Enum.TextXAlignment.Left
+SubTitle.Parent = TitleBar
+
 local CloseBtn = Instance.new("TextButton")
 CloseBtn.Size = UDim2.new(0, 30, 0, 30)
 CloseBtn.Position = UDim2.new(1, -30, 0, 0)
@@ -86,6 +101,9 @@ CloseBtn.TextSize = 13
 CloseBtn.Parent = TitleBar
 
 local fpsBoostLoop = nil 
+local aimbotConnection = nil
+local inputBeganConnection = nil
+local inputEndedConnection = nil
 
 local function CleanUpAimbot()
     GhostAimbotState.Enabled = false
@@ -100,8 +118,18 @@ local function CleanUpAimbot()
     game:GetService("Lighting").GlobalShadows = true
     if fpsBoostLoop then fpsBoostLoop:Disconnect() fpsBoostLoop = nil end
     
+    if aimbotConnection then aimbotConnection:Disconnect() aimbotConnection = nil end
+    if inputBeganConnection then inputBeganConnection:Disconnect() inputBeganConnection = nil end
+    if inputEndedConnection then inputEndedConnection:Disconnect() inputEndedConnection = nil end
+    
     local fovGui = CoreGui:FindFirstChild("GhostFOVCircle_Standalone")
     if fovGui then fovGui:Destroy() end
+    
+    for _, plr in pairs(game.Players:GetPlayers()) do
+        if plr.Character and plr.Character:FindFirstChild("GhostESP") then
+            plr.Character.GhostESP:Destroy()
+        end
+    end
 end
 
 CloseBtn.MouseButton1Click:Connect(function() 
@@ -117,7 +145,7 @@ Scroll.Size = UDim2.new(1, 0, 1, -35)
 Scroll.Position = UDim2.new(0, 0, 0, 35)
 Scroll.BackgroundTransparency = 1
 Scroll.ScrollBarThickness = 2
-Scroll.ScrollBarImageColor3 = Color3.fromRGB(80, 80, 80)
+Scroll.ScrollBarImageColor3 = Color3.fromRGB(80, 100, 140)
 Scroll.Parent = Frame
 
 local Layout = Instance.new("UIListLayout")
@@ -139,7 +167,7 @@ Pad.Parent = Scroll
 local function AddToggle(text, stateKey, callback)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, 0, 0, 32)
-    btn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    btn.BackgroundColor3 = elementColor
     btn.Text = "   " .. text
     btn.TextColor3 = textColor
     btn.Font = Enum.Font.GothamSemibold
@@ -147,19 +175,19 @@ local function AddToggle(text, stateKey, callback)
     btn.TextXAlignment = Enum.TextXAlignment.Left
     btn.AutoButtonColor = false
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
-    Instance.new("UIStroke", btn).Color = Color3.fromRGB(40, 40, 40)
+    Instance.new("UIStroke", btn).Color = Color3.fromRGB(40, 55, 80)
     btn.Parent = Scroll
     
     local indicator = Instance.new("Frame")
     indicator.Size = UDim2.new(0, 14, 0, 14)
     indicator.Position = UDim2.new(1, -25, 0.5, -7)
-    indicator.BackgroundColor3 = GhostAimbotState[stateKey] and accentColor or Color3.fromRGB(50, 50, 50)
+    indicator.BackgroundColor3 = GhostAimbotState[stateKey] and accentColor or Color3.fromRGB(20, 30, 50)
     Instance.new("UICorner", indicator).CornerRadius = UDim.new(0, 3)
     indicator.Parent = btn
     
     btn.MouseButton1Click:Connect(function()
         GhostAimbotState[stateKey] = not GhostAimbotState[stateKey]
-        TS:Create(indicator, TweenInfo.new(0.2), {BackgroundColor3 = GhostAimbotState[stateKey] and accentColor or Color3.fromRGB(50, 50, 50)}):Play()
+        TS:Create(indicator, TweenInfo.new(0.2), {BackgroundColor3 = GhostAimbotState[stateKey] and accentColor or Color3.fromRGB(20, 30, 50)}):Play()
         if callback then callback(GhostAimbotState[stateKey]) end
     end)
 end
@@ -173,7 +201,7 @@ local function AddDropdown(text, options, stateKey)
     
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, 0, 0, 32)
-    btn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    btn.BackgroundColor3 = elementColor
     btn.Text = "   " .. text .. ": " .. GhostAimbotState[stateKey]
     btn.TextColor3 = textColor
     btn.Font = Enum.Font.GothamSemibold
@@ -181,7 +209,7 @@ local function AddDropdown(text, options, stateKey)
     btn.TextXAlignment = Enum.TextXAlignment.Left
     btn.AutoButtonColor = false
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
-    Instance.new("UIStroke", btn).Color = Color3.fromRGB(40, 40, 40)
+    Instance.new("UIStroke", btn).Color = Color3.fromRGB(40, 55, 80)
     btn.Parent = container
 
     local arrow = Instance.new("TextLabel")
@@ -197,9 +225,9 @@ local function AddDropdown(text, options, stateKey)
     local dropList = Instance.new("Frame")
     dropList.Size = UDim2.new(1, 0, 0, #options * 30)
     dropList.Position = UDim2.new(0, 0, 0, 35)
-    dropList.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+    dropList.BackgroundColor3 = topBarColor
     Instance.new("UICorner", dropList).CornerRadius = UDim.new(0, 4)
-    Instance.new("UIStroke", dropList).Color = Color3.fromRGB(50, 50, 50)
+    Instance.new("UIStroke", dropList).Color = Color3.fromRGB(40, 55, 80)
     dropList.Parent = container
     
     local listLayout = Instance.new("UIListLayout")
@@ -220,7 +248,7 @@ local function AddDropdown(text, options, stateKey)
     for i, opt in ipairs(options) do
         local optBtn = Instance.new("TextButton")
         optBtn.Size = UDim2.new(1, 0, 0, 30)
-        optBtn.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+        optBtn.BackgroundColor3 = topBarColor
         optBtn.Text = "      " .. opt
         optBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
         optBtn.Font = Enum.Font.Gotham
@@ -245,7 +273,7 @@ end
 local function AddKeybind(text, stateKey)
     local btn = Instance.new("TextButton")
     btn.Size = UDim2.new(1, 0, 0, 32)
-    btn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    btn.BackgroundColor3 = elementColor
     btn.Text = "   " .. text
     btn.TextColor3 = textColor
     btn.Font = Enum.Font.GothamSemibold
@@ -253,7 +281,7 @@ local function AddKeybind(text, stateKey)
     btn.TextXAlignment = Enum.TextXAlignment.Left
     btn.AutoButtonColor = false
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
-    Instance.new("UIStroke", btn).Color = Color3.fromRGB(40, 40, 40)
+    Instance.new("UIStroke", btn).Color = Color3.fromRGB(40, 55, 80)
     btn.Parent = Scroll
     
     local valText = Instance.new("TextLabel")
@@ -272,7 +300,7 @@ local function AddKeybind(text, stateKey)
         valText.Text = "[ ... ]"
     end)
     
-    UIS.InputBegan:Connect(function(input)
+    inputBeganConnection = UIS.InputBegan:Connect(function(input)
         if binding and input.UserInputType == Enum.UserInputType.Keyboard then
             binding = false
             GhostAimbotState[stateKey] = input.KeyCode
@@ -284,9 +312,9 @@ end
 local function AddSlider(text, min, max, stateKey, callback)
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(1, 0, 0, 45)
-    frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    frame.BackgroundColor3 = elementColor
     Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 4)
-    Instance.new("UIStroke", frame).Color = Color3.fromRGB(40, 40, 40)
+    Instance.new("UIStroke", frame).Color = Color3.fromRGB(40, 55, 80)
     frame.Parent = Scroll
     
     local lbl = Instance.new("TextLabel")
@@ -314,7 +342,7 @@ local function AddSlider(text, min, max, stateKey, callback)
     local bar = Instance.new("Frame")
     bar.Size = UDim2.new(1, -20, 0, 6)
     bar.Position = UDim2.new(0, 10, 0, 30)
-    bar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    bar.BackgroundColor3 = topBarColor
     Instance.new("UICorner", bar).CornerRadius = UDim.new(1, 0)
     bar.Parent = frame
     
@@ -356,9 +384,9 @@ end
 local function AddColorBoard(text)
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(1, 0, 0, 55)
-    frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    frame.BackgroundColor3 = elementColor
     Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 4)
-    Instance.new("UIStroke", frame).Color = Color3.fromRGB(40, 40, 40)
+    Instance.new("UIStroke", frame).Color = Color3.fromRGB(40, 55, 80)
     frame.Parent = Scroll
     
     local lbl = Instance.new("TextLabel")
@@ -416,7 +444,7 @@ local function AddColorBoard(text)
     end
 end
 
--- الإضافات الخاصة بواجهة الايمبوت
+-- الإضافات
 AddToggle("Aimlock", "Enabled")
 AddDropdown("Mode", {"Hold", "Toggle"}, "Mode")
 AddKeybind("Aimlock Key", "Key")
@@ -431,10 +459,10 @@ AddToggle("ESP Outline Only (White)", "ESPOutlineOnly")
 
 local space = Instance.new("Frame"); space.Size = UDim2.new(1,0,0,5); space.BackgroundTransparency = 1; space.Parent = Scroll
 
--- [1. زر الريجوين القوي والمضمون]
+-- [1. زر الريجوين - Infinite Yield]
 local rejoinBtn = Instance.new("TextButton")
 rejoinBtn.Size = UDim2.new(1, 0, 0, 35)
-rejoinBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+rejoinBtn.BackgroundColor3 = elementColor
 rejoinBtn.Text = "Rejoin Server"
 rejoinBtn.TextColor3 = textColor
 rejoinBtn.Font = Enum.Font.GothamBold
@@ -448,14 +476,14 @@ rejoinBtn.MouseButton1Click:Connect(function()
     task.spawn(function()
         local ts = game:GetService("TeleportService")
         local p = game.Players.LocalPlayer
-        if getgenv and getgenv().rejoingame then
-            pcall(getgenv().rejoingame)
-        else
-            local success, err = pcall(function()
+        local success, err = pcall(function()
+            if #game.Players:GetPlayers() <= 1 or game.PrivateServerId ~= "" then
+                ts:Teleport(game.PlaceId, p)
+            else
                 ts:TeleportToPlaceInstance(game.PlaceId, game.JobId, p)
-            end)
-            if not success then pcall(function() ts:Teleport(game.PlaceId, p) end) end
-        end
+            end
+        end)
+        if not success then pcall(function() ts:Teleport(game.PlaceId, p) end) end
         task.wait(3)
         rejoinBtn.Text = "Rejoin Server"
         rejoinBtn.TextColor3 = textColor
@@ -464,10 +492,10 @@ end)
 
 local space2 = Instance.new("Frame"); space2.Size = UDim2.new(1,0,0,5); space2.BackgroundTransparency = 1; space2.Parent = Scroll
 
--- [2. زر السيرفر هوب السريع للهروب من اللاق]
+-- [2. زر السيرفر هوب]
 local hopBtn = Instance.new("TextButton")
 hopBtn.Size = UDim2.new(1, 0, 0, 35)
-hopBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+hopBtn.BackgroundColor3 = elementColor
 hopBtn.Text = "Server Hop"
 hopBtn.TextColor3 = textColor
 hopBtn.Font = Enum.Font.GothamBold
@@ -482,7 +510,6 @@ hopBtn.MouseButton1Click:Connect(function()
         local TPS = game:GetService("TeleportService")
         local Http = game:GetService("HttpService")
         local PlaceID = game.PlaceId
-        
         local success = pcall(function()
             local req = game:HttpGet("https://games.roproxy.com/v1/games/"..PlaceID.."/servers/Public?sortOrder=Desc&limit=100")
             local data = Http:JSONDecode(req)
@@ -497,7 +524,6 @@ hopBtn.MouseButton1Click:Connect(function()
             if #servers > 0 then TPS:TeleportToPlaceInstance(PlaceID, servers[math.random(1, #servers)], game.Players.LocalPlayer)
             else TPS:Teleport(PlaceID, game.Players.LocalPlayer) end
         end)
-        
         if not success then pcall(function() TPS:Teleport(PlaceID, game.Players.LocalPlayer) end) end
         task.wait(3)
         hopBtn.Text = "Server Hop"
@@ -505,7 +531,7 @@ hopBtn.MouseButton1Click:Connect(function()
     end)
 end)
 
--- [3. الـ FPS Boost (تم تعديله عشان ميبوظش الـ ESP)]
+-- [3. الـ FPS Boost من غير ما يكسر الـ ESP]
 local function wipeDetails(v)
     if v:IsA("BasePart") and not v:IsA("MeshPart") then
         v.Material = Enum.Material.SmoothPlastic
@@ -525,14 +551,10 @@ end
 AddToggle("FPS Boost (Potato Mode)", "FPSBoost", function(state)
     local Lighting = game:GetService("Lighting")
     local Terrain = workspace:FindFirstChildOfClass("Terrain")
-    
     if state then
         pcall(function()
             Lighting.GlobalShadows = false
             Lighting.FogEnd = 9e9
-            Lighting.ShadowSoftness = 0
-            -- تم مسح سطر الإضاءة المعقد اللي كان بيكسر الـ ESP
-            
             if Terrain then
                 Terrain.WaterWaveSize = 0
                 Terrain.WaterWaveSpeed = 0
@@ -540,7 +562,6 @@ AddToggle("FPS Boost (Potato Mode)", "FPSBoost", function(state)
                 Terrain.WaterTransparency = 0
                 pcall(function() Terrain.Decoration = false end)
             end
-            
             for _, v in pairs(workspace:GetDescendants()) do wipeDetails(v) end
             fpsBoostLoop = workspace.DescendantAdded:Connect(function(v) wipeDetails(v) end)
         end)
@@ -551,12 +572,10 @@ AddToggle("FPS Boost (Potato Mode)", "FPSBoost", function(state)
 end)
 
 AddSlider("FPS Cap", 60, 700, "FPSCap", function(val)
-    pcall(function()
-        if setfpscap then setfpscap(val) end
-    end)
+    pcall(function() if setfpscap then setfpscap(val) end end)
 end)
 
--- إخفاء واظهار الواجهة عبر Right Control
+-- إخفاء/إظهار بالـ Right Control
 UIS.InputBegan:Connect(function(input, gpe)
     if not gpe and input.KeyCode == Enum.KeyCode.RightControl then
         if Gui then Gui.Enabled = not Gui.Enabled end
@@ -580,7 +599,7 @@ str.Thickness = 1.5
 Instance.new("UICorner", circle).CornerRadius = UDim.new(1, 0)
 circle.Parent = fovGui
 
--- كود الايمبوت والـ ESP (تم تحسينه وتحديثه للتعامل مع الـ 31 ليميت والموت)
+-- نظام الايمبوت والـ ESP 
 local isTargeting = false
 local currentTarget = nil 
 
@@ -588,7 +607,6 @@ local function GetClosestTarget()
     local mouseLoc = UIS:GetMouseLocation()
     local closestDist = math.huge
     local closest = nil
-    
     for _, plr in pairs(game.Players:GetPlayers()) do
         if plr ~= Player and plr.Character and plr.Character:FindFirstChild(GhostAimbotState.LockPart) and plr.Character:FindFirstChild("Humanoid") and plr.Character.Humanoid.Health > 0 then
             local partPos, onScreen = workspace.CurrentCamera:WorldToViewportPoint(plr.Character[GhostAimbotState.LockPart].Position)
@@ -610,10 +628,9 @@ local function GetClosestTarget()
     return closest
 end
 
-UIS.InputBegan:Connect(function(input, gpe)
+inputBeganConnection = UIS.InputBegan:Connect(function(input, gpe)
     if not gpe and input.KeyCode == GhostAimbotState.Key then
-        if GhostAimbotState.Mode == "Hold" then
-            isTargeting = true
+        if GhostAimbotState.Mode == "Hold" then isTargeting = true
         else
             isTargeting = not isTargeting
             if not isTargeting then currentTarget = nil end
@@ -621,16 +638,16 @@ UIS.InputBegan:Connect(function(input, gpe)
     end
 end)
 
-UIS.InputEnded:Connect(function(input, gpe)
+inputEndedConnection = UIS.InputEnded:Connect(function(input, gpe)
     if not gpe and input.KeyCode == GhostAimbotState.Key and GhostAimbotState.Mode == "Hold" then
         isTargeting = false
         currentTarget = nil 
     end
 end)
 
-RunService.RenderStepped:Connect(function()
+-- اللوب الرئيسي
+aimbotConnection = RunService.RenderStepped:Connect(function()
     local mouseLoc = UIS:GetMouseLocation()
-    
     if GhostAimbotState.ShowFOV then
         circle.Visible = true
         circle.Size = UDim2.new(0, GhostAimbotState.FOV * 2, 0, GhostAimbotState.FOV * 2)
@@ -639,7 +656,7 @@ RunService.RenderStepped:Connect(function()
         circle.Visible = false
     end
     
-    -- نظام الـ ESP الجديد (أوتوماتيك بيمسح جثث الأموات وبيركب على الجديد فوراً)
+    -- نظام الـ ESP الأوتوماتيك 
     for _, plr in pairs(game.Players:GetPlayers()) do
         if plr ~= Player then
             local char = plr.Character
@@ -649,11 +666,10 @@ RunService.RenderStepped:Connect(function()
                     if not hl then
                         hl = Instance.new("Highlight")
                         hl.Name = "GhostESP"
-                        hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop -- بيخليه يشوف من ورا الحيطة
+                        hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
                         hl.Adornee = char
                         hl.Parent = char
                     end
-                    
                     if GhostAimbotState.ESPOutlineOnly then
                         hl.FillTransparency = 1 
                         hl.OutlineColor = Color3.fromRGB(255, 255, 255) 
@@ -664,19 +680,15 @@ RunService.RenderStepped:Connect(function()
                     end
                     hl.Enabled = true
                 else
-                    -- بيمسح الـ ESP من الميتين عشان يوسع ليميت روبلوكس (31)
-                    if char and char:FindFirstChild("GhostESP") then
-                        char.GhostESP:Destroy()
-                    end
+                    if char and char:FindFirstChild("GhostESP") then char.GhostESP:Destroy() end
                 end
             else
-                if char and char:FindFirstChild("GhostESP") then
-                    char.GhostESP:Destroy()
-                end
+                if char and char:FindFirstChild("GhostESP") then char.GhostESP:Destroy() end
             end
         end
     end
     
+    -- الايمبوت
     if GhostAimbotState.Enabled and isTargeting then
         if currentTarget then
             local char = currentTarget.Character
@@ -684,11 +696,7 @@ RunService.RenderStepped:Connect(function()
                 currentTarget = nil
             end
         end
-        
-        if not currentTarget then
-            currentTarget = GetClosestTarget()
-        end
-        
+        if not currentTarget then currentTarget = GetClosestTarget() end
         if currentTarget and currentTarget.Character then
             local targetPos = currentTarget.Character[GhostAimbotState.LockPart].Position
             local cam = workspace.CurrentCamera
@@ -697,5 +705,31 @@ RunService.RenderStepped:Connect(function()
         end
     else
         currentTarget = nil
+    end
+end)
+
+-- السحب (Dragging)
+local dragging, dragInput, dragStart, startPos
+TitleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = Frame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+        end)
+    end
+end)
+
+TitleBar.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        dragInput = input
+    end
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
 end)
