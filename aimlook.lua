@@ -1,5 +1,5 @@
 -- ==========================================
--- GHOST SCRIPT - MINI HUB (NO KEY SYSTEM)
+-- PRIVATE SCRIPT INTERFACE (STANDALONE + NO INFO + NO KEY)
 -- ==========================================
 
 local Player = game.Players.LocalPlayer
@@ -104,27 +104,17 @@ local function LoadMainScript()
     TopBarLine.BorderSizePixel = 0
     TopBarLine.Parent = TopBar
 
+    -- [تم التعديل] العنوان الخاص بك
     local Title = Instance.new("TextLabel")
-    Title.Size = UDim2.new(0, 150, 1, 0)
+    Title.Size = UDim2.new(0, 200, 1, 0)
     Title.Position = UDim2.new(0, 15, 0, 0)
     Title.BackgroundTransparency = 1
-    Title.Text = "Ghost Script"
+    Title.Text = "واجهة السكربت الخاصه بيا"
     Title.TextColor3 = textColor
     Title.Font = Enum.Font.GothamBold
     Title.TextSize = 14
     Title.TextXAlignment = Enum.TextXAlignment.Left
     Title.Parent = TopBar
-    
-    local SubTitle = Instance.new("TextLabel")
-    SubTitle.Size = UDim2.new(0, 100, 1, 0)
-    SubTitle.Position = UDim2.new(0, 105, 0, 0)
-    SubTitle.BackgroundTransparency = 1
-    SubTitle.Text = " / by sasuke"
-    SubTitle.TextColor3 = accentColor
-    SubTitle.Font = Enum.Font.GothamSemibold
-    SubTitle.TextSize = 11
-    SubTitle.TextXAlignment = Enum.TextXAlignment.Left
-    SubTitle.Parent = TopBar
 
     local CloseBtn = Instance.new("TextButton")
     CloseBtn.Size = UDim2.new(0, 25, 0, 25)
@@ -204,7 +194,6 @@ local function LoadMainScript()
     end
 
     local CategoryBtn_Scripts, AccentLine_Scripts = CreateCategoryButton("السكربتات", 1, true)
-    local CategoryBtn_Info, AccentLine_Info = CreateCategoryButton("معلومات عن صاحب السكربت", 999, false)
 
     local function CreateContentFrame(isVisible)
         local Frame = Instance.new("ScrollingFrame")
@@ -232,58 +221,8 @@ local function LoadMainScript()
     end
 
     local ContentFrame_Scripts, Layout_Scripts = CreateContentFrame(true)
-    local ContentFrame_Info, Layout_Info = CreateContentFrame(false)
 
-    -- =========================================================
-    -- محتوى قسم "معلومات عن صاحب السكربت"
-    -- =========================================================
-    local function AddInfoLabel(parent, text, color)
-        local lbl = Instance.new("TextLabel")
-        lbl.Size = UDim2.new(1, 0, 0, 25)
-        lbl.BackgroundTransparency = 1
-        lbl.Text = text
-        lbl.TextColor3 = color or textColor
-        lbl.Font = Enum.Font.GothamSemibold
-        lbl.TextSize = 13
-        lbl.TextXAlignment = Enum.TextXAlignment.Center
-        lbl.Parent = parent
-        return lbl
-    end
-
-    local function AddCopyButton(parent, title, copyText)
-        local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(1, 0, 0, 35)
-        btn.BackgroundColor3 = elementColor
-        btn.Text = title
-        btn.TextColor3 = accentColor
-        btn.Font = Enum.Font.GothamBold
-        btn.TextSize = 13
-        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
-        Instance.new("UIStroke", btn).Color = Color3.fromRGB(50, 50, 50)
-        btn.Parent = parent
-
-        btn.MouseButton1Click:Connect(function()
-            pcall(function() setclipboard(copyText) end)
-            local oldText = btn.Text
-            btn.Text = "تم النسخ بنجاح!"
-            btn.TextColor3 = Color3.fromRGB(46, 204, 166)
-            task.wait(1.5)
-            btn.Text = oldText
-            btn.TextColor3 = accentColor
-        end)
-    end
-
-    AddInfoLabel(ContentFrame_Info, "قناة التيليجرام:", textColor)
-    AddCopyButton(ContentFrame_Info, "اضغط هنا لنسخ رابط التيليجرام", "https://t.me/sasuke1212z")
-    local space1 = Instance.new("Frame"); space1.Size = UDim2.new(1,0,0,5); space1.BackgroundTransparency = 1; space1.Parent = ContentFrame_Info
-    AddInfoLabel(ContentFrame_Info, "قناة اليوتيوب:", textColor)
-    AddCopyButton(ContentFrame_Info, "اضغط هنا لنسخ رابط اليوتيوب", "https://youtube.com/@mx_sasike?si=Nm7T3NKUZx1Fj4EJ")
-    local space2 = Instance.new("Frame"); space2.Size = UDim2.new(1,0,0,15); space2.BackgroundTransparency = 1; space2.Parent = ContentFrame_Info
-    AddInfoLabel(ContentFrame_Info, "للتواصل بخصوص مشكلة في السكربت:", Color3.fromRGB(255, 50, 50))
-    AddInfoLabel(ContentFrame_Info, "يوزري ديسكورد: 4_7v", textColor) 
-    AddInfoLabel(ContentFrame_Info, "يوزري تيليجرام: @sasuke195p", textColor)
-
-    -- إخفاء واجهة الايمبوت ودائرته فقطططط عبر (Right Control)
+    -- إخفاء واجهة الايمبوت ودائرته فقط عبر (Right Control)
     UIS.InputBegan:Connect(function(input, gpe)
         if not gpe and input.KeyCode == Enum.KeyCode.RightControl then
             local aimbotGui = CoreGui:FindFirstChild("GhostAimbotGUI")
@@ -962,7 +901,6 @@ local function LoadMainScript()
         return Btn
     end
 
-    -- وضع الزرارين المطلوبين فقط في القائمة
     CreateScriptButton(ContentFrame_Scripts, "ايمبوت", "BUILTIN_AIMBOT")
     CreateScriptButton(ContentFrame_Scripts, "سكربت vd مفتاح دائم", "https://vonixehub.my.id/api/loader")
 
@@ -994,8 +932,7 @@ local function LoadMainScript()
     OpenHub()
 
     local tabs = {
-        {btn = CategoryBtn_Scripts, accent = AccentLine_Scripts, content = ContentFrame_Scripts, layout = Layout_Scripts},
-        {btn = CategoryBtn_Info, accent = AccentLine_Info, content = ContentFrame_Info, layout = Layout_Info}
+        {btn = CategoryBtn_Scripts, accent = AccentLine_Scripts, content = ContentFrame_Scripts, layout = Layout_Scripts}
     }
 
     local function SwitchTab(activeTab)
@@ -1016,7 +953,6 @@ local function LoadMainScript()
     end
 
     CategoryBtn_Scripts.MouseButton1Click:Connect(function() SwitchTab(tabs[1]) end)
-    CategoryBtn_Info.MouseButton1Click:Connect(function() SwitchTab(tabs[2]) end)
 
     CloseBtn.MouseButton1Click:Connect(function()
         local closeTween = TS:Create(MainFrame, tweenInfoClose, {
