@@ -1,5 +1,5 @@
 -- ==========================================
--- PRIVATE SCRIPT INTERFACE (STANDALONE + NO INFO + NO KEY)
+-- PRIVATE SCRIPT INTERFACE (STANDALONE + KEYS STASH + SCRIPTS)
 -- ==========================================
 
 local Player = game.Players.LocalPlayer
@@ -104,7 +104,6 @@ local function LoadMainScript()
     TopBarLine.BorderSizePixel = 0
     TopBarLine.Parent = TopBar
 
-    -- [تم التعديل] العنوان الخاص بك
     local Title = Instance.new("TextLabel")
     Title.Size = UDim2.new(0, 200, 1, 0)
     Title.Position = UDim2.new(0, 15, 0, 0)
@@ -194,6 +193,7 @@ local function LoadMainScript()
     end
 
     local CategoryBtn_Scripts, AccentLine_Scripts = CreateCategoryButton("السكربتات", 1, true)
+    local CategoryBtn_Keys, AccentLine_Keys = CreateCategoryButton("المفاتيح", 2, false)
 
     local function CreateContentFrame(isVisible)
         local Frame = Instance.new("ScrollingFrame")
@@ -221,6 +221,43 @@ local function LoadMainScript()
     end
 
     local ContentFrame_Scripts, Layout_Scripts = CreateContentFrame(true)
+    local ContentFrame_Keys, Layout_Keys = CreateContentFrame(false)
+
+    -- =========================================================
+    -- إنشاء أزرار النسخ (لقسم المفاتيح)
+    -- =========================================================
+    local function AddCopyButton(parent, title, copyText)
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, 0, 0, 35)
+        btn.BackgroundColor3 = elementColor
+        btn.Text = title
+        btn.TextColor3 = textColor
+        btn.Font = Enum.Font.GothamBold
+        btn.TextSize = 13
+        Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+        Instance.new("UIStroke", btn).Color = Color3.fromRGB(50, 50, 50)
+        btn.Parent = parent
+
+        btn.MouseEnter:Connect(function()
+            TS:Create(btn, tweenInfoFast, {BackgroundColor3 = hoverColor}):Play()
+        end)
+        btn.MouseLeave:Connect(function()
+            TS:Create(btn, tweenInfoFast, {BackgroundColor3 = elementColor}):Play()
+        end)
+
+        btn.MouseButton1Click:Connect(function()
+            pcall(function() setclipboard(copyText) end)
+            local oldText = btn.Text
+            btn.Text = "تم النسخ بنجاح!"
+            btn.TextColor3 = Color3.fromRGB(46, 204, 166)
+            task.wait(1.5)
+            btn.Text = oldText
+            btn.TextColor3 = textColor
+        end)
+    end
+
+    AddCopyButton(ContentFrame_Keys, "نسخ مفتاج vd", "VONIXE-PREM-ULUYRU7ZGZXQ")
+    AddCopyButton(ContentFrame_Keys, "كود مفتاح ftf", "11699551-b355-4525-9879-84446c50dd99")
 
     -- إخفاء واجهة الايمبوت ودائرته فقط عبر (Right Control)
     UIS.InputBegan:Connect(function(input, gpe)
@@ -836,7 +873,7 @@ local function LoadMainScript()
     end
 
     -- =========================================================
-    -- إنشاء السكربتات في القسم الرئيسي
+    -- إنشاء السكربتات في الأقسام
     -- =========================================================
     local function CreateScriptButton(parent, text, scriptUrl)
         local Btn = Instance.new("TextButton")
@@ -882,7 +919,11 @@ local function LoadMainScript()
                 
                 task.spawn(function()
                     local success, err = pcall(function()
-                        loadstring(game:HttpGet(scriptUrl))()
+                        if scriptUrl:match("^https?://") then
+                            loadstring(game:HttpGet(scriptUrl))()
+                        else
+                            loadstring(scriptUrl)()
+                        end
                     end)
                     
                     if success then
@@ -901,8 +942,10 @@ local function LoadMainScript()
         return Btn
     end
 
+    -- قسم السكربتات
     CreateScriptButton(ContentFrame_Scripts, "ايمبوت", "BUILTIN_AIMBOT")
     CreateScriptButton(ContentFrame_Scripts, "سكربت vd مفتاح دائم", "https://vonixehub.my.id/api/loader")
+    CreateScriptButton(ContentFrame_Scripts, "سكربت ftf", "https://api.jnkie.com/api/v1/luascripts/public/2111fcae4f4bfc3fca6c1f01cbf7ad9607b040f7ab7df277e6e1b573d5722b08/download")
 
     -- ==========================================
     -- وظائف الأزرار والتنقل
@@ -932,7 +975,8 @@ local function LoadMainScript()
     OpenHub()
 
     local tabs = {
-        {btn = CategoryBtn_Scripts, accent = AccentLine_Scripts, content = ContentFrame_Scripts, layout = Layout_Scripts}
+        {btn = CategoryBtn_Scripts, accent = AccentLine_Scripts, content = ContentFrame_Scripts, layout = Layout_Scripts},
+        {btn = CategoryBtn_Keys, accent = AccentLine_Keys, content = ContentFrame_Keys, layout = Layout_Keys}
     }
 
     local function SwitchTab(activeTab)
@@ -953,6 +997,7 @@ local function LoadMainScript()
     end
 
     CategoryBtn_Scripts.MouseButton1Click:Connect(function() SwitchTab(tabs[1]) end)
+    CategoryBtn_Keys.MouseButton1Click:Connect(function() SwitchTab(tabs[2]) end)
 
     CloseBtn.MouseButton1Click:Connect(function()
         local closeTween = TS:Create(MainFrame, tweenInfoClose, {
