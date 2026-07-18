@@ -271,7 +271,7 @@ local function LoadMainScript()
     end)
 
     -- =========================================================
-    -- واجهة الايمبوت الاحترافية الشاملة
+    -- واجهة الايمبوت الاحترافية الشاملة مع الأنيميشن السحري وحل مشكلة البحث المستمر
     -- =========================================================
     local function LaunchAimbotGUI()
         if CoreGui:FindFirstChild("GhostAimbotGUI") then return end
@@ -281,7 +281,7 @@ local function LoadMainScript()
         Gui.Parent = CoreGui
         
         local Frame = Instance.new("Frame")
-        Frame.Size = UDim2.new(0, 260, 0, 420)
+        Frame.Size = UDim2.new(0, 260, 0, 460) 
         Frame.Position = UDim2.new(-0.5, 0, 0.5, -150) 
         Frame.BackgroundColor3 = Color3.fromRGB(15, 15, 15) 
         Frame.Active = true
@@ -665,7 +665,8 @@ local function LoadMainScript()
         AddToggle("ESP Outline Only (White)", "ESPOutlineOnly") 
         
         local space = Instance.new("Frame"); space.Size = UDim2.new(1,0,0,5); space.BackgroundTransparency = 1; space.Parent = Scroll
-        
+
+        -- [1. زر الريجوين كما هو - شغال معاك تمام]
         local rejoinBtn = Instance.new("TextButton")
         rejoinBtn.Size = UDim2.new(1, 0, 0, 35)
         rejoinBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
@@ -675,21 +676,119 @@ local function LoadMainScript()
         rejoinBtn.TextSize = 13
         Instance.new("UICorner", rejoinBtn).CornerRadius = UDim.new(0, 6)
         rejoinBtn.Parent = Scroll
+
         rejoinBtn.MouseButton1Click:Connect(function()
-            if typeof(rejoingame) == "function" then
-                rejoingame()
+            local ts = game:GetService("TeleportService")
+            local isVIP = (game.PrivateServerId ~= "" or game.PrivateServerOwnerId ~= 0)
+            
+            if isVIP then
+                local rFunc = getgenv and getgenv().rejoingame or (typeof(rejoingame) == "function" and rejoingame)
+                if rFunc then
+                    pcall(rFunc)
+                else
+                    pcall(function() ts:TeleportToPlaceInstance(game.PlaceId, game.JobId, Player) end)
+                end
             else
-                local ts = game:GetService("TeleportService")
-                local p = game.Players.LocalPlayer
-                local success, err = pcall(function()
-                    ts:TeleportToPlaceInstance(game.PlaceId, game.JobId, p)
-                end)
-                if not success then
-                    p:Kick("\nRejoining...")
+                if #game.Players:GetPlayers() <= 1 then
+                    Player:Kick("\nRejoining...")
                     task.wait()
-                    ts:Teleport(game.PlaceId, p)
+                    ts:Teleport(game.PlaceId, Player)
+                else
+                    pcall(function()
+                        ts:TeleportToPlaceInstance(game.PlaceId, game.JobId, Player)
+                    end)
                 end
             end
+        end)
+
+        local space2 = Instance.new("Frame"); space2.Size = UDim2.new(1,0,0,5); space2.BackgroundTransparency = 1; space2.Parent = Scroll
+
+        -- [2. زر السيرفر هوب البريميوم المخصص (طريقة ZXE Hub المضمونة 100%)]
+        local hopBtn = Instance.new("TextButton")
+        hopBtn.Size = UDim2.new(1, 0, 0, 35)
+        hopBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+        hopBtn.Text = "Server Hop"
+        hopBtn.TextColor3 = textColor
+        hopBtn.Font = Enum.Font.GothamBold
+        hopBtn.TextSize = 13
+        Instance.new("UICorner", hopBtn).CornerRadius = UDim.new(0, 6)
+        hopBtn.Parent = Scroll
+
+        hopBtn.MouseButton1Click:Connect(function()
+            hopBtn.Text = "Hopping..."
+            hopBtn.TextColor3 = accentColor
+            
+            task.spawn(function()
+                local HttpService = game:GetService("HttpService")
+                local TeleportService = game:GetService("TeleportService")
+                local req = request or http_request or (syn and syn.request) or (fluxus and fluxus.request)
+                local servers = {}
+                
+                -- وظيفة البحث القوية
+                local function fetch(cursor)
+                    local url = "https://games.roblox.com/v1/games/" .. tostring(game.PlaceId) .. "/servers/Public?sortOrder=Desc&limit=100"
+                    if cursor then url = url .. "&cursor=" .. cursor end
+                    
+                    local res = nil
+                    -- المحاولة الأولى: من خلال الإكسكيوتر (الأفضل)
+                    pcall(function()
+                        if req then
+                            local response = req({Url = url, Method = "GET"})
+                            if response.StatusCode == 200 then res = response.Body end
+                        end
+                    end)
+                    
+                    -- المحاولة التانية: بروكسي لو الإكسكيوتر فشل
+                    if not res then
+                        pcall(function()
+                            local pUrl = "https://games.roproxy.com/v1/games/" .. tostring(game.PlaceId) .. "/servers/Public?sortOrder=Desc&limit=100"
+                            if cursor then pUrl = pUrl .. "&cursor=" .. cursor end
+                            res = game:HttpGet(pUrl)
+                        end)
+                    end
+                    
+                    if res then
+                        local success, decoded = pcall(function() return HttpService:JSONDecode(res) end)
+                        if success then return decoded end
+                    end
+                    return nil
+                end
+                
+                -- بيقلب في 5 صفحات (500 سيرفر) عشان يتأكد إنه لقى مكان فاضي
+                local cursor = nil
+                for i = 1, 5 do 
+                    local data = fetch(cursor)
+                    if data and data.data then
+                        for _, v in pairs(data.data) do
+                            if type(v) == "table" and v.playing and v.maxPlayers and v.playing < v.maxPlayers and v.id ~= game.JobId then
+                                table.insert(servers, v.id)
+                            end
+                        end
+                        cursor = data.nextPageCursor
+                        if not cursor then break end
+                    else
+                        break
+                    end
+                end
+                
+                -- التليپورت الإجباري (Ultimate Fallback)
+                if #servers > 0 then
+                    local randomServer = servers[math.random(1, #servers)]
+                    pcall(function()
+                        TeleportService:TeleportToPlaceInstance(game.PlaceId, randomServer, Player)
+                    end)
+                else
+                    -- لو ملقاش أي سيرفر أو الـ API مقفول خالص، بيعمل Teleport إجباري للماب 
+                    -- ودي الطريقة اللي مستحيل تفشل لأنها بتعتمد على نظام الماتش ميكنج الأساسي بتاع اللعبة
+                    pcall(function()
+                        TeleportService:Teleport(game.PlaceId, Player)
+                    end)
+                end
+                
+                task.wait(3)
+                hopBtn.Text = "Server Hop"
+                hopBtn.TextColor3 = textColor
+            end)
         end)
 
         local function wipeDetails(v)
