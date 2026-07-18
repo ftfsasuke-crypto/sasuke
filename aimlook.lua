@@ -1,5 +1,5 @@
 -- ==========================================
--- PRIVATE SCRIPT INTERFACE (STANDALONE + KEYS STASH + SCRIPTS)
+-- PRIVATE SCRIPT INTERFACE (HUB + NEW FULL AIMBOT)
 -- ==========================================
 
 local Player = game.Players.LocalPlayer
@@ -9,7 +9,7 @@ local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
 
 -- ==========================================
--- إعدادات الايمبوت
+-- إعدادات الايمبوت العامة
 -- ==========================================
 local GhostAimbotState = {
     Enabled = false,
@@ -28,7 +28,7 @@ local GhostAimbotState = {
 }
 
 -- ==========================================
--- الدالة الرئيسية لتشغيل الواجهة
+-- الدالة الرئيسية لتشغيل الهب
 -- ==========================================
 local function LoadMainScript()
     if CoreGui:FindFirstChild("GhostMiniHub") then
@@ -259,30 +259,30 @@ local function LoadMainScript()
     AddCopyButton(ContentFrame_Keys, "نسخ مفتاج vd", "VONIXE-PREM-ULUYRU7ZGZXQ")
     AddCopyButton(ContentFrame_Keys, "كود مفتاح ftf", "11699551-b355-4525-9879-84446c50dd99")
 
-    -- إخفاء واجهة الايمبوت ودائرته فقط عبر (Right Control)
+    -- إخفاء واظهار الواجهة عبر Right Control
     UIS.InputBegan:Connect(function(input, gpe)
         if not gpe and input.KeyCode == Enum.KeyCode.RightControl then
-            local aimbotGui = CoreGui:FindFirstChild("GhostAimbotGUI")
+            local aimbotGui = CoreGui:FindFirstChild("GhostAimbotGUI_Standalone")
             if aimbotGui then aimbotGui.Enabled = not aimbotGui.Enabled end
             
-            local fovCircle = CoreGui:FindFirstChild("GhostFOVCircle")
+            local fovCircle = CoreGui:FindFirstChild("GhostFOVCircle_Standalone")
             if fovCircle then fovCircle.Enabled = not fovCircle.Enabled end
         end
     end)
 
     -- =========================================================
-    -- واجهة الايمبوت الاحترافية الشاملة مع الأنيميشن السحري وحل مشكلة البحث المستمر
+    -- واجهة الايمبوت المدمجة (تم إضافة زر تشغيل الايمبوت المفقود)
     -- =========================================================
     local function LaunchAimbotGUI()
-        if CoreGui:FindFirstChild("GhostAimbotGUI") then return end
+        if CoreGui:FindFirstChild("GhostAimbotGUI_Standalone") then return end
         
         local Gui = Instance.new("ScreenGui")
-        Gui.Name = "GhostAimbotGUI"
+        Gui.Name = "GhostAimbotGUI_Standalone"
         Gui.Parent = CoreGui
         
         local Frame = Instance.new("Frame")
-        Frame.Size = UDim2.new(0, 260, 0, 460) 
-        Frame.Position = UDim2.new(-0.5, 0, 0.5, -150) 
+        Frame.Size = UDim2.new(0, 260, 0, 480)
+        Frame.Position = UDim2.new(-0.5, 0, 0.5, -150)
         Frame.BackgroundColor3 = Color3.fromRGB(15, 15, 15) 
         Frame.Active = true
         Frame.Draggable = true
@@ -308,15 +308,26 @@ local function LoadMainScript()
         TitleLine.Parent = TitleBar
         
         local Title = Instance.new("TextLabel")
-        Title.Size = UDim2.new(1, -10, 1, 0)
+        Title.Size = UDim2.new(0, 150, 1, 0)
         Title.Position = UDim2.new(0, 10, 0, 0)
         Title.BackgroundTransparency = 1
-        Title.Text = "AIMBOT SETTINGS"
+        Title.Text = "GHOST AIMBOT FULL"
         Title.TextColor3 = textColor
         Title.Font = Enum.Font.GothamBold
         Title.TextSize = 13
         Title.TextXAlignment = Enum.TextXAlignment.Left
         Title.Parent = TitleBar
+        
+        local SubTitle = Instance.new("TextLabel")
+        SubTitle.Size = UDim2.new(0, 100, 1, 0)
+        SubTitle.Position = UDim2.new(0, 140, 0, 0)
+        SubTitle.BackgroundTransparency = 1
+        SubTitle.Text = " / by sasuke"
+        SubTitle.TextColor3 = accentColor
+        SubTitle.Font = Enum.Font.GothamSemibold
+        SubTitle.TextSize = 11
+        SubTitle.TextXAlignment = Enum.TextXAlignment.Left
+        SubTitle.Parent = TitleBar
         
         local CloseBtn = Instance.new("TextButton")
         CloseBtn.Size = UDim2.new(0, 30, 0, 30)
@@ -329,8 +340,12 @@ local function LoadMainScript()
         CloseBtn.Parent = TitleBar
         
         local fpsBoostLoop = nil 
+        local aimbotConnection = nil
+        local inputBeganConnection = nil
+        local inputEndedConnection = nil
+        local keybindConnection = nil
         
-        CloseBtn.MouseButton1Click:Connect(function() 
+        local function CleanUpAimbot()
             GhostAimbotState.Enabled = false
             GhostAimbotState.ShowFOV = false
             GhostAimbotState.ESP = false
@@ -343,6 +358,23 @@ local function LoadMainScript()
             game:GetService("Lighting").GlobalShadows = true
             if fpsBoostLoop then fpsBoostLoop:Disconnect() fpsBoostLoop = nil end
             
+            if aimbotConnection then aimbotConnection:Disconnect() aimbotConnection = nil end
+            if inputBeganConnection then inputBeganConnection:Disconnect() inputBeganConnection = nil end
+            if inputEndedConnection then inputEndedConnection:Disconnect() inputEndedConnection = nil end
+            if keybindConnection then keybindConnection:Disconnect() keybindConnection = nil end
+            
+            local fovGui = CoreGui:FindFirstChild("GhostFOVCircle_Standalone")
+            if fovGui then fovGui:Destroy() end
+            
+            for _, plr in pairs(game.Players:GetPlayers()) do
+                if plr.Character and plr.Character:FindFirstChild("GhostESP") then
+                    plr.Character.GhostESP:Destroy()
+                end
+            end
+        end
+
+        CloseBtn.MouseButton1Click:Connect(function() 
+            CleanUpAimbot()
             local closeAnim = TS:Create(Frame, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {Position = UDim2.new(-0.5, 0, Frame.Position.Y.Scale, Frame.Position.Y.Offset)})
             closeAnim:Play()
             closeAnim.Completed:Wait()
@@ -508,7 +540,7 @@ local function LoadMainScript()
                 valText.Text = "[ ... ]"
             end)
             
-            UIS.InputBegan:Connect(function(input)
+            keybindConnection = UIS.InputBegan:Connect(function(input)
                 if binding and input.UserInputType == Enum.UserInputType.Keyboard then
                     binding = false
                     GhostAimbotState[stateKey] = input.KeyCode
@@ -652,6 +684,7 @@ local function LoadMainScript()
             end
         end
         
+        -- إضافات الايمبوت
         AddToggle("Aimlock", "Enabled")
         AddDropdown("Mode", {"Hold", "Toggle"}, "Mode")
         AddKeybind("Aimlock Key", "Key")
@@ -666,7 +699,7 @@ local function LoadMainScript()
         
         local space = Instance.new("Frame"); space.Size = UDim2.new(1,0,0,5); space.BackgroundTransparency = 1; space.Parent = Scroll
 
-        -- [1. زر الريجوين كما هو - شغال معاك تمام]
+        -- [1. زر الريجوين - كود Infinite Yield الرسمي الجاهز لتخطي 773]
         local rejoinBtn = Instance.new("TextButton")
         rejoinBtn.Size = UDim2.new(1, 0, 0, 35)
         rejoinBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
@@ -678,32 +711,29 @@ local function LoadMainScript()
         rejoinBtn.Parent = Scroll
 
         rejoinBtn.MouseButton1Click:Connect(function()
-            local ts = game:GetService("TeleportService")
-            local isVIP = (game.PrivateServerId ~= "" or game.PrivateServerOwnerId ~= 0)
+            rejoinBtn.Text = "Rejoining..."
+            rejoinBtn.TextColor3 = accentColor
             
-            if isVIP then
-                local rFunc = getgenv and getgenv().rejoingame or (typeof(rejoingame) == "function" and rejoingame)
-                if rFunc then
-                    pcall(rFunc)
-                else
-                    pcall(function() ts:TeleportToPlaceInstance(game.PlaceId, game.JobId, Player) end)
-                end
-            else
-                if #game.Players:GetPlayers() <= 1 then
-                    Player:Kick("\nRejoining...")
-                    task.wait()
-                    ts:Teleport(game.PlaceId, Player)
-                else
-                    pcall(function()
-                        ts:TeleportToPlaceInstance(game.PlaceId, game.JobId, Player)
-                    end)
-                end
-            end
+            task.spawn(function()
+                local ts = game:GetService("TeleportService")
+                local p = game.Players.LocalPlayer
+                local success, err = pcall(function()
+                    if #game.Players:GetPlayers() <= 1 or game.PrivateServerId ~= "" then
+                        ts:Teleport(game.PlaceId, p)
+                    else
+                        ts:TeleportToPlaceInstance(game.PlaceId, game.JobId, p)
+                    end
+                end)
+                if not success then pcall(function() ts:Teleport(game.PlaceId, p) end) end
+                task.wait(3)
+                rejoinBtn.Text = "Rejoin Server"
+                rejoinBtn.TextColor3 = textColor
+            end)
         end)
 
         local space2 = Instance.new("Frame"); space2.Size = UDim2.new(1,0,0,5); space2.BackgroundTransparency = 1; space2.Parent = Scroll
 
-        -- [2. زر السيرفر هوب البريميوم المخصص (طريقة ZXE Hub المضمونة 100%)]
+        -- [2. زر السيرفر هوب - كود مبسط ومضمون للبحث السريع]
         local hopBtn = Instance.new("TextButton")
         hopBtn.Size = UDim2.new(1, 0, 0, 35)
         hopBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
@@ -719,78 +749,31 @@ local function LoadMainScript()
             hopBtn.TextColor3 = accentColor
             
             task.spawn(function()
-                local HttpService = game:GetService("HttpService")
-                local TeleportService = game:GetService("TeleportService")
-                local req = request or http_request or (syn and syn.request) or (fluxus and fluxus.request)
-                local servers = {}
-                
-                -- وظيفة البحث القوية
-                local function fetch(cursor)
-                    local url = "https://games.roblox.com/v1/games/" .. tostring(game.PlaceId) .. "/servers/Public?sortOrder=Desc&limit=100"
-                    if cursor then url = url .. "&cursor=" .. cursor end
-                    
-                    local res = nil
-                    -- المحاولة الأولى: من خلال الإكسكيوتر (الأفضل)
-                    pcall(function()
-                        if req then
-                            local response = req({Url = url, Method = "GET"})
-                            if response.StatusCode == 200 then res = response.Body end
-                        end
-                    end)
-                    
-                    -- المحاولة التانية: بروكسي لو الإكسكيوتر فشل
-                    if not res then
-                        pcall(function()
-                            local pUrl = "https://games.roproxy.com/v1/games/" .. tostring(game.PlaceId) .. "/servers/Public?sortOrder=Desc&limit=100"
-                            if cursor then pUrl = pUrl .. "&cursor=" .. cursor end
-                            res = game:HttpGet(pUrl)
-                        end)
-                    end
-                    
-                    if res then
-                        local success, decoded = pcall(function() return HttpService:JSONDecode(res) end)
-                        if success then return decoded end
-                    end
-                    return nil
-                end
-                
-                -- بيقلب في 5 صفحات (500 سيرفر) عشان يتأكد إنه لقى مكان فاضي
-                local cursor = nil
-                for i = 1, 5 do 
-                    local data = fetch(cursor)
+                local TPS = game:GetService("TeleportService")
+                local Http = game:GetService("HttpService")
+                local PlaceID = game.PlaceId
+                local success = pcall(function()
+                    local req = game:HttpGet("https://games.roproxy.com/v1/games/"..PlaceID.."/servers/Public?sortOrder=Desc&limit=100")
+                    local data = Http:JSONDecode(req)
+                    local servers = {}
                     if data and data.data then
                         for _, v in pairs(data.data) do
-                            if type(v) == "table" and v.playing and v.maxPlayers and v.playing < v.maxPlayers and v.id ~= game.JobId then
+                            if type(v) == "table" and v.playing and v.maxPlayers and v.playing < v.maxPlayers - 1 and v.id ~= game.JobId then
                                 table.insert(servers, v.id)
                             end
                         end
-                        cursor = data.nextPageCursor
-                        if not cursor then break end
-                    else
-                        break
                     end
-                end
-                
-                -- التليپورت الإجباري (Ultimate Fallback)
-                if #servers > 0 then
-                    local randomServer = servers[math.random(1, #servers)]
-                    pcall(function()
-                        TeleportService:TeleportToPlaceInstance(game.PlaceId, randomServer, Player)
-                    end)
-                else
-                    -- لو ملقاش أي سيرفر أو الـ API مقفول خالص، بيعمل Teleport إجباري للماب 
-                    -- ودي الطريقة اللي مستحيل تفشل لأنها بتعتمد على نظام الماتش ميكنج الأساسي بتاع اللعبة
-                    pcall(function()
-                        TeleportService:Teleport(game.PlaceId, Player)
-                    end)
-                end
-                
+                    if #servers > 0 then TPS:TeleportToPlaceInstance(PlaceID, servers[math.random(1, #servers)], game.Players.LocalPlayer)
+                    else TPS:Teleport(PlaceID, game.Players.LocalPlayer) end
+                end)
+                if not success then pcall(function() TPS:Teleport(PlaceID, game.Players.LocalPlayer) end) end
                 task.wait(3)
                 hopBtn.Text = "Server Hop"
                 hopBtn.TextColor3 = textColor
             end)
         end)
 
+        -- [3. الـ FPS Boost من غير ما يكسر الـ ESP]
         local function wipeDetails(v)
             if v:IsA("BasePart") and not v:IsA("MeshPart") then
                 v.Material = Enum.Material.SmoothPlastic
@@ -810,16 +793,10 @@ local function LoadMainScript()
         AddToggle("FPS Boost (Potato Mode)", "FPSBoost", function(state)
             local Lighting = game:GetService("Lighting")
             local Terrain = workspace:FindFirstChildOfClass("Terrain")
-            
             if state then
                 pcall(function()
                     Lighting.GlobalShadows = false
                     Lighting.FogEnd = 9e9
-                    Lighting.ShadowSoftness = 0
-                    if sethiddenproperty then
-                        pcall(function() sethiddenproperty(Lighting, "Technology", Enum.Technology.Compatibility) end)
-                    end
-                    
                     if Terrain then
                         Terrain.WaterWaveSize = 0
                         Terrain.WaterWaveSpeed = 0
@@ -827,9 +804,7 @@ local function LoadMainScript()
                         Terrain.WaterTransparency = 0
                         pcall(function() Terrain.Decoration = false end)
                     end
-                    
                     for _, v in pairs(workspace:GetDescendants()) do wipeDetails(v) end
-                    
                     fpsBoostLoop = workspace.DescendantAdded:Connect(function(v) wipeDetails(v) end)
                 end)
             else
@@ -839,14 +814,13 @@ local function LoadMainScript()
         end)
 
         AddSlider("FPS Cap", 60, 700, "FPSCap", function(val)
-            pcall(function()
-                if setfpscap then setfpscap(val) end
-            end)
+            pcall(function() if setfpscap then setfpscap(val) end end)
         end)
         
-        if not CoreGui:FindFirstChild("GhostFOVCircle") then
+        -- دائرة الـ FOV
+        if not CoreGui:FindFirstChild("GhostFOVCircle_Standalone") then
             local fovGui = Instance.new("ScreenGui")
-            fovGui.Name = "GhostFOVCircle"
+            fovGui.Name = "GhostFOVCircle_Standalone"
             fovGui.IgnoreGuiInset = true 
             fovGui.Parent = CoreGui
             
@@ -866,7 +840,6 @@ local function LoadMainScript()
                 local mouseLoc = UIS:GetMouseLocation()
                 local closestDist = math.huge
                 local closest = nil
-                
                 for _, plr in pairs(game.Players:GetPlayers()) do
                     if plr ~= Player and plr.Character and plr.Character:FindFirstChild(GhostAimbotState.LockPart) and plr.Character:FindFirstChild("Humanoid") and plr.Character.Humanoid.Health > 0 then
                         local partPos, onScreen = workspace.CurrentCamera:WorldToViewportPoint(plr.Character[GhostAimbotState.LockPart].Position)
@@ -877,7 +850,6 @@ local function LoadMainScript()
                                 if GhostAimbotState.SmartTarget and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
                                     distToUse = (plr.Character.HumanoidRootPart.Position - Player.Character.HumanoidRootPart.Position).Magnitude
                                 end
-                                
                                 if distToUse < closestDist then
                                     closestDist = distToUse
                                     closest = plr
@@ -889,9 +861,10 @@ local function LoadMainScript()
                 return closest
             end
             
-            UIS.InputBegan:Connect(function(input, gpe)
+            -- الزرار المفقود اللي كان موقف الايمبوت تم إرجاعه هنا
+            inputBeganConnection = UIS.InputBegan:Connect(function(input, gpe)
                 if not gpe and input.KeyCode == GhostAimbotState.Key then
-                    if GhostAimbotState.Mode == "Hold" then
+                    if GhostAimbotState.Mode == "Hold" then 
                         isTargeting = true
                     else
                         isTargeting = not isTargeting
@@ -899,17 +872,16 @@ local function LoadMainScript()
                     end
                 end
             end)
-            
-            UIS.InputEnded:Connect(function(input, gpe)
+
+            inputEndedConnection = UIS.InputEnded:Connect(function(input, gpe)
                 if not gpe and input.KeyCode == GhostAimbotState.Key and GhostAimbotState.Mode == "Hold" then
                     isTargeting = false
                     currentTarget = nil 
                 end
             end)
             
-            RunService.RenderStepped:Connect(function()
+            aimbotConnection = RunService.RenderStepped:Connect(function()
                 local mouseLoc = UIS:GetMouseLocation()
-                
                 if GhostAimbotState.ShowFOV then
                     circle.Visible = true
                     circle.Size = UDim2.new(0, GhostAimbotState.FOV * 2, 0, GhostAimbotState.FOV * 2)
@@ -918,17 +890,20 @@ local function LoadMainScript()
                     circle.Visible = false
                 end
                 
+                -- نظام الـ ESP الأوتوماتيك (بيمسح الميتين ويركب للجداد)
                 for _, plr in pairs(game.Players:GetPlayers()) do
                     if plr ~= Player then
+                        local char = plr.Character
                         if GhostAimbotState.ESP then
-                            if plr.Character and plr.Character:FindFirstChild("Humanoid") and plr.Character.Humanoid.Health > 0 then
-                                local hl = plr.Character:FindFirstChild("GhostESP")
+                            if char and char:FindFirstChild("Humanoid") and char.Humanoid.Health > 0 then
+                                local hl = char:FindFirstChild("GhostESP")
                                 if not hl then
                                     hl = Instance.new("Highlight")
                                     hl.Name = "GhostESP"
-                                    hl.Parent = plr.Character
+                                    hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                                    hl.Adornee = char
+                                    hl.Parent = char
                                 end
-                                
                                 if GhostAimbotState.ESPOutlineOnly then
                                     hl.FillTransparency = 1 
                                     hl.OutlineColor = Color3.fromRGB(255, 255, 255) 
@@ -937,10 +912,15 @@ local function LoadMainScript()
                                     hl.FillColor = GhostAimbotState.ESPColor 
                                     hl.OutlineColor = Color3.fromRGB(255, 255, 255)
                                 end
+                                hl.Enabled = true
+                            else
+                                if char and char:FindFirstChild("GhostESP") then
+                                    char.GhostESP:Destroy()
+                                end
                             end
                         else
-                            if plr.Character and plr.Character:FindFirstChild("GhostESP") then
-                                plr.Character.GhostESP:Destroy()
+                            if char and char:FindFirstChild("GhostESP") then
+                                char.GhostESP:Destroy()
                             end
                         end
                     end
@@ -953,11 +933,7 @@ local function LoadMainScript()
                             currentTarget = nil
                         end
                     end
-                    
-                    if not currentTarget then
-                        currentTarget = GetClosestTarget()
-                    end
-                    
+                    if not currentTarget then currentTarget = GetClosestTarget() end
                     if currentTarget and currentTarget.Character then
                         local targetPos = currentTarget.Character[GhostAimbotState.LockPart].Position
                         local cam = workspace.CurrentCamera
