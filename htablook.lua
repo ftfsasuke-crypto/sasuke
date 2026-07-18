@@ -547,7 +547,7 @@ end)
 
 local space3 = Instance.new("Frame"); space3.Size = UDim2.new(1,0,0,5); space3.BackgroundTransparency = 1; space3.Parent = Scroll
 
--- [3. زر الإعدادات الأسطورية السريعة]
+-- [3. زر الإعدادات الأسطورية السريعة - مُعدل ليعمل Reset أولاً]
 local quickSettingsBtn = Instance.new("TextButton")
 quickSettingsBtn.Size = UDim2.new(1, 0, 0, 35)
 quickSettingsBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 166)
@@ -559,6 +559,24 @@ Instance.new("UICorner", quickSettingsBtn).CornerRadius = UDim.new(0, 6)
 quickSettingsBtn.Parent = Scroll
 
 quickSettingsBtn.MouseButton1Click:Connect(function()
+    -- 1. إطفاء أي إعدادات تانية شغالة عشان ننظف السكربت الأول
+    GhostAimbotState.ShowFOV = false
+    if UIElements["ShowFOV"] then UIElements["ShowFOV"].BackgroundColor3 = Color3.fromRGB(20, 30, 50) end
+    
+    GhostAimbotState.ESP = false
+    if UIElements["ESP"] then UIElements["ESP"].BackgroundColor3 = Color3.fromRGB(20, 30, 50) end
+    
+    GhostAimbotState.ESPOutlineOnly = false
+    if UIElements["ESPOutlineOnly"] then UIElements["ESPOutlineOnly"].BackgroundColor3 = Color3.fromRGB(20, 30, 50) end
+    
+    if GhostAimbotState.FPSBoost then
+        GhostAimbotState.FPSBoost = false
+        if UIElements["FPSBoost"] then UIElements["FPSBoost"].BackgroundColor3 = Color3.fromRGB(20, 30, 50) end
+        pcall(function() game:GetService("Lighting").GlobalShadows = true end)
+        if fpsBoostLoop then fpsBoostLoop:Disconnect() fpsBoostLoop = nil end
+    end
+
+    -- 2. تفعيل الإعدادات الأسطورية فقط
     GhostAimbotState.Enabled = true
     if UIElements["Enabled"] then UIElements["Enabled"].BackgroundColor3 = accentColor end
     
@@ -578,7 +596,7 @@ quickSettingsBtn.MouseButton1Click:Connect(function()
     GhostAimbotState.SmartTarget = true
     if UIElements["SmartTarget"] then UIElements["SmartTarget"].BackgroundColor3 = accentColor end
     
-    quickSettingsBtn.Text = "تم التفعيل!"
+    quickSettingsBtn.Text = "تم التفعيل بنجاح!"
     task.wait(1)
     quickSettingsBtn.Text = "⚡ إعدادات أسطورية"
 end)
