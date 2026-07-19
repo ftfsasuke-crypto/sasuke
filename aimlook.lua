@@ -1,5 +1,6 @@
 -- ==========================================
 -- PRIVATE SCRIPT INTERFACE (HUB + NEW FULL AIMBOT)
+-- Includes: VIP Rejoin Bypass, Bulletproof ESP, Anti-Duplicate, Perfect Mouse Unlock
 -- ==========================================
 
 local Player = game.Players.LocalPlayer
@@ -62,6 +63,14 @@ local function LoadMainScript()
     MainFrame.Active = true
     MainFrame.ClipsDescendants = true
     MainFrame.Parent = ScreenGui
+
+    -- [ زر مخفي لجعل الماوس حر أثناء فتح الهب ]
+    local HubModal = Instance.new("TextButton")
+    HubModal.Size = UDim2.new(0, 0, 0, 0)
+    HubModal.BackgroundTransparency = 1
+    HubModal.Text = ""
+    HubModal.Modal = true
+    HubModal.Parent = MainFrame
 
     local MainCorner = Instance.new("UICorner")
     MainCorner.CornerRadius = UDim.new(0, 8)
@@ -240,22 +249,22 @@ local function LoadMainScript()
     AddCopyButton(ContentFrame_Keys, "نسخ مفتاج vd", "VONIXE-PREM-ULUYRU7ZGZXQ")
     AddCopyButton(ContentFrame_Keys, "كود مفتاح ftf", "11699551-b355-4525-9879-84446c50dd99")
 
-    -- إخفاء واظهار الواجهة عبر Right Control
-    UIS.InputBegan:Connect(function(input, gpe)
-        if not gpe and input.KeyCode == Enum.KeyCode.RightControl then
-            local aimbotGui = CoreGui:FindFirstChild("GhostAimbotGUI_Standalone")
-            if aimbotGui then aimbotGui.Enabled = not aimbotGui.Enabled end
-            
-            local fovCircle = CoreGui:FindFirstChild("GhostFOVCircle_Standalone")
-            if fovCircle then fovCircle.Enabled = not fovCircle.Enabled end
-        end
-    end)
-
     -- =========================================================
-    -- واجهة الايمبوت المدمجة (الجديدة كلياً بالـ Reset السحري)
+    -- واجهة الايمبوت المدمجة (النسخة النهائية الأسطورية)
     -- =========================================================
     local function LaunchAimbotGUI()
-        if CoreGui:FindFirstChild("GhostAimbotGUI_Standalone") then return end
+        
+        -- [ نظام الحماية من التكرار ]
+        if _G.GhostAimbotCleanup then
+            pcall(function() _G.GhostAimbotCleanup() end)
+            task.wait(0.2)
+        end
+
+        local aim_bgColor = Color3.fromRGB(15, 25, 45)       
+        local aim_topBarColor = Color3.fromRGB(10, 15, 30)   
+        local aim_elementColor = Color3.fromRGB(25, 40, 70)  
+        local aim_textColor = Color3.fromRGB(240, 240, 240)
+        local aim_accentColor = Color3.fromRGB(255, 215, 0) 
 
         local GhostAimbotState = {
             Enabled = false,
@@ -273,121 +282,131 @@ local function LoadMainScript()
             FPSCap = 60
         }
 
+        -- [ فولدر الـ ESP المضاد للتبويظ ]
+        local ESPFolder = CoreGui:FindFirstChild("GhostESPFolder_Standalone")
+        if ESPFolder then ESPFolder:Destroy() end
+        ESPFolder = Instance.new("Folder")
+        ESPFolder.Name = "GhostESPFolder_Standalone"
+        ESPFolder.Parent = CoreGui
+
         local Gui = Instance.new("ScreenGui")
         Gui.Name = "GhostAimbotGUI_Standalone"
+        Gui.ResetOnSpawn = false
         Gui.Parent = CoreGui
 
         local Frame = Instance.new("Frame")
-        Frame.Size = UDim2.new(0, 260, 0, 480)
-        Frame.Position = UDim2.new(-0.5, 0, 0.5, -150)
-        Frame.BackgroundColor3 = Color3.fromRGB(15, 25, 45) 
+        Frame.Size = UDim2.new(0, 420, 0, 580)
+        Frame.Position = UDim2.new(-0.5, 0, 0.5, -290)
+        Frame.BackgroundColor3 = aim_bgColor 
         Frame.Active = true
         Frame.Draggable = true
-        Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 6)
+        Instance.new("UICorner", Frame).CornerRadius = UDim.new(0, 8)
         local stroke = Instance.new("UIStroke", Frame)
         stroke.Color = Color3.fromRGB(40, 55, 80)
-        stroke.Thickness = 1
+        stroke.Thickness = 1.5
         Frame.Parent = Gui
 
-        TS:Create(Frame, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2.new(0, 20, 0.5, -150)}):Play()
+        -- [ زر مخفي يجبر الماوس على التحرر أثناء فتح الإيمبوت فقط بـ Modal ]
+        local AimbotModal = Instance.new("TextButton")
+        AimbotModal.Size = UDim2.new(0, 0, 0, 0)
+        AimbotModal.BackgroundTransparency = 1
+        AimbotModal.Text = ""
+        AimbotModal.Modal = true 
+        AimbotModal.Parent = Frame
+
+        TS:Create(Frame, TweenInfo.new(0.5, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Position = UDim2.new(0, 50, 0.5, -290)}):Play()
 
         local TitleBar = Instance.new("Frame")
-        TitleBar.Size = UDim2.new(1, 0, 0, 30)
-        TitleBar.BackgroundColor3 = Color3.fromRGB(10, 15, 30)
-        Instance.new("UICorner", TitleBar).CornerRadius = UDim.new(0, 6)
+        TitleBar.Size = UDim2.new(1, 0, 0, 45)
+        TitleBar.BackgroundColor3 = aim_topBarColor
+        Instance.new("UICorner", TitleBar).CornerRadius = UDim.new(0, 8)
         TitleBar.Parent = Frame
 
         local TitleLine = Instance.new("Frame")
-        TitleLine.Size = UDim2.new(1, 0, 0, 1)
+        TitleLine.Size = UDim2.new(1, 0, 0, 2)
         TitleLine.Position = UDim2.new(0, 0, 1, 0)
-        TitleLine.BackgroundColor3 = accentColor
+        TitleLine.BackgroundColor3 = aim_accentColor
         TitleLine.BorderSizePixel = 0
         TitleLine.Parent = TitleBar
 
         local Title = Instance.new("TextLabel")
-        Title.Size = UDim2.new(0, 150, 1, 0)
-        Title.Position = UDim2.new(0, 10, 0, 0)
+        Title.Size = UDim2.new(0, 200, 1, 0)
+        Title.Position = UDim2.new(0, 20, 0, 0)
         Title.BackgroundTransparency = 1
         Title.Text = "GHOST AIMBOT FULL"
-        Title.TextColor3 = textColor
+        Title.TextColor3 = aim_textColor
         Title.Font = Enum.Font.GothamBold
-        Title.TextSize = 13
+        Title.TextSize = 17
         Title.TextXAlignment = Enum.TextXAlignment.Left
         Title.Parent = TitleBar
 
         local SubTitle = Instance.new("TextLabel")
-        SubTitle.Size = UDim2.new(0, 100, 1, 0)
-        SubTitle.Position = UDim2.new(0, 145, 0, 0)
+        SubTitle.Size = UDim2.new(0, 120, 1, 0)
+        SubTitle.Position = UDim2.new(0, 215, 0, 0)
         SubTitle.BackgroundTransparency = 1
-        SubTitle.Text = " / standalone"
-        SubTitle.TextColor3 = accentColor
+        SubTitle.Text = "/ standalone"
+        SubTitle.TextColor3 = aim_accentColor
         SubTitle.Font = Enum.Font.GothamSemibold
-        SubTitle.TextSize = 11
+        SubTitle.TextSize = 14
         SubTitle.TextXAlignment = Enum.TextXAlignment.Left
         SubTitle.Parent = TitleBar
 
         local CloseBtn = Instance.new("TextButton")
-        CloseBtn.Size = UDim2.new(0, 30, 0, 30)
-        CloseBtn.Position = UDim2.new(1, -30, 0, 0)
+        CloseBtn.Size = UDim2.new(0, 45, 0, 45)
+        CloseBtn.Position = UDim2.new(1, -45, 0, 0)
         CloseBtn.BackgroundTransparency = 1
         CloseBtn.Text = "X"
-        CloseBtn.TextColor3 = Color3.fromRGB(200, 50, 50)
+        CloseBtn.TextColor3 = Color3.fromRGB(220, 60, 60)
         CloseBtn.Font = Enum.Font.GothamBold
-        CloseBtn.TextSize = 13
+        CloseBtn.TextSize = 18
         CloseBtn.Parent = TitleBar
 
         local fpsBoostLoop = nil 
         local aimbotConnection = nil
         local inputBeganConnection = nil
         local inputEndedConnection = nil
-        local keybindConnection = nil
+        local toggleUiConnection = nil
 
+        -- [ دالة التنظيف الشاملة ]
         local function CleanUpAimbot()
             GhostAimbotState.Enabled = false
-            GhostAimbotState.ShowFOV = false
             GhostAimbotState.ESP = false
-            GhostAimbotState.SmartTarget = false
-            GhostAimbotState.ESPOutlineOnly = false
             GhostAimbotState.FPSBoost = false
-            GhostAimbotState.FPSCap = 60
             
             pcall(function() if setfpscap then setfpscap(60) end end)
-            game:GetService("Lighting").GlobalShadows = true
-            if fpsBoostLoop then fpsBoostLoop:Disconnect() fpsBoostLoop = nil end
+            pcall(function() game:GetService("Lighting").GlobalShadows = true end)
             
+            if fpsBoostLoop then fpsBoostLoop:Disconnect() fpsBoostLoop = nil end
             if aimbotConnection then aimbotConnection:Disconnect() aimbotConnection = nil end
             if inputBeganConnection then inputBeganConnection:Disconnect() inputBeganConnection = nil end
             if inputEndedConnection then inputEndedConnection:Disconnect() inputEndedConnection = nil end
-            if keybindConnection then keybindConnection:Disconnect() keybindConnection = nil end
+            if toggleUiConnection then toggleUiConnection:Disconnect() toggleUiConnection = nil end
             
-            local fovGui = CoreGui:FindFirstChild("GhostFOVCircle_Standalone")
-            if fovGui then fovGui:Destroy() end
+            if CoreGui:FindFirstChild("GhostAimbotGUI_Standalone") then CoreGui.GhostAimbotGUI_Standalone:Destroy() end
+            if CoreGui:FindFirstChild("GhostFOVCircle_Standalone") then CoreGui.GhostFOVCircle_Standalone:Destroy() end
+            if CoreGui:FindFirstChild("GhostESPFolder_Standalone") then CoreGui.GhostESPFolder_Standalone:Destroy() end
             
-            for _, plr in pairs(game.Players:GetPlayers()) do
-                if plr.Character and plr.Character:FindFirstChild("GhostESP") then
-                    plr.Character.GhostESP:Destroy()
-                end
-            end
+            _G.GhostAimbotCleanup = nil
         end
+        _G.GhostAimbotCleanup = CleanUpAimbot
 
         CloseBtn.MouseButton1Click:Connect(function() 
-            CleanUpAimbot()
             local closeAnim = TS:Create(Frame, TweenInfo.new(0.4, Enum.EasingStyle.Quart, Enum.EasingDirection.In), {Position = UDim2.new(-0.5, 0, Frame.Position.Y.Scale, Frame.Position.Y.Offset)})
             closeAnim:Play()
             closeAnim.Completed:Wait()
-            Gui:Destroy() 
+            CleanUpAimbot()
         end)
 
         local Scroll = Instance.new("ScrollingFrame")
-        Scroll.Size = UDim2.new(1, 0, 1, -35)
-        Scroll.Position = UDim2.new(0, 0, 0, 35)
+        Scroll.Size = UDim2.new(1, 0, 1, -50)
+        Scroll.Position = UDim2.new(0, 0, 0, 50)
         Scroll.BackgroundTransparency = 1
-        Scroll.ScrollBarThickness = 2
+        Scroll.ScrollBarThickness = 4
         Scroll.ScrollBarImageColor3 = Color3.fromRGB(80, 100, 140)
         Scroll.Parent = Frame
 
         local Layout = Instance.new("UIListLayout")
-        Layout.Padding = UDim.new(0, 8)
+        Layout.Padding = UDim.new(0, 12)
         Layout.SortOrder = Enum.SortOrder.LayoutOrder
         Layout.Parent = Scroll
 
@@ -396,80 +415,80 @@ local function LoadMainScript()
         end)
 
         local Pad = Instance.new("UIPadding")
-        Pad.PaddingLeft = UDim.new(0, 10)
-        Pad.PaddingRight = UDim.new(0, 10)
-        Pad.PaddingTop = UDim.new(0, 5)
+        Pad.PaddingLeft = UDim.new(0, 15)
+        Pad.PaddingRight = UDim.new(0, 15)
+        Pad.PaddingTop = UDim.new(0, 10)
         Pad.Parent = Scroll
 
         local UIElements = {} 
 
         local function AddToggle(text, stateKey, callback)
             local btn = Instance.new("TextButton")
-            btn.Size = UDim2.new(1, 0, 0, 32)
-            btn.BackgroundColor3 = Color3.fromRGB(25, 40, 70)
-            btn.Text = "   " .. text
-            btn.TextColor3 = textColor
+            btn.Size = UDim2.new(1, 0, 0, 46) 
+            btn.BackgroundColor3 = aim_elementColor
+            btn.Text = "    " .. text
+            btn.TextColor3 = aim_textColor
             btn.Font = Enum.Font.GothamSemibold
-            btn.TextSize = 13
+            btn.TextSize = 15
             btn.TextXAlignment = Enum.TextXAlignment.Left
             btn.AutoButtonColor = false
-            Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
+            Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
             Instance.new("UIStroke", btn).Color = Color3.fromRGB(40, 55, 80)
             btn.Parent = Scroll
             
             local indicator = Instance.new("Frame")
-            indicator.Size = UDim2.new(0, 14, 0, 14)
-            indicator.Position = UDim2.new(1, -25, 0.5, -7)
-            indicator.BackgroundColor3 = GhostAimbotState[stateKey] and accentColor or Color3.fromRGB(20, 30, 50)
-            Instance.new("UICorner", indicator).CornerRadius = UDim.new(0, 3)
+            indicator.Size = UDim2.new(0, 20, 0, 20)
+            indicator.Position = UDim2.new(1, -35, 0.5, -10)
+            indicator.BackgroundColor3 = GhostAimbotState[stateKey] and aim_accentColor or Color3.fromRGB(20, 30, 50)
+            Instance.new("UICorner", indicator).CornerRadius = UDim.new(0, 4)
             indicator.Parent = btn
             
             UIElements[stateKey] = indicator 
             
             btn.MouseButton1Click:Connect(function()
                 GhostAimbotState[stateKey] = not GhostAimbotState[stateKey]
-                TS:Create(indicator, TweenInfo.new(0.2), {BackgroundColor3 = GhostAimbotState[stateKey] and accentColor or Color3.fromRGB(20, 30, 50)}):Play()
+                TS:Create(indicator, TweenInfo.new(0.2), {BackgroundColor3 = GhostAimbotState[stateKey] and aim_accentColor or Color3.fromRGB(20, 30, 50)}):Play()
                 if callback then callback(GhostAimbotState[stateKey]) end
             end)
         end
 
         local function AddDropdown(text, options, stateKey)
             local container = Instance.new("Frame")
-            container.Size = UDim2.new(1, 0, 0, 32)
+            container.Size = UDim2.new(1, 0, 0, 46)
             container.BackgroundTransparency = 1
             container.ClipsDescendants = true
             container.Parent = Scroll
             
             local btn = Instance.new("TextButton")
-            btn.Size = UDim2.new(1, 0, 0, 32)
-            btn.BackgroundColor3 = Color3.fromRGB(25, 40, 70)
-            btn.Text = "   " .. text .. ": " .. GhostAimbotState[stateKey]
-            btn.TextColor3 = textColor
+            btn.Size = UDim2.new(1, 0, 0, 46)
+            btn.BackgroundColor3 = aim_elementColor
+            btn.Text = "    " .. text .. ": " .. GhostAimbotState[stateKey]
+            btn.TextColor3 = aim_textColor
             btn.Font = Enum.Font.GothamSemibold
-            btn.TextSize = 13
+            btn.TextSize = 15
             btn.TextXAlignment = Enum.TextXAlignment.Left
             btn.AutoButtonColor = false
-            Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
+            Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
             Instance.new("UIStroke", btn).Color = Color3.fromRGB(40, 55, 80)
             btn.Parent = container
 
             UIElements[stateKey] = btn 
 
             local arrow = Instance.new("TextLabel")
-            arrow.Size = UDim2.new(0, 30, 1, 0)
-            arrow.Position = UDim2.new(1, -30, 0, 0)
+            arrow.Size = UDim2.new(0, 35, 1, 0)
+            arrow.Position = UDim2.new(1, -35, 0, 0)
             arrow.BackgroundTransparency = 1
             arrow.Text = "▼"
-            arrow.TextColor3 = accentColor
+            arrow.TextColor3 = aim_accentColor
             arrow.Font = Enum.Font.GothamBold
-            arrow.TextSize = 12
+            arrow.TextSize = 15
             arrow.Parent = btn
             
             local dropList = Instance.new("Frame")
-            dropList.Size = UDim2.new(1, 0, 0, #options * 30)
-            dropList.Position = UDim2.new(0, 0, 0, 35)
-            dropList.BackgroundColor3 = Color3.fromRGB(10, 15, 30)
-            Instance.new("UICorner", dropList).CornerRadius = UDim.new(0, 4)
+            dropList.Size = UDim2.new(1, 0, 0, #options * 38)
+            dropList.Position = UDim2.new(0, 0, 0, 50)
+            dropList.BackgroundColor3 = aim_topBarColor
+            Instance.new("UICorner", dropList).CornerRadius = UDim.new(0, 6)
             Instance.new("UIStroke", dropList).Color = Color3.fromRGB(40, 55, 80)
             dropList.Parent = container
             
@@ -482,118 +501,121 @@ local function LoadMainScript()
                 isOpen = not isOpen
                 arrow.Text = isOpen and "▲" or "▼"
                 if isOpen then
-                    TS:Create(container, TweenInfo.new(0.2), {Size = UDim2.new(1, 0, 0, 35 + (#options * 30))}):Play()
+                    TS:Create(container, TweenInfo.new(0.2), {Size = UDim2.new(1, 0, 0, 50 + (#options * 38))}):Play()
                 else
-                    TS:Create(container, TweenInfo.new(0.2), {Size = UDim2.new(1, 0, 0, 32)}):Play()
+                    TS:Create(container, TweenInfo.new(0.2), {Size = UDim2.new(1, 0, 0, 46)}):Play()
                 end
             end)
             
             for i, opt in ipairs(options) do
                 local optBtn = Instance.new("TextButton")
-                optBtn.Size = UDim2.new(1, 0, 0, 30)
-                optBtn.BackgroundColor3 = Color3.fromRGB(10, 15, 30)
+                optBtn.Size = UDim2.new(1, 0, 0, 38)
+                optBtn.BackgroundColor3 = aim_topBarColor
                 optBtn.Text = "      " .. opt
                 optBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
                 optBtn.Font = Enum.Font.Gotham
-                optBtn.TextSize = 12
+                optBtn.TextSize = 14
                 optBtn.TextXAlignment = Enum.TextXAlignment.Left
                 optBtn.AutoButtonColor = false
                 optBtn.Parent = dropList
                 
-                optBtn.MouseEnter:Connect(function() optBtn.TextColor3 = accentColor end)
+                optBtn.MouseEnter:Connect(function() optBtn.TextColor3 = aim_accentColor end)
                 optBtn.MouseLeave:Connect(function() optBtn.TextColor3 = Color3.fromRGB(200, 200, 200) end)
                 
                 optBtn.MouseButton1Click:Connect(function()
                     GhostAimbotState[stateKey] = opt
-                    btn.Text = "   " .. text .. ": " .. opt
+                    btn.Text = "    " .. text .. ": " .. opt
                     isOpen = false
                     arrow.Text = "▼"
-                    TS:Create(container, TweenInfo.new(0.2), {Size = UDim2.new(1, 0, 0, 32)}):Play()
+                    TS:Create(container, TweenInfo.new(0.2), {Size = UDim2.new(1, 0, 0, 46)}):Play()
                 end)
             end
         end
-        
+
         local function AddKeybind(text, stateKey)
             local btn = Instance.new("TextButton")
-            btn.Size = UDim2.new(1, 0, 0, 32)
-            btn.BackgroundColor3 = Color3.fromRGB(25, 40, 70)
-            btn.Text = "   " .. text
-            btn.TextColor3 = textColor
+            btn.Size = UDim2.new(1, 0, 0, 46)
+            btn.BackgroundColor3 = aim_elementColor
+            btn.Text = "    " .. text
+            btn.TextColor3 = aim_textColor
             btn.Font = Enum.Font.GothamSemibold
-            btn.TextSize = 13
+            btn.TextSize = 15
             btn.TextXAlignment = Enum.TextXAlignment.Left
             btn.AutoButtonColor = false
-            Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 4)
+            Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
             Instance.new("UIStroke", btn).Color = Color3.fromRGB(40, 55, 80)
             btn.Parent = Scroll
             
             local valText = Instance.new("TextLabel")
-            valText.Size = UDim2.new(0, 50, 1, 0)
-            valText.Position = UDim2.new(1, -60, 0, 0)
+            valText.Size = UDim2.new(0, 80, 1, 0)
+            valText.Position = UDim2.new(1, -90, 0, 0)
             valText.BackgroundTransparency = 1
             valText.Text = "[ " .. GhostAimbotState[stateKey].Name .. " ]"
-            valText.TextColor3 = accentColor
+            valText.TextColor3 = aim_accentColor
             valText.Font = Enum.Font.GothamBold
-            valText.TextSize = 13
+            valText.TextSize = 15
             valText.Parent = btn
             
             UIElements[stateKey] = valText
             
             local binding = false
+            local keyConnection = nil
             btn.MouseButton1Click:Connect(function()
                 binding = true
                 valText.Text = "[ ... ]"
-            end)
-            
-            keybindConnection = UIS.InputBegan:Connect(function(input)
-                if binding and input.UserInputType == Enum.UserInputType.Keyboard then
-                    binding = false
-                    GhostAimbotState[stateKey] = input.KeyCode
-                    valText.Text = "[ " .. input.KeyCode.Name .. " ]"
-                end
+                
+                if keyConnection then keyConnection:Disconnect() end
+                keyConnection = UIS.InputBegan:Connect(function(input)
+                    if binding and input.UserInputType == Enum.UserInputType.Keyboard then
+                        binding = false
+                        GhostAimbotState[stateKey] = input.KeyCode
+                        valText.Text = "[ " .. input.KeyCode.Name .. " ]"
+                        keyConnection:Disconnect()
+                    end
+                end)
             end)
         end
-        
+
         local function AddSlider(text, min, max, stateKey, callback)
             local frame = Instance.new("Frame")
-            frame.Size = UDim2.new(1, 0, 0, 45)
-            frame.BackgroundColor3 = Color3.fromRGB(25, 40, 70)
-            Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 4)
+            frame.Size = UDim2.new(1, 0, 0, 60)
+            frame.BackgroundColor3 = aim_elementColor
+            Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 6)
             Instance.new("UIStroke", frame).Color = Color3.fromRGB(40, 55, 80)
             frame.Parent = Scroll
             
             local lbl = Instance.new("TextLabel")
-            lbl.Size = UDim2.new(1, -10, 0, 20)
-            lbl.Position = UDim2.new(0, 10, 0, 5)
+            lbl.Size = UDim2.new(1, -10, 0, 30)
+            lbl.Position = UDim2.new(0, 15, 0, 5)
             lbl.BackgroundTransparency = 1
             lbl.Text = text
-            lbl.TextColor3 = textColor
+            lbl.TextColor3 = aim_textColor
             lbl.Font = Enum.Font.GothamSemibold
-            lbl.TextSize = 12
+            lbl.TextSize = 14
             lbl.TextXAlignment = Enum.TextXAlignment.Left
             lbl.Parent = frame
             
             local valLbl = Instance.new("TextLabel")
-            valLbl.Size = UDim2.new(0, 50, 0, 20)
-            valLbl.Position = UDim2.new(1, -60, 0, 5)
+            valLbl.Size = UDim2.new(0, 60, 0, 30)
+            valLbl.Position = UDim2.new(1, -75, 0, 5)
             valLbl.BackgroundTransparency = 1
             valLbl.Text = tostring(GhostAimbotState[stateKey]) .. "/" .. tostring(max)
-            valLbl.TextColor3 = accentColor
+            valLbl.TextColor3 = aim_accentColor
             valLbl.Font = Enum.Font.GothamBold
-            valLbl.TextSize = 12
+            valLbl.TextSize = 14
             valLbl.TextXAlignment = Enum.TextXAlignment.Right
             valLbl.Parent = frame
             
             local bar = Instance.new("Frame")
-            bar.Size = UDim2.new(1, -20, 0, 6)
-            bar.Position = UDim2.new(0, 10, 0, 30)
-            bar.BackgroundColor3 = Color3.fromRGB(10, 15, 30)
+            bar.Size = UDim2.new(1, -30, 0, 8)
+            bar.Position = UDim2.new(0, 15, 0, 40)
+            bar.BackgroundColor3 = aim_topBarColor
             Instance.new("UICorner", bar).CornerRadius = UDim.new(1, 0)
             bar.Parent = frame
             
             local fill = Instance.new("Frame")
             fill.Size = UDim2.new((GhostAimbotState[stateKey]-min)/(max-min), 0, 1, 0)
-            fill.BackgroundColor3 = accentColor
+            fill.BackgroundColor3 = aim_accentColor
             Instance.new("UICorner", fill).CornerRadius = UDim.new(1, 0)
             fill.Parent = bar
             
@@ -631,20 +653,20 @@ local function LoadMainScript()
 
         local function AddColorBoard(text)
             local frame = Instance.new("Frame")
-            frame.Size = UDim2.new(1, 0, 0, 55)
-            frame.BackgroundColor3 = Color3.fromRGB(25, 40, 70)
-            Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 4)
+            frame.Size = UDim2.new(1, 0, 0, 75)
+            frame.BackgroundColor3 = aim_elementColor
+            Instance.new("UICorner", frame).CornerRadius = UDim.new(0, 6)
             Instance.new("UIStroke", frame).Color = Color3.fromRGB(40, 55, 80)
             frame.Parent = Scroll
             
             local lbl = Instance.new("TextLabel")
-            lbl.Size = UDim2.new(1, -10, 0, 20)
-            lbl.Position = UDim2.new(0, 10, 0, 3)
+            lbl.Size = UDim2.new(1, -10, 0, 25)
+            lbl.Position = UDim2.new(0, 15, 0, 5)
             lbl.BackgroundTransparency = 1
             lbl.Text = text
-            lbl.TextColor3 = textColor
+            lbl.TextColor3 = aim_textColor
             lbl.Font = Enum.Font.GothamSemibold
-            lbl.TextSize = 12
+            lbl.TextSize = 14
             lbl.TextXAlignment = Enum.TextXAlignment.Left
             lbl.Parent = frame
             
@@ -658,8 +680,8 @@ local function LoadMainScript()
             }
             
             local container = Instance.new("Frame")
-            container.Size = UDim2.new(1, -20, 0, 22)
-            container.Position = UDim2.new(0, 10, 0, 25)
+            container.Size = UDim2.new(1, -30, 0, 30)
+            container.Position = UDim2.new(0, 15, 0, 35)
             container.BackgroundTransparency = 1
             container.Parent = frame
             
@@ -667,18 +689,18 @@ local function LoadMainScript()
             list.FillDirection = Enum.FillDirection.Horizontal
             list.HorizontalAlignment = Enum.HorizontalAlignment.Center
             list.VerticalAlignment = Enum.VerticalAlignment.Center
-            list.Padding = UDim.new(0, 12)
+            list.Padding = UDim.new(0, 18)
             list.Parent = container
             
             for _, color in ipairs(colors) do
                 local cBtn = Instance.new("TextButton")
-                cBtn.Size = UDim2.new(0, 18, 0, 18)
+                cBtn.Size = UDim2.new(0, 28, 0, 28)
                 cBtn.BackgroundColor3 = color
                 cBtn.Text = ""
                 Instance.new("UICorner", cBtn).CornerRadius = UDim.new(1, 0)
                 local cStroke = Instance.new("UIStroke", cBtn)
                 cStroke.Color = GhostAimbotState.ESPColor == color and Color3.fromRGB(255, 255, 255) or Color3.fromRGB(0, 0, 0)
-                cStroke.Thickness = 1.5
+                cStroke.Thickness = 2
                 cBtn.Parent = container
                 
                 cBtn.MouseButton1Click:Connect(function()
@@ -691,8 +713,8 @@ local function LoadMainScript()
                 end)
             end
         end
-        
-        -- إضافات الايمبوت
+
+        -- واجهة الإضافات
         AddToggle("Aimlock", "Enabled")
         AddDropdown("Mode", {"Hold", "Toggle"}, "Mode")
         AddKeybind("Aimlock Key", "Key")
@@ -707,37 +729,42 @@ local function LoadMainScript()
 
         local space = Instance.new("Frame"); space.Size = UDim2.new(1,0,0,5); space.BackgroundTransparency = 1; space.Parent = Scroll
 
-        -- [1. زر الريجوين مع التشغيل التلقائي للايمبوت]
+        -- [1. زر الريجوين - الخدعة البرمجية (Bypass) للسيرفرات الـ VIP ]
         local rejoinBtn = Instance.new("TextButton")
-        rejoinBtn.Size = UDim2.new(1, 0, 0, 35)
-        rejoinBtn.BackgroundColor3 = Color3.fromRGB(25, 40, 70)
+        rejoinBtn.Size = UDim2.new(1, 0, 0, 50)
+        rejoinBtn.BackgroundColor3 = aim_elementColor
         rejoinBtn.Text = "Rejoin Server"
-        rejoinBtn.TextColor3 = textColor
+        rejoinBtn.TextColor3 = aim_textColor
         rejoinBtn.Font = Enum.Font.GothamBold
-        rejoinBtn.TextSize = 13
+        rejoinBtn.TextSize = 15
         Instance.new("UICorner", rejoinBtn).CornerRadius = UDim.new(0, 6)
         rejoinBtn.Parent = Scroll
 
         rejoinBtn.MouseButton1Click:Connect(function()
             rejoinBtn.Text = "Rejoining..."
-            rejoinBtn.TextColor3 = accentColor
+            rejoinBtn.TextColor3 = aim_accentColor
             
             if writefile then pcall(function() writefile("GhostAutoLaunchAimbot.txt", "1") end) end
             
             task.spawn(function()
                 local ts = game:GetService("TeleportService")
                 local p = game.Players.LocalPlayer
-                local success, err = pcall(function()
-                    if #game.Players:GetPlayers() <= 1 or game.PrivateServerId ~= "" then
+                
+                local failConnection
+                failConnection = ts.TeleportInitFailed:Connect(function(player, teleportResult, errorMessage)
+                    if player == p then
+                        pcall(function() failConnection:Disconnect() end)
                         ts:Teleport(game.PlaceId, p)
-                    else
-                        ts:TeleportToPlaceInstance(game.PlaceId, game.JobId, p)
                     end
                 end)
-                if not success then pcall(function() ts:Teleport(game.PlaceId, p) end) end
+                
+                pcall(function()
+                    ts:TeleportToPlaceInstance(game.PlaceId, game.JobId, p)
+                end)
+                
                 task.wait(3)
                 rejoinBtn.Text = "Rejoin Server"
-                rejoinBtn.TextColor3 = textColor
+                rejoinBtn.TextColor3 = aim_textColor
             end)
         end)
 
@@ -745,18 +772,18 @@ local function LoadMainScript()
 
         -- [2. زر السيرفر هوب]
         local hopBtn = Instance.new("TextButton")
-        hopBtn.Size = UDim2.new(1, 0, 0, 35)
-        hopBtn.BackgroundColor3 = Color3.fromRGB(25, 40, 70)
+        hopBtn.Size = UDim2.new(1, 0, 0, 50)
+        hopBtn.BackgroundColor3 = aim_elementColor
         hopBtn.Text = "Server Hop"
-        hopBtn.TextColor3 = textColor
+        hopBtn.TextColor3 = aim_textColor
         hopBtn.Font = Enum.Font.GothamBold
-        hopBtn.TextSize = 13
+        hopBtn.TextSize = 15
         Instance.new("UICorner", hopBtn).CornerRadius = UDim.new(0, 6)
         hopBtn.Parent = Scroll
 
         hopBtn.MouseButton1Click:Connect(function()
             hopBtn.Text = "Hopping..."
-            hopBtn.TextColor3 = accentColor
+            hopBtn.TextColor3 = aim_accentColor
             task.spawn(function()
                 local TPS = game:GetService("TeleportService")
                 local Http = game:GetService("HttpService")
@@ -778,25 +805,24 @@ local function LoadMainScript()
                 if not success then pcall(function() TPS:Teleport(PlaceID, game.Players.LocalPlayer) end) end
                 task.wait(3)
                 hopBtn.Text = "Server Hop"
-                hopBtn.TextColor3 = textColor
+                hopBtn.TextColor3 = aim_textColor
             end)
         end)
 
         local space3 = Instance.new("Frame"); space3.Size = UDim2.new(1,0,0,5); space3.BackgroundTransparency = 1; space3.Parent = Scroll
 
-        -- [3. زر الإعدادات الأسطورية السريعة (زر الـ Reset)]
+        -- [3. زر الإعدادات الأسطورية السريعة]
         local quickSettingsBtn = Instance.new("TextButton")
-        quickSettingsBtn.Size = UDim2.new(1, 0, 0, 35)
+        quickSettingsBtn.Size = UDim2.new(1, 0, 0, 50)
         quickSettingsBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 166)
         quickSettingsBtn.Text = "⚡ إعدادات أسطورية"
         quickSettingsBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
         quickSettingsBtn.Font = Enum.Font.GothamBold
-        quickSettingsBtn.TextSize = 13
+        quickSettingsBtn.TextSize = 15
         Instance.new("UICorner", quickSettingsBtn).CornerRadius = UDim.new(0, 6)
         quickSettingsBtn.Parent = Scroll
 
         quickSettingsBtn.MouseButton1Click:Connect(function()
-            -- إطفاء أي إعدادات تانية شغالة (تنظيف السكربت)
             GhostAimbotState.ShowFOV = false
             if UIElements["ShowFOV"] then UIElements["ShowFOV"].BackgroundColor3 = Color3.fromRGB(20, 30, 50) end
             
@@ -813,32 +839,31 @@ local function LoadMainScript()
                 if fpsBoostLoop then fpsBoostLoop:Disconnect() fpsBoostLoop = nil end
             end
 
-            -- تفعيل الإعدادات الأسطورية فقط
             GhostAimbotState.Enabled = true
-            if UIElements["Enabled"] then UIElements["Enabled"].BackgroundColor3 = accentColor end
+            if UIElements["Enabled"] then UIElements["Enabled"].BackgroundColor3 = aim_accentColor end
             
             GhostAimbotState.Mode = "Toggle"
-            if UIElements["Mode"] then UIElements["Mode"].Text = "   Mode: Toggle" end
+            if UIElements["Mode"] then UIElements["Mode"].Text = "    Mode: Toggle" end
             
             GhostAimbotState.Key = Enum.KeyCode.R
             if UIElements["Key"] then UIElements["Key"].Text = "[ R ]" end
             
             GhostAimbotState.LockPart = "HumanoidRootPart"
-            if UIElements["LockPart"] then UIElements["LockPart"].Text = "   Lock Part: HumanoidRootPart" end
+            if UIElements["LockPart"] then UIElements["LockPart"].Text = "    Lock Part: HumanoidRootPart" end
             
             GhostAimbotState.Smoothness = 10
             if UIElements["Smoothness_Fill"] then UIElements["Smoothness_Fill"].Size = UDim2.new(1, 0, 1, 0) end
             if UIElements["Smoothness_Lbl"] then UIElements["Smoothness_Lbl"].Text = "10/10" end
             
             GhostAimbotState.SmartTarget = true
-            if UIElements["SmartTarget"] then UIElements["SmartTarget"].BackgroundColor3 = accentColor end
+            if UIElements["SmartTarget"] then UIElements["SmartTarget"].BackgroundColor3 = aim_accentColor end
             
             quickSettingsBtn.Text = "تم التفعيل بنجاح!"
             task.wait(1)
             quickSettingsBtn.Text = "⚡ إعدادات أسطورية"
         end)
 
-        -- [4. الـ FPS Boost من غير ما يكسر الـ ESP]
+        -- [4. الـ FPS Boost]
         local function wipeDetails(v)
             if v:IsA("BasePart") and not v:IsA("MeshPart") then
                 v.Material = Enum.Material.SmoothPlastic
@@ -882,17 +907,38 @@ local function LoadMainScript()
             pcall(function() if setfpscap then setfpscap(val) end end)
         end)
 
+        -- [ إخفاء وإظهار الواجهة للمستخدم بضغطة واحدة صحيحة ]
+        toggleUiConnection = UIS.InputBegan:Connect(function(input, gpe)
+            if not gpe and input.KeyCode == Enum.KeyCode.RightControl then
+                if Gui then 
+                    Gui.Enabled = not Gui.Enabled 
+                end
+                
+                local fovGui = CoreGui:FindFirstChild("GhostFOVCircle_Standalone")
+                if fovGui then 
+                    if not Gui.Enabled then
+                        fovGui.Enabled = false
+                    else
+                        if GhostAimbotState.ShowFOV then
+                            fovGui.Enabled = true
+                        end
+                    end
+                end
+            end
+        end)
+
         -- دائرة الـ FOV
         local fovGui = Instance.new("ScreenGui")
         fovGui.Name = "GhostFOVCircle_Standalone"
         fovGui.IgnoreGuiInset = true 
+        fovGui.ResetOnSpawn = false 
         fovGui.Parent = CoreGui
 
         local circle = Instance.new("Frame")
         circle.BackgroundTransparency = 1
         circle.AnchorPoint = Vector2.new(0.5, 0.5)
         local str = Instance.new("UIStroke", circle)
-        str.Color = accentColor
+        str.Color = aim_accentColor
         str.Thickness = 1.5
         Instance.new("UICorner", circle).CornerRadius = UDim.new(1, 0)
         circle.Parent = fovGui
@@ -944,7 +990,7 @@ local function LoadMainScript()
             end
         end)
 
-        -- اللوب الرئيسي
+        -- اللوب الرئيسي (بدون إجبار للماوس لعدم تعليق الكاميرا)
         aimbotConnection = RunService.RenderStepped:Connect(function()
             local mouseLoc = UIS:GetMouseLocation()
             if GhostAimbotState.ShowFOV then
@@ -955,20 +1001,24 @@ local function LoadMainScript()
                 circle.Visible = false
             end
             
-            -- نظام الـ ESP الأوتوماتيك 
+            -- [ نظام الـ ESP المقاوم للتبويظ (Bulletproof) ]
             for _, plr in pairs(game.Players:GetPlayers()) do
                 if plr ~= Player then
                     local char = plr.Character
+                    local espName = plr.Name .. "_ESP"
+                    
                     if GhostAimbotState.ESP then
                         if char and char:FindFirstChild("Humanoid") and char.Humanoid.Health > 0 then
-                            local hl = char:FindFirstChild("GhostESP")
+                            local hl = ESPFolder:FindFirstChild(espName)
                             if not hl then
                                 hl = Instance.new("Highlight")
-                                hl.Name = "GhostESP"
+                                hl.Name = espName
                                 hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-                                hl.Adornee = char
-                                hl.Parent = char
+                                hl.Parent = ESPFolder
                             end
+                            
+                            hl.Adornee = char 
+                            
                             if GhostAimbotState.ESPOutlineOnly then
                                 hl.FillTransparency = 1 
                                 hl.OutlineColor = Color3.fromRGB(255, 255, 255) 
@@ -979,10 +1029,10 @@ local function LoadMainScript()
                             end
                             hl.Enabled = true
                         else
-                            if char and char:FindFirstChild("GhostESP") then char.GhostESP:Destroy() end
+                            if ESPFolder:FindFirstChild(espName) then ESPFolder[espName]:Destroy() end
                         end
                     else
-                        if char and char:FindFirstChild("GhostESP") then char.GhostESP:Destroy() end
+                        if ESPFolder:FindFirstChild(espName) then ESPFolder[espName]:Destroy() end
                     end
                 end
             end
@@ -1110,7 +1160,7 @@ local function LoadMainScript()
     CreateScriptButton(ContentFrame_Scripts, "سكربت ftf", "https://api.jnkie.com/api/v1/luascripts/public/2111fcae4f4bfc3fca6c1f01cbf7ad9607b040f7ab7df277e6e1b573d5722b08/download")
 
     -- ==========================================
-    -- وظائف الأزرار والتنقل
+    -- وظائف الأزرار والتنقل الخاصة بالهب
     -- ==========================================
     local isHubOpen = false
 
