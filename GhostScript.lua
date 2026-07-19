@@ -764,8 +764,10 @@ local function LoadMainScript(expireTimestamp)
                                 if char then
                                     for _, v in pairs(char:GetDescendants()) do
                                         if v:IsA("BasePart") and v.CanCollide then
-                                            -- يخلي الأرض والماب الأساسية تتلمس عشان متقعش، بس يخترق الحيطان العادية
-                                            v.CanCollide = false
+                                            local n = v.Name:lower()
+                                            if not string.find(n, "leg") and not string.find(n, "foot") and v.Name ~= "HumanoidRootPart" then
+                                                v.CanCollide = false
+                                            end
                                         end
                                     end
                                 end
@@ -805,26 +807,67 @@ local function LoadMainScript(expireTimestamp)
                 loadstring(noclipScriptCode)()
             elseif scriptUrl == "CUSTOM_GHOST_INVISIBLE" then
                 local invScriptCode = [[
-                    local p = game.Players.LocalPlayer
+                    if _G.GhostInvisConnections then
+                        for _, conn in pairs(_G.GhostInvisConnections) do 
+                            pcall(function() conn:Disconnect() end)
+                        end
+                        pcall(function() game:GetService("RunService"):UnbindFromRenderStep("GhostInvisFix") end)
+                        _G.GhostInvisConnections = nil
+                    end
+
+                    local player = game.Players.LocalPlayer
+                    local UIS = game:GetService("UserInputService")
+                    local RunService = game:GetService("RunService")
                     local TS = game:GetService("TweenService")
+
+                    local character = nil
+                    local humanoid = nil
+                    local hrp = nil
+                    local isActive = false
+                    local parts = {}
+                    local invisHeartbeat = nil
+                    local savedCF = nil
+
+                    local function loadCharacter()
+                        character = player.Character or player.CharacterAdded:Wait()
+                        humanoid = character:WaitForChild("Humanoid")
+                        hrp = character:WaitForChild("HumanoidRootPart")
+                        parts = {}
+                        for _, part in pairs(character:GetDescendants()) do
+                            if part:IsA("BasePart") and part.Transparency == 0 then
+                                parts[#parts + 1] = part
+                            elseif part:IsA("Decal") then
+                                parts[#parts + 1] = part
+                            end
+                        end
+                        if hrp then
+                            savedCF = hrp.CFrame
+                        end
+                    end
+
+                    loadCharacter()
+
+                    if game.CoreGui:FindFirstChild("GhostInvisibleGUI_New") then 
+                        game.CoreGui.GhostInvisibleGUI_New:Destroy() 
+                    end
+
                     local SG = Instance.new("ScreenGui")
-                    SG.Name = "GhostInvisibleGUI"
-                    if game.CoreGui:FindFirstChild("GhostInvisibleGUI") then game.CoreGui.GhostInvisibleGUI:Destroy() end
+                    SG.Name = "GhostInvisibleGUI_New"
                     SG.Parent = game.CoreGui
-                    
+
                     local F = Instance.new("Frame")
                     F.Parent = SG
-                    F.BackgroundColor3 = Color3.fromRGB(15, 25, 45)
+                    F.BackgroundColor3 = Color3.fromRGB(15, 25, 45) 
                     F.Position = UDim2.new(1, 50, 0.5, 140)
                     F.Size = UDim2.new(0, 220, 0, 90)
                     F.Active = true
                     F.Draggable = true
                     F.ClipsDescendants = true
                     Instance.new("UICorner", F).CornerRadius = UDim.new(0, 8)
-                    Instance.new("UIStroke", F).Color = Color3.fromRGB(255, 215, 0)
-                    
+                    Instance.new("UIStroke", F).Color = Color3.fromRGB(255, 215, 0) 
+
                     TS:Create(F, TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(1, -240, 0.5, 140)}):Play()
-                    
+
                     local T = Instance.new("TextLabel")
                     T.Parent = F
                     T.BackgroundTransparency = 1
@@ -833,7 +876,7 @@ local function LoadMainScript(expireTimestamp)
                     T.Text = "Invisible Menu"
                     T.TextColor3 = Color3.fromRGB(255, 215, 0)
                     T.TextSize = 14
-                    
+
                     local X = Instance.new("TextButton")
                     X.Parent = F
                     X.BackgroundTransparency = 1
@@ -843,7 +886,7 @@ local function LoadMainScript(expireTimestamp)
                     X.Text = "X"
                     X.TextColor3 = Color3.fromRGB(255, 50, 50)
                     X.TextSize = 15
-                    
+
                     local Min = Instance.new("TextButton")
                     Min.Parent = F
                     Min.BackgroundTransparency = 1
@@ -853,7 +896,7 @@ local function LoadMainScript(expireTimestamp)
                     Min.Text = "—"
                     Min.TextColor3 = Color3.fromRGB(200, 200, 200)
                     Min.TextSize = 15
-                    
+
                     local ToggleBtn = Instance.new("TextButton")
                     ToggleBtn.Parent = F
                     ToggleBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
@@ -864,7 +907,7 @@ local function LoadMainScript(expireTimestamp)
                     ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
                     ToggleBtn.TextSize = 14
                     Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 6)
-                    
+
                     local isMin = false
                     Min.MouseButton1Click:Connect(function()
                         isMin = not isMin
@@ -874,125 +917,86 @@ local function LoadMainScript(expireTimestamp)
                             TS:Create(F, TweenInfo.new(0.2), {Size = UDim2.new(0, 220, 0, 90)}):Play()
                         end
                     end)
-                    
-                    local invEnabled = false
-                    local invLoop = nil
-                    local realChar = nil
-                    local cloneChar = nil
-                    local skyPlatform = nil
-                    
-                    ToggleBtn.MouseButton1Click:Connect(function()
-                        invEnabled = not invEnabled
-                        if invEnabled then
-                            realChar = p.Character
-                            if not realChar or not realChar:FindFirstChild("HumanoidRootPart") then invEnabled = false return end
-                            
-                            ToggleBtn.Text = "Visible"
-                            ToggleBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 166)
-                            
-                            local cam = workspace.CurrentCamera
-                            local savedCamCFrame = cam.CFrame 
-                            
-                            realChar.Archivable = true
-                            cloneChar = realChar:Clone()
-                            cloneChar.Parent = workspace
-                            cloneChar:PivotTo(realChar:GetPivot())
-                            
-                            p.Character = cloneChar
-                            cam.CameraSubject = cloneChar:FindFirstChild("Humanoid")
-                            
-                            -- بارت واحد بيتحرك معاك بالملي
-                            skyPlatform = Instance.new("Part")
-                            skyPlatform.Size = Vector3.new(5, 1, 5)
-                            skyPlatform.Anchored = true
-                            skyPlatform.Transparency = 1
-                            skyPlatform.CanCollide = true
-                            skyPlatform.Parent = workspace
-                            
-                            -- مسافة آمنة لفوق وجنب
-                            local offset = Vector3.new(100, 200, 100)
-                            realChar:PivotTo(cloneChar:GetPivot() + offset)
-                            
-                            -- منع هزة الكاميرا
-                            local camFix
-                            local ticks = 0
-                            camFix = game:GetService("RunService").RenderStepped:Connect(function()
-                                cam.CFrame = savedCamCFrame
-                                ticks = ticks + 1
-                                if ticks > 5 then camFix:Disconnect() end
-                            end)
-                            
-                            invLoop = game:GetService("RunService").Stepped:Connect(function()
-                                if cloneChar and realChar and cloneChar:FindFirstChild("HumanoidRootPart") and realChar:FindFirstChild("HumanoidRootPart") then
-                                    for _, v in pairs(cloneChar:GetDescendants()) do
-                                        if v:IsA("BasePart") and v.Name ~= "HumanoidRootPart" then
-                                            v.LocalTransparencyModifier = 0.5
-                                        elseif v:IsA("Decal") then
-                                            v.LocalTransparencyModifier = 0.5
-                                        end
-                                    end
-                                    
-                                    local targetCFrame = cloneChar.HumanoidRootPart.CFrame + offset
-                                    realChar.HumanoidRootPart.CFrame = targetCFrame
-                                    realChar.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
-                                    
-                                    -- البارت بيكون دايما تحت رجل الشخصية الأساسية
-                                    skyPlatform.CFrame = targetCFrame - Vector3.new(0, 3.1, 0)
-                                end
-                            end)
-                        else
-                            ToggleBtn.Text = "Invisible"
-                            ToggleBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
-                            if invLoop then invLoop:Disconnect() end
-                            
-                            local cam = workspace.CurrentCamera
-                            local savedCamCFrame = cam.CFrame
-                            
-                            if realChar and cloneChar then
-                                realChar:PivotTo(cloneChar:GetPivot())
-                                p.Character = realChar
-                                cam.CameraSubject = realChar:FindFirstChild("Humanoid")
-                                cloneChar:Destroy()
-                                
-                                local camFix
-                                local ticks = 0
-                                camFix = game:GetService("RunService").RenderStepped:Connect(function()
-                                    cam.CFrame = savedCamCFrame
-                                    ticks = ticks + 1
-                                    if ticks > 5 then camFix:Disconnect() end
-                                end)
-                            end
-                            if skyPlatform then skyPlatform:Destroy() end
-                        end
-                    end)
-                    
+
                     X.MouseButton1Click:Connect(function()
-                        if invLoop then invLoop:Disconnect() end
+                        isActive = false
+                        if invisHeartbeat then invisHeartbeat:Disconnect() invisHeartbeat = nil end
+                        pcall(function() RunService:UnbindFromRenderStep("GhostInvisFix") end)
+                        
+                        if hrp and savedCF then
+                            hrp.CFrame = savedCF
+                        end
+                        
                         pcall(function()
-                            local cam = workspace.CurrentCamera
-                            local savedCamCFrame = cam.CFrame
-                            
-                            if invEnabled and realChar and cloneChar then
-                                realChar:PivotTo(cloneChar:GetPivot())
-                                p.Character = realChar
-                                cam.CameraSubject = realChar:FindFirstChild("Humanoid")
-                                cloneChar:Destroy()
-                                
-                                local camFix
-                                local ticks = 0
-                                camFix = game:GetService("RunService").RenderStepped:Connect(function()
-                                    cam.CFrame = savedCamCFrame
-                                    ticks = ticks + 1
-                                    if ticks > 5 then camFix:Disconnect() end
-                                end)
+                            for _, part in pairs(parts) do
+                                part.LocalTransparencyModifier = 0
                             end
-                            if skyPlatform then skyPlatform:Destroy() end
                         end)
+                        
                         local closeAnim = TS:Create(F, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(1, 50, 0.5, 140)})
                         closeAnim:Play()
                         closeAnim.Completed:Wait()
                         SG:Destroy()
                     end)
+
+                    ToggleBtn.MouseButton1Click:Connect(function()
+                        isActive = not isActive
+                        if isActive then
+                            ToggleBtn.Text = "Visible"
+                            ToggleBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 166)
+                            
+                            if invisHeartbeat then invisHeartbeat:Disconnect() end
+                            pcall(function() RunService:UnbindFromRenderStep("GhostInvisFix") end)
+                            
+                            if hrp then savedCF = hrp.CFrame end
+                            
+                            invisHeartbeat = RunService.Heartbeat:Connect(function()
+                                if isActive and hrp and humanoid then
+                                    savedCF = hrp.CFrame
+                                    hrp.CFrame = savedCF * CFrame.new(0, 900, 0)
+                                end
+                            end)
+                            
+                            RunService:BindToRenderStep("GhostInvisFix", Enum.RenderPriority.Camera.Value - 1, function()
+                                if isActive and hrp and savedCF then
+                                    hrp.CFrame = savedCF
+                                    for _, part in pairs(parts) do
+                                        if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                                            part.LocalTransparencyModifier = 0.5
+                                        elseif part:IsA("Decal") then
+                                            part.LocalTransparencyModifier = 0.5
+                                        end
+                                    end
+                                end
+                            end)
+
+                        else
+                            ToggleBtn.Text = "Invisible"
+                            ToggleBtn.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+                            
+                            if invisHeartbeat then invisHeartbeat:Disconnect() invisHeartbeat = nil end
+                            pcall(function() RunService:UnbindFromRenderStep("GhostInvisFix") end)
+                            
+                            if hrp and savedCF then
+                                hrp.CFrame = savedCF
+                            end
+                            for _, part in pairs(parts) do
+                                if part:IsA("BasePart") then
+                                    part.LocalTransparencyModifier = 0
+                                elseif part:IsA("Decal") then
+                                    part.LocalTransparencyModifier = 0
+                                end
+                            end
+                        end
+                    end)
+
+                    local respawnConn
+                    respawnConn = player.CharacterAdded:Connect(function()
+                        task.wait(0.5)
+                        loadCharacter()
+                    end)
+
+                    _G.GhostInvisConnections = {respawnConn}
                 ]]
                 loadstring(invScriptCode)()
             else
