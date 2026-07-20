@@ -1,7 +1,7 @@
 -- ==========================================
 -- PRIVATE SCRIPT INTERFACE (HUB + NEW FULL AIMBOT)
 -- Includes: VIP Rejoin Bypass, Bulletproof ESP, Anti-Duplicate, Perfect Mouse Unlock
--- Features: Middle Click Toggle, 100% Revertible & Safe FPS Boost (No Lighting/Shadow touch)
+-- Features: Middle Click Toggle, Revertible FPS Boost, Flawless High-Tree Leaves Hider
 -- ==========================================
 
 local Player = game.Players.LocalPlayer
@@ -275,6 +275,7 @@ local function LoadMainScript()
             ESP = false,
             ESPColor = Color3.fromRGB(255, 215, 0), 
             ESPOutlineOnly = false,
+            HideTreeLeaves = false, -- ميزة العشب الجديدة
             FPSBoost = false,
             FPSCap = 60
         }
@@ -357,28 +358,52 @@ local function LoadMainScript()
         CloseBtn.Parent = TitleBar
 
         local fpsBoostLoop = nil 
+        local treeLeavesLoop = nil
         local aimbotConnection = nil
         local inputBeganConnection = nil
         local inputEndedConnection = nil
         local toggleUiConnection = nil
 
-        -- [ ذاكرة استرجاع الـ FPS Boost الآمنة 100% ]
-        local ChangedMaterials = {}
-        local HiddenDecals = {}
+        -- [ ذاكرة استرجاع الـ FPS Boost ]
+        local OriginalStates = {}
+        local HiddenElements = {}
         local TerrainOrig = {}
+        
+        -- [ ذاكرة استرجاع ورق الشجر ]
+        local OriginalLeaves = {}
 
         local function revertPotatoMode()
-            -- استرجاع الخامات
-            for obj, mat in pairs(ChangedMaterials) do
-                pcall(function() if obj then obj.Material = mat end end)
+            for obj, data in pairs(OriginalStates) do
+                pcall(function()
+                    if obj then
+                        if data.Material then obj.Material = data.Material end
+                        if data.Reflectance then obj.Reflectance = data.Reflectance end
+                        if data.Enabled ~= nil then obj.Enabled = data.Enabled end
+                    end
+                end)
             end
-            ChangedMaterials = {}
+            OriginalStates = {}
 
-            -- إظهار التفاصيل اللي كانت مخفية بشفافية
-            for obj, trans in pairs(HiddenDecals) do
-                pcall(function() if obj then obj.Transparency = trans end end)
+            for obj, parent in pairs(HiddenElements) do
+                pcall(function()
+                    if obj and parent then obj.Parent = parent end
+                end)
             end
-            HiddenDecals = {}
+            HiddenElements = {}
+        end
+
+        local function revertTreeLeaves()
+            for obj, data in pairs(OriginalLeaves) do
+                pcall(function()
+                    if obj then
+                        obj.Transparency = data.Transparency
+                        if data.CanCollide ~= nil then
+                            obj.CanCollide = data.CanCollide
+                        end
+                    end
+                end)
+            end
+            OriginalLeaves = {}
         end
 
         local function CleanUpAimbot()
@@ -387,11 +412,15 @@ local function LoadMainScript()
             GhostAimbotState.FPSBoost = false
             GhostAimbotState.SmartTarget = false
             GhostAimbotState.DistanceLock = false
+            GhostAimbotState.HideTreeLeaves = false
             
             pcall(function() if setfpscap then setfpscap(60) end end)
             
             if fpsBoostLoop then fpsBoostLoop:Disconnect() fpsBoostLoop = nil end
             revertPotatoMode()
+            
+            if treeLeavesLoop then treeLeavesLoop:Disconnect() treeLeavesLoop = nil end
+            revertTreeLeaves()
             
             local Terrain = workspace:FindFirstChildOfClass("Terrain")
             if Terrain then
@@ -774,6 +803,53 @@ local function LoadMainScript()
 
         local space = Instance.new("Frame"); space.Size = UDim2.new(1,0,0,5); space.BackgroundTransparency = 1; space.Parent = Scroll
 
+        -- [ دالة إخفاء الورق العالي (الخاص بالشجر فقط) ]
+        local function processTreeLeaf(v)
+            pcall(function()
+                if v:IsA("BasePart") then
+                    local name = v.Name:lower()
+                    local pName = (v.Parent and v.Parent.Name:lower()) or ""
+                    
+                    -- حماية قصوى: استثناء أي حاجة تبع المتاهة، الأرضية، الحيطان، الأسوار
+                    if name:match("maze") or pName:match("maze") or name:match("hedge") or pName:match("hedge") then return end
+                    if name:match("ground") or pName:match("ground") or name:match("floor") or pName:match("floor") then return end
+                    if name:match("wall") or pName:match("wall") then return end
+                    
+                    -- حماية إضافية للأسطح الكبيرة (مستحيل تكون ورق شجر)
+                    if v.Size.X > 80 or v.Size.Z > 80 then return end
+                    
+                    -- التأكد إن اللون لونه أخضر
+                    local isGreen = (v.Color.G > v.Color.R) and (v.Color.G > v.Color.B)
+                    
+                    -- السر هنا: الارتفاع! المتاهة والأرضية ارتفاعهم قليل، ورق الشجر بيكون عالي (أكثر من 14)
+                    if isGreen and v.Position.Y > 14 then
+                        if not OriginalLeaves[v] then
+                            OriginalLeaves[v] = {
+                                Transparency = v.Transparency,
+                                CanCollide = v.CanCollide
+                            }
+                        end
+                        v.Transparency = 1
+                        v.CanCollide = false
+                    end
+                end
+            end)
+        end
+
+        AddToggle("اخفاء العشب للشجر (Tree Leaves)", "HideTreeLeaves", function(state)
+            if state then
+                for _, v in pairs(workspace:GetDescendants()) do processTreeLeaf(v) end
+                treeLeavesLoop = workspace.DescendantAdded:Connect(function(v) 
+                    if GhostAimbotState.HideTreeLeaves then processTreeLeaf(v) end
+                end)
+            else
+                if treeLeavesLoop then treeLeavesLoop:Disconnect() treeLeavesLoop = nil end
+                revertTreeLeaves()
+            end
+        end)
+
+        local spaceX = Instance.new("Frame"); spaceX.Size = UDim2.new(1,0,0,5); spaceX.BackgroundTransparency = 1; spaceX.Parent = Scroll
+
         -- [1. زر الريجوين ]
         local rejoinBtn = Instance.new("TextButton")
         rejoinBtn.Size = UDim2.new(1, 0, 0, 50)
@@ -916,13 +992,28 @@ local function LoadMainScript()
             pcall(function()
                 if v:IsA("BasePart") and not v:IsA("Terrain") then
                     if v.Material ~= Enum.Material.SmoothPlastic then
-                        ChangedMaterials[v] = v.Material
+                        if not OriginalStates[v] then
+                            OriginalStates[v] = {
+                                Material = v.Material,
+                                Reflectance = v.Reflectance
+                            }
+                        end
                         v.Material = Enum.Material.SmoothPlastic
+                        v.Reflectance = 0
                     end
                 elseif v:IsA("Decal") or v:IsA("Texture") then
                     if v.Transparency < 1 then
-                        HiddenDecals[v] = v.Transparency
-                        v.Transparency = 1 -- التخفي الآمن بدل الحذف
+                        if not HiddenElements[v] then
+                            HiddenElements[v] = v.Parent
+                            v.Parent = nil
+                        end
+                    end
+                elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Beam") or v:IsA("Fire") or v:IsA("Smoke") or v:IsA("Sparkles") then
+                    if v.Enabled == true then
+                        if not OriginalStates[v] then
+                            OriginalStates[v] = { Enabled = v.Enabled }
+                        end
+                        v.Enabled = false
                     end
                 end
             end)
@@ -967,6 +1058,7 @@ local function LoadMainScript()
             pcall(function() if setfpscap then setfpscap(val) end end)
         end)
 
+        -- [ إخفاء وإظهار الواجهة + التبديل بين SmartTarget و DistanceLock ببكرة الماوس ]
         toggleUiConnection = UIS.InputBegan:Connect(function(input, gpe)
             if not gpe then
                 if input.KeyCode == Enum.KeyCode.RightControl then
