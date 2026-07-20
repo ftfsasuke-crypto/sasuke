@@ -1,7 +1,7 @@
 -- ==========================================
 -- PRIVATE SCRIPT INTERFACE (HUB + NEW FULL AIMBOT)
 -- Includes: VIP Rejoin Bypass, Bulletproof ESP, Anti-Duplicate, Perfect Mouse Unlock
--- Feature: True Nvidia Gamma, Middle Click Toggle, Revertible & Light-Safe FPS Boost
+-- Features: Middle Click Toggle, Revertible FPS Boost (No Gamma)
 -- ==========================================
 
 local Player = game.Players.LocalPlayer
@@ -275,47 +275,9 @@ local function LoadMainScript()
             ESP = false,
             ESPColor = Color3.fromRGB(255, 215, 0), 
             ESPOutlineOnly = false,
-            GammaBoost = false,
-            GammaValue = 50, 
             FPSBoost = false,
             FPSCap = 60
         }
-
-        local OrigLighting = {Saved = false}
-
-        local function UpdateGamma()
-            pcall(function()
-                local Lighting = game:GetService("Lighting")
-                local cc = Lighting:FindFirstChild("GhostGammaEffect")
-                
-                if GhostAimbotState.GammaBoost then
-                    if not OrigLighting.Saved then
-                        OrigLighting.Exposure = Lighting.ExposureCompensation
-                        OrigLighting.Saved = true
-                    end
-                    
-                    if not cc then
-                        cc = Instance.new("ColorCorrectionEffect")
-                        cc.Name = "GhostGammaEffect"
-                        cc.Parent = Lighting
-                    end
-                    
-                    local val = GhostAimbotState.GammaValue / 100 
-                    
-                    Lighting.ExposureCompensation = OrigLighting.Exposure + (val * 3) 
-                    cc.Contrast = -(val * 0.15)
-                    cc.Brightness = val * 0.05
-                    cc.Enabled = true
-                else
-                    if OrigLighting.Saved then
-                        Lighting.ExposureCompensation = OrigLighting.Exposure
-                    end
-                    if cc then
-                        cc.Enabled = false
-                    end
-                end
-            end)
-        end
 
         local ESPFolder = CoreGui:FindFirstChild("GhostESPFolder_Standalone")
         if ESPFolder then ESPFolder:Destroy() end
@@ -431,22 +393,10 @@ local function LoadMainScript()
             GhostAimbotState.FPSBoost = false
             GhostAimbotState.SmartTarget = false
             GhostAimbotState.DistanceLock = false
-            GhostAimbotState.GammaBoost = false
             
             pcall(function() if setfpscap then setfpscap(60) end end)
+            pcall(function() game:GetService("Lighting").GlobalShadows = true end)
             
-            -- استرجاع الألوان الخاصة بالماب
-            pcall(function()
-                local Lighting = game:GetService("Lighting")
-                if OrigLighting.Saved then
-                    Lighting.ExposureCompensation = OrigLighting.Exposure
-                end
-                if Lighting:FindFirstChild("GhostGammaEffect") then
-                    Lighting.GhostGammaEffect:Destroy()
-                end
-            end)
-
-            -- استرجاع تعديلات الـ FPS
             if fpsBoostLoop then fpsBoostLoop:Disconnect() fpsBoostLoop = nil end
             revertPotatoMode()
             
@@ -824,16 +774,6 @@ local function LoadMainScript()
                 end
             end
         end)
-        
-        AddToggle("Gamma Boost (Nvidia Style)", "GammaBoost", function(state)
-            UpdateGamma()
-        end)
-
-        AddSlider("Gamma Level (Testing)", 0, 100, "GammaValue", function(val)
-            if GhostAimbotState.GammaBoost then
-                UpdateGamma()
-            end
-        end)
 
         AddToggle("ESP (Players)", "ESP")
         AddColorBoard("ESP Color Board") 
@@ -841,7 +781,6 @@ local function LoadMainScript()
 
         local space = Instance.new("Frame"); space.Size = UDim2.new(1,0,0,5); space.BackgroundTransparency = 1; space.Parent = Scroll
 
-        -- [1. زر الريجوين - الخدعة البرمجية ]
         local rejoinBtn = Instance.new("TextButton")
         rejoinBtn.Size = UDim2.new(1, 0, 0, 50)
         rejoinBtn.BackgroundColor3 = aim_elementColor
@@ -882,7 +821,6 @@ local function LoadMainScript()
 
         local space2 = Instance.new("Frame"); space2.Size = UDim2.new(1,0,0,5); space2.BackgroundTransparency = 1; space2.Parent = Scroll
 
-        -- [2. زر السيرفر هوب]
         local hopBtn = Instance.new("TextButton")
         hopBtn.Size = UDim2.new(1, 0, 0, 50)
         hopBtn.BackgroundColor3 = aim_elementColor
@@ -923,7 +861,6 @@ local function LoadMainScript()
 
         local space3 = Instance.new("Frame"); space3.Size = UDim2.new(1,0,0,5); space3.BackgroundTransparency = 1; space3.Parent = Scroll
 
-        -- [3. زر الإعدادات الأسطورية السريعة]
         local quickSettingsBtn = Instance.new("TextButton")
         quickSettingsBtn.Size = UDim2.new(1, 0, 0, 50)
         quickSettingsBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 166)
@@ -973,20 +910,11 @@ local function LoadMainScript()
             GhostAimbotState.DistanceLock = false
             if UIElements["DistanceLock"] then UIElements["DistanceLock"].BackgroundColor3 = Color3.fromRGB(20, 30, 50) end
             
-            GhostAimbotState.GammaValue = 50
-            if UIElements["GammaValue_Lbl"] then UIElements["GammaValue_Lbl"].Text = "50/100" end
-            if UIElements["GammaValue_Fill"] then UIElements["GammaValue_Fill"].Size = UDim2.new(0.5, 0, 1, 0) end
-            
-            GhostAimbotState.GammaBoost = true
-            if UIElements["GammaBoost"] then UIElements["GammaBoost"].BackgroundColor3 = aim_accentColor end
-            UpdateGamma()
-            
             quickSettingsBtn.Text = "تم التفعيل بنجاح!"
             task.wait(1)
             quickSettingsBtn.Text = "⚡ إعدادات أسطورية"
         end)
 
-        -- [4. الـ FPS Boost باسترجاع وحماية الإضاءة ]
         local function applyPotatoMode(v)
             pcall(function()
                 if v:IsA("BasePart") then
