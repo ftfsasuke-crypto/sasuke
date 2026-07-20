@@ -1,7 +1,7 @@
 -- ==========================================
 -- PRIVATE SCRIPT INTERFACE (HUB + NEW FULL AIMBOT)
 -- Includes: VIP Rejoin Bypass, Bulletproof ESP, Anti-Duplicate, Perfect Mouse Unlock
--- New Feature: DistanceLock (Target Nearest Player ignoring FOV)
+-- Feature: True Nvidia Gamma, Middle Click Toggle, Revertible & Light-Safe FPS Boost
 -- ==========================================
 
 local Player = game.Players.LocalPlayer
@@ -65,7 +65,6 @@ local function LoadMainScript()
     MainFrame.ClipsDescendants = true
     MainFrame.Parent = ScreenGui
 
-    -- [ زر مخفي لجعل الماوس حر أثناء فتح الهب ]
     local HubModal = Instance.new("TextButton")
     HubModal.Size = UDim2.new(0, 0, 0, 0)
     HubModal.BackgroundTransparency = 1
@@ -214,9 +213,6 @@ local function LoadMainScript()
     local ContentFrame_Scripts, Layout_Scripts = CreateContentFrame(true)
     local ContentFrame_Keys, Layout_Keys = CreateContentFrame(false)
 
-    -- =========================================================
-    -- إنشاء أزرار النسخ (لقسم المفاتيح)
-    -- =========================================================
     local function AddCopyButton(parent, title, copyText)
         local btn = Instance.new("TextButton")
         btn.Size = UDim2.new(1, 0, 0, 35)
@@ -255,7 +251,6 @@ local function LoadMainScript()
     -- =========================================================
     local function LaunchAimbotGUI()
         
-        -- [ نظام الحماية من التكرار ]
         if _G.GhostAimbotCleanup then
             pcall(function() _G.GhostAimbotCleanup() end)
             task.wait(0.2)
@@ -275,15 +270,53 @@ local function LoadMainScript()
             Smoothness = 2,
             FOV = 300, 
             ShowFOV = false,
-            DistanceLock = false, -- الميزة الجديدة بدلاً من SmartTarget
+            SmartTarget = false, 
+            DistanceLock = false, 
             ESP = false,
             ESPColor = Color3.fromRGB(255, 215, 0), 
             ESPOutlineOnly = false,
+            GammaBoost = false,
+            GammaValue = 50, 
             FPSBoost = false,
             FPSCap = 60
         }
 
-        -- [ فولدر الـ ESP المضاد للتبويظ ]
+        local OrigLighting = {Saved = false}
+
+        local function UpdateGamma()
+            pcall(function()
+                local Lighting = game:GetService("Lighting")
+                local cc = Lighting:FindFirstChild("GhostGammaEffect")
+                
+                if GhostAimbotState.GammaBoost then
+                    if not OrigLighting.Saved then
+                        OrigLighting.Exposure = Lighting.ExposureCompensation
+                        OrigLighting.Saved = true
+                    end
+                    
+                    if not cc then
+                        cc = Instance.new("ColorCorrectionEffect")
+                        cc.Name = "GhostGammaEffect"
+                        cc.Parent = Lighting
+                    end
+                    
+                    local val = GhostAimbotState.GammaValue / 100 
+                    
+                    Lighting.ExposureCompensation = OrigLighting.Exposure + (val * 3) 
+                    cc.Contrast = -(val * 0.15)
+                    cc.Brightness = val * 0.05
+                    cc.Enabled = true
+                else
+                    if OrigLighting.Saved then
+                        Lighting.ExposureCompensation = OrigLighting.Exposure
+                    end
+                    if cc then
+                        cc.Enabled = false
+                    end
+                end
+            end)
+        end
+
         local ESPFolder = CoreGui:FindFirstChild("GhostESPFolder_Standalone")
         if ESPFolder then ESPFolder:Destroy() end
         ESPFolder = Instance.new("Folder")
@@ -307,7 +340,6 @@ local function LoadMainScript()
         stroke.Thickness = 1.5
         Frame.Parent = Gui
 
-        -- [ زر مخفي يجبر الماوس على التحرر أثناء فتح الإيمبوت فقط بـ Modal ]
         local AimbotModal = Instance.new("TextButton")
         AimbotModal.Size = UDim2.new(0, 0, 0, 0)
         AimbotModal.BackgroundTransparency = 1
@@ -334,7 +366,7 @@ local function LoadMainScript()
         Title.Size = UDim2.new(0, 200, 1, 0)
         Title.Position = UDim2.new(0, 20, 0, 0)
         Title.BackgroundTransparency = 1
-        Title.Text = "GHOST AIMBOT FULL"
+        Title.Text = "AIM LOOK"
         Title.TextColor3 = aim_textColor
         Title.Font = Enum.Font.GothamBold
         Title.TextSize = 17
@@ -343,9 +375,9 @@ local function LoadMainScript()
 
         local SubTitle = Instance.new("TextLabel")
         SubTitle.Size = UDim2.new(0, 120, 1, 0)
-        SubTitle.Position = UDim2.new(0, 215, 0, 0)
+        SubTitle.Position = UDim2.new(0, 105, 0, 0)
         SubTitle.BackgroundTransparency = 1
-        SubTitle.Text = "/ standalone"
+        SubTitle.Text = "/ by Sasuke"
         SubTitle.TextColor3 = aim_accentColor
         SubTitle.Font = Enum.Font.GothamSemibold
         SubTitle.TextSize = 14
@@ -368,17 +400,68 @@ local function LoadMainScript()
         local inputEndedConnection = nil
         local toggleUiConnection = nil
 
-        -- [ دالة التنظيف الشاملة ]
+        -- [ ذاكرة استرجاع الـ FPS Boost ]
+        local OriginalStates = {}
+        local HiddenElements = {}
+        local TerrainOrig = {}
+
+        local function revertPotatoMode()
+            for obj, data in pairs(OriginalStates) do
+                pcall(function()
+                    if obj then
+                        if data.Material then obj.Material = data.Material end
+                        if data.Reflectance then obj.Reflectance = data.Reflectance end
+                        if data.Enabled ~= nil then obj.Enabled = data.Enabled end
+                    end
+                end)
+            end
+            OriginalStates = {}
+
+            for obj, parent in pairs(HiddenElements) do
+                pcall(function()
+                    if obj and parent then obj.Parent = parent end
+                end)
+            end
+            HiddenElements = {}
+        end
+
         local function CleanUpAimbot()
             GhostAimbotState.Enabled = false
             GhostAimbotState.ESP = false
             GhostAimbotState.FPSBoost = false
+            GhostAimbotState.SmartTarget = false
             GhostAimbotState.DistanceLock = false
+            GhostAimbotState.GammaBoost = false
             
             pcall(function() if setfpscap then setfpscap(60) end end)
-            pcall(function() game:GetService("Lighting").GlobalShadows = true end)
             
+            -- استرجاع الألوان الخاصة بالماب
+            pcall(function()
+                local Lighting = game:GetService("Lighting")
+                if OrigLighting.Saved then
+                    Lighting.ExposureCompensation = OrigLighting.Exposure
+                end
+                if Lighting:FindFirstChild("GhostGammaEffect") then
+                    Lighting.GhostGammaEffect:Destroy()
+                end
+            end)
+
+            -- استرجاع تعديلات الـ FPS
             if fpsBoostLoop then fpsBoostLoop:Disconnect() fpsBoostLoop = nil end
+            revertPotatoMode()
+            
+            local Terrain = workspace:FindFirstChildOfClass("Terrain")
+            if Terrain then
+                pcall(function()
+                    if TerrainOrig.WaterWaveSize then Terrain.WaterWaveSize = TerrainOrig.WaterWaveSize end
+                    if TerrainOrig.WaterWaveSpeed then Terrain.WaterWaveSpeed = TerrainOrig.WaterWaveSpeed end
+                    if TerrainOrig.WaterReflectance then Terrain.WaterReflectance = TerrainOrig.WaterReflectance end
+                    if TerrainOrig.WaterTransparency then Terrain.WaterTransparency = TerrainOrig.WaterTransparency end
+                    if TerrainOrig.Decoration ~= nil then pcall(function() Terrain.Decoration = TerrainOrig.Decoration end) end
+                end)
+            end
+            TerrainOrig = {}
+            
             if aimbotConnection then aimbotConnection:Disconnect() aimbotConnection = nil end
             if inputBeganConnection then inputBeganConnection:Disconnect() inputBeganConnection = nil end
             if inputEndedConnection then inputEndedConnection:Disconnect() inputEndedConnection = nil end
@@ -724,14 +807,41 @@ local function LoadMainScript()
         AddSlider("Smoothness", 1, 10, "Smoothness") 
         AddSlider("FOV Radius", 50, 500, "FOV") 
         AddToggle("Show FOV Circle", "ShowFOV")
-        AddToggle("Lock Nearest Player (Ignore FOV)", "DistanceLock") 
+        
+        AddToggle("Smart Target (Closest to Player)", "SmartTarget", function(state)
+            if state then
+                GhostAimbotState.DistanceLock = false
+                if UIElements["DistanceLock"] then
+                    TS:Create(UIElements["DistanceLock"], TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(20, 30, 50)}):Play()
+                end
+            end
+        end)
+        AddToggle("Lock Nearest Player (Middle Click)", "DistanceLock", function(state)
+            if state then
+                GhostAimbotState.SmartTarget = false
+                if UIElements["SmartTarget"] then
+                    TS:Create(UIElements["SmartTarget"], TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(20, 30, 50)}):Play()
+                end
+            end
+        end)
+        
+        AddToggle("Gamma Boost (Nvidia Style)", "GammaBoost", function(state)
+            UpdateGamma()
+        end)
+
+        AddSlider("Gamma Level (Testing)", 0, 100, "GammaValue", function(val)
+            if GhostAimbotState.GammaBoost then
+                UpdateGamma()
+            end
+        end)
+
         AddToggle("ESP (Players)", "ESP")
         AddColorBoard("ESP Color Board") 
         AddToggle("ESP Outline Only (White)", "ESPOutlineOnly") 
 
         local space = Instance.new("Frame"); space.Size = UDim2.new(1,0,0,5); space.BackgroundTransparency = 1; space.Parent = Scroll
 
-        -- [1. زر الريجوين - الخدعة البرمجية (Bypass) للسيرفرات الـ VIP ]
+        -- [1. زر الريجوين - الخدعة البرمجية ]
         local rejoinBtn = Instance.new("TextButton")
         rejoinBtn.Size = UDim2.new(1, 0, 0, 50)
         rejoinBtn.BackgroundColor3 = aim_elementColor
@@ -837,8 +947,8 @@ local function LoadMainScript()
             if GhostAimbotState.FPSBoost then
                 GhostAimbotState.FPSBoost = false
                 if UIElements["FPSBoost"] then UIElements["FPSBoost"].BackgroundColor3 = Color3.fromRGB(20, 30, 50) end
-                pcall(function() game:GetService("Lighting").GlobalShadows = true end)
                 if fpsBoostLoop then fpsBoostLoop:Disconnect() fpsBoostLoop = nil end
+                revertPotatoMode()
             end
 
             GhostAimbotState.Enabled = true
@@ -857,51 +967,86 @@ local function LoadMainScript()
             if UIElements["Smoothness_Fill"] then UIElements["Smoothness_Fill"].Size = UDim2.new(1, 0, 1, 0) end
             if UIElements["Smoothness_Lbl"] then UIElements["Smoothness_Lbl"].Text = "10/10" end
             
-            GhostAimbotState.DistanceLock = true
-            if UIElements["DistanceLock"] then UIElements["DistanceLock"].BackgroundColor3 = aim_accentColor end
+            GhostAimbotState.SmartTarget = true
+            if UIElements["SmartTarget"] then UIElements["SmartTarget"].BackgroundColor3 = aim_accentColor end
+            
+            GhostAimbotState.DistanceLock = false
+            if UIElements["DistanceLock"] then UIElements["DistanceLock"].BackgroundColor3 = Color3.fromRGB(20, 30, 50) end
+            
+            GhostAimbotState.GammaValue = 50
+            if UIElements["GammaValue_Lbl"] then UIElements["GammaValue_Lbl"].Text = "50/100" end
+            if UIElements["GammaValue_Fill"] then UIElements["GammaValue_Fill"].Size = UDim2.new(0.5, 0, 1, 0) end
+            
+            GhostAimbotState.GammaBoost = true
+            if UIElements["GammaBoost"] then UIElements["GammaBoost"].BackgroundColor3 = aim_accentColor end
+            UpdateGamma()
             
             quickSettingsBtn.Text = "تم التفعيل بنجاح!"
             task.wait(1)
             quickSettingsBtn.Text = "⚡ إعدادات أسطورية"
         end)
 
-        -- [4. الـ FPS Boost]
-        local function wipeDetails(v)
-            if v:IsA("BasePart") and not v:IsA("MeshPart") then
-                v.Material = Enum.Material.SmoothPlastic
-                v.Reflectance = 0
-                v.CastShadow = false
-            elseif v:IsA("MeshPart") then
-                v.Material = Enum.Material.SmoothPlastic
-                v.Reflectance = 0
-                v.CastShadow = false
-            elseif v:IsA("Decal") or v:IsA("Texture") or v:IsA("SurfaceAppearance") then
-                pcall(function() v:Destroy() end)
-            elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Beam") or v:IsA("Fire") or v:IsA("Smoke") or v:IsA("Sparkles") then
-                v.Enabled = false
-            end
+        -- [4. الـ FPS Boost باسترجاع وحماية الإضاءة ]
+        local function applyPotatoMode(v)
+            pcall(function()
+                if v:IsA("BasePart") then
+                    if not OriginalStates[v] then
+                        OriginalStates[v] = {
+                            Material = v.Material,
+                            Reflectance = v.Reflectance,
+                            CastShadow = v.CastShadow
+                        }
+                    end
+                    v.Material = Enum.Material.SmoothPlastic
+                    v.Reflectance = 0
+                    v.CastShadow = false
+                elseif v:IsA("Decal") or v:IsA("Texture") or v:IsA("SurfaceAppearance") then
+                    if v.Parent then
+                        HiddenElements[v] = v.Parent
+                        v.Parent = nil
+                    end
+                elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Beam") or v:IsA("Fire") or v:IsA("Smoke") or v:IsA("Sparkles") then
+                    if not OriginalStates[v] then
+                        OriginalStates[v] = { Enabled = v.Enabled }
+                    end
+                    v.Enabled = false
+                end
+            end)
         end
 
         AddToggle("FPS Boost (Potato Mode)", "FPSBoost", function(state)
-            local Lighting = game:GetService("Lighting")
             local Terrain = workspace:FindFirstChildOfClass("Terrain")
             if state then
-                pcall(function()
-                    Lighting.GlobalShadows = false
-                    Lighting.FogEnd = 9e9
-                    if Terrain then
+                if Terrain then
+                    pcall(function()
+                        TerrainOrig.WaterWaveSize = Terrain.WaterWaveSize
+                        TerrainOrig.WaterWaveSpeed = Terrain.WaterWaveSpeed
+                        TerrainOrig.WaterReflectance = Terrain.WaterReflectance
+                        TerrainOrig.WaterTransparency = Terrain.WaterTransparency
+                        pcall(function() TerrainOrig.Decoration = Terrain.Decoration end)
+
                         Terrain.WaterWaveSize = 0
                         Terrain.WaterWaveSpeed = 0
                         Terrain.WaterReflectance = 0
                         Terrain.WaterTransparency = 0
                         pcall(function() Terrain.Decoration = false end)
-                    end
-                    for _, v in pairs(workspace:GetDescendants()) do wipeDetails(v) end
-                    fpsBoostLoop = workspace.DescendantAdded:Connect(function(v) wipeDetails(v) end)
-                end)
+                    end)
+                end
+                for _, v in pairs(workspace:GetDescendants()) do applyPotatoMode(v) end
+                fpsBoostLoop = workspace.DescendantAdded:Connect(function(v) applyPotatoMode(v) end)
             else
-                pcall(function() Lighting.GlobalShadows = true end)
                 if fpsBoostLoop then fpsBoostLoop:Disconnect() fpsBoostLoop = nil end
+                revertPotatoMode()
+                if Terrain then
+                    pcall(function()
+                        if TerrainOrig.WaterWaveSize then Terrain.WaterWaveSize = TerrainOrig.WaterWaveSize end
+                        if TerrainOrig.WaterWaveSpeed then Terrain.WaterWaveSpeed = TerrainOrig.WaterWaveSpeed end
+                        if TerrainOrig.WaterReflectance then Terrain.WaterReflectance = TerrainOrig.WaterReflectance end
+                        if TerrainOrig.WaterTransparency then Terrain.WaterTransparency = TerrainOrig.WaterTransparency end
+                        if TerrainOrig.Decoration ~= nil then pcall(function() Terrain.Decoration = TerrainOrig.Decoration end) end
+                    end)
+                end
+                TerrainOrig = {}
             end
         end)
 
@@ -909,27 +1054,36 @@ local function LoadMainScript()
             pcall(function() if setfpscap then setfpscap(val) end end)
         end)
 
-        -- [ إخفاء وإظهار الواجهة للمستخدم بضغطة واحدة صحيحة ]
         toggleUiConnection = UIS.InputBegan:Connect(function(input, gpe)
-            if not gpe and input.KeyCode == Enum.KeyCode.RightControl then
-                if Gui then 
-                    Gui.Enabled = not Gui.Enabled 
-                end
-                
-                local fovGui = CoreGui:FindFirstChild("GhostFOVCircle_Standalone")
-                if fovGui then 
-                    if not Gui.Enabled then
-                        fovGui.Enabled = false
-                    else
-                        if GhostAimbotState.ShowFOV then
-                            fovGui.Enabled = true
+            if not gpe then
+                if input.KeyCode == Enum.KeyCode.RightControl then
+                    if Gui then Gui.Enabled = not Gui.Enabled end
+                    
+                    local fovGui = CoreGui:FindFirstChild("GhostFOVCircle_Standalone")
+                    if fovGui then 
+                        if not Gui.Enabled then
+                            fovGui.Enabled = false
+                        else
+                            if GhostAimbotState.ShowFOV then
+                                fovGui.Enabled = true
+                            end
                         end
+                    end
+                
+                elseif input.UserInputType == Enum.UserInputType.MouseButton3 then
+                    GhostAimbotState.DistanceLock = not GhostAimbotState.DistanceLock
+                    GhostAimbotState.SmartTarget = not GhostAimbotState.DistanceLock
+                    
+                    if UIElements["DistanceLock"] then
+                        TS:Create(UIElements["DistanceLock"], TweenInfo.new(0.2), {BackgroundColor3 = GhostAimbotState.DistanceLock and aim_accentColor or Color3.fromRGB(20, 30, 50)}):Play()
+                    end
+                    if UIElements["SmartTarget"] then
+                        TS:Create(UIElements["SmartTarget"], TweenInfo.new(0.2), {BackgroundColor3 = GhostAimbotState.SmartTarget and aim_accentColor or Color3.fromRGB(20, 30, 50)}):Play()
                     end
                 end
             end
         end)
 
-        -- دائرة الـ FOV
         local fovGui = Instance.new("ScreenGui")
         fovGui.Name = "GhostFOVCircle_Standalone"
         fovGui.IgnoreGuiInset = true 
@@ -945,7 +1099,6 @@ local function LoadMainScript()
         Instance.new("UICorner", circle).CornerRadius = UDim.new(1, 0)
         circle.Parent = fovGui
 
-        -- نظام الايمبوت والـ ESP 
         local isTargeting = false
         local currentTarget = nil 
 
@@ -954,7 +1107,6 @@ local function LoadMainScript()
             local closest = nil
             
             if GhostAimbotState.DistanceLock then
-                -- [ الميزة الجديدة: تجاهل الـ FOV واختيار أقرب لاعب بمسافة العالم الحقيقي ]
                 if not Player.Character or not Player.Character:FindFirstChild("HumanoidRootPart") then return nil end
                 local myPos = Player.Character.HumanoidRootPart.Position
                 
@@ -970,7 +1122,6 @@ local function LoadMainScript()
                     end
                 end
             else
-                -- [ النظام القديم: الاعتماد على دايرة الـ FOV في الشاشة ]
                 local mouseLoc = UIS:GetMouseLocation()
                 for _, plr in pairs(game.Players:GetPlayers()) do
                     if plr ~= Player and plr.Character and plr.Character:FindFirstChild(GhostAimbotState.LockPart) and plr.Character:FindFirstChild("Humanoid") and plr.Character.Humanoid.Health > 0 then
@@ -978,8 +1129,15 @@ local function LoadMainScript()
                         if onScreen then
                             local screenDist = (Vector2.new(partPos.X, partPos.Y) - mouseLoc).Magnitude
                             if screenDist <= GhostAimbotState.FOV then
-                                if screenDist < closestDist then
-                                    closestDist = screenDist
+                                local distToUse = screenDist
+                                if GhostAimbotState.SmartTarget and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+                                    local myPos = Player.Character.HumanoidRootPart.Position
+                                    local targetPart = plr.Character:FindFirstChild("HumanoidRootPart") or plr.Character[GhostAimbotState.LockPart]
+                                    distToUse = (targetPart.Position - myPos).Magnitude
+                                end
+                                
+                                if distToUse < closestDist then
+                                    closestDist = distToUse
                                     closest = plr
                                 end
                             end
@@ -1009,7 +1167,6 @@ local function LoadMainScript()
             end
         end)
 
-        -- اللوب الرئيسي (بدون إجبار للماوس لعدم تعليق الكاميرا)
         aimbotConnection = RunService.RenderStepped:Connect(function()
             local mouseLoc = UIS:GetMouseLocation()
             if GhostAimbotState.ShowFOV then
@@ -1020,7 +1177,6 @@ local function LoadMainScript()
                 circle.Visible = false
             end
             
-            -- [ نظام الـ ESP المقاوم للتبويظ (Bulletproof) ]
             for _, plr in pairs(game.Players:GetPlayers()) do
                 if plr ~= Player then
                     local char = plr.Character
@@ -1056,7 +1212,6 @@ local function LoadMainScript()
                 end
             end
             
-            -- الايمبوت
             if GhostAimbotState.Enabled and isTargeting then
                 if currentTarget then
                     local char = currentTarget.Character
@@ -1076,7 +1231,6 @@ local function LoadMainScript()
             end
         end)
 
-        -- السحب (Dragging)
         local dragging, dragInput, dragStart, startPos
         TitleBar.InputBegan:Connect(function(input)
             if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -1103,9 +1257,6 @@ local function LoadMainScript()
         end)
     end
 
-    -- =========================================================
-    -- إنشاء أزرار السكربتات
-    -- =========================================================
     local function CreateScriptButton(parent, text, scriptUrl)
         local Btn = Instance.new("TextButton")
         Btn.Size = UDim2.new(1, 0, 0, 35) 
@@ -1173,14 +1324,10 @@ local function LoadMainScript()
         return Btn
     end
 
-    -- قسم السكربتات
     CreateScriptButton(ContentFrame_Scripts, "ايمبوت", "BUILTIN_AIMBOT")
     CreateScriptButton(ContentFrame_Scripts, "سكربت vd مفتاح دائم", "https://vonixehub.my.id/api/loader")
     CreateScriptButton(ContentFrame_Scripts, "سكربت ftf", "https://api.jnkie.com/api/v1/luascripts/public/2111fcae4f4bfc3fca6c1f01cbf7ad9607b040f7ab7df277e6e1b573d5722b08/download")
 
-    -- ==========================================
-    -- وظائف الأزرار والتنقل الخاصة بالهب
-    -- ==========================================
     local isHubOpen = false
 
     local function OpenHub()
@@ -1286,12 +1433,10 @@ local function LoadMainScript()
     MakeDraggable(TopBar, MainFrame)
     MakeDraggable(ToggleButton, ToggleButton)
     
-    -- نظام التشغيل التلقائي للايمبوت لو اللعبة عملت ريجوين
     if isfile and isfile("GhostAutoLaunchAimbot.txt") then
         pcall(function() delfile("GhostAutoLaunchAimbot.txt") end)
         LaunchAimbotGUI()
     end
 end
 
--- تشغيل الواجهة المباشرة
 LoadMainScript()
