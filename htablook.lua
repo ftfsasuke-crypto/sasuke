@@ -1,6 +1,7 @@
 -- ==========================================
 -- GHOST AIMBOT (STANDALONE FULL VERSION)
 -- Includes: VIP Rejoin Bypass, Bulletproof ESP, Anti-Duplicate, Perfect Mouse Unlock
+-- New Feature: DistanceLock (Target Nearest Player ignoring FOV)
 -- ==========================================
 
 local Player = game.Players.LocalPlayer
@@ -29,7 +30,7 @@ local GhostAimbotState = {
     Smoothness = 2,
     FOV = 300, 
     ShowFOV = false,
-    SmartTarget = false,
+    DistanceLock = false, -- الميزة الجديدة: التركيز على أقرب لاعب بالمسافة
     ESP = false,
     ESPColor = Color3.fromRGB(255, 215, 0), 
     ESPOutlineOnly = false,
@@ -127,6 +128,7 @@ local function CleanUpAimbot()
     GhostAimbotState.Enabled = false
     GhostAimbotState.ESP = false
     GhostAimbotState.FPSBoost = false
+    GhostAimbotState.DistanceLock = false
     
     pcall(function() if setfpscap then setfpscap(60) end end)
     pcall(function() game:GetService("Lighting").GlobalShadows = true end)
@@ -477,7 +479,7 @@ AddDropdown("Lock Part", {"Head", "HumanoidRootPart"}, "LockPart")
 AddSlider("Smoothness", 1, 10, "Smoothness") 
 AddSlider("FOV Radius", 50, 500, "FOV") 
 AddToggle("Show FOV Circle", "ShowFOV")
-AddToggle("Smart Target (Closest to Player)", "SmartTarget")
+AddToggle("Lock Nearest Player (Ignore FOV)", "DistanceLock") -- الميزة الجديدة بدلاً من القديمة
 AddToggle("ESP (Players)", "ESP")
 AddColorBoard("ESP Color Board") 
 AddToggle("ESP Outline Only (White)", "ESPOutlineOnly") 
@@ -610,8 +612,8 @@ quickSettingsBtn.MouseButton1Click:Connect(function()
     if UIElements["Smoothness_Fill"] then UIElements["Smoothness_Fill"].Size = UDim2.new(1, 0, 1, 0) end
     if UIElements["Smoothness_Lbl"] then UIElements["Smoothness_Lbl"].Text = "10/10" end
     
-    GhostAimbotState.SmartTarget = true
-    if UIElements["SmartTarget"] then UIElements["SmartTarget"].BackgroundColor3 = aim_accentColor end
+    GhostAimbotState.DistanceLock = true
+    if UIElements["DistanceLock"] then UIElements["DistanceLock"].BackgroundColor3 = aim_accentColor end
     
     quickSettingsBtn.Text = "تم التفعيل بنجاح!"
     task.wait(1)
@@ -703,27 +705,45 @@ local isTargeting = false
 local currentTarget = nil 
 
 local function GetClosestTarget()
-    local mouseLoc = UIS:GetMouseLocation()
     local closestDist = math.huge
     local closest = nil
-    for _, plr in pairs(game.Players:GetPlayers()) do
-        if plr ~= Player and plr.Character and plr.Character:FindFirstChild(GhostAimbotState.LockPart) and plr.Character:FindFirstChild("Humanoid") and plr.Character.Humanoid.Health > 0 then
-            local partPos, onScreen = workspace.CurrentCamera:WorldToViewportPoint(plr.Character[GhostAimbotState.LockPart].Position)
-            if onScreen then
-                local screenDist = (Vector2.new(partPos.X, partPos.Y) - mouseLoc).Magnitude
-                if screenDist <= GhostAimbotState.FOV then
-                    local distToUse = screenDist
-                    if GhostAimbotState.SmartTarget and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
-                        distToUse = (plr.Character.HumanoidRootPart.Position - Player.Character.HumanoidRootPart.Position).Magnitude
-                    end
-                    if distToUse < closestDist then
-                        closestDist = distToUse
-                        closest = plr
+    
+    if GhostAimbotState.DistanceLock then
+        -- [ الميزة الجديدة: تجاهل الـ FOV واختيار أقرب لاعب بمسافة العالم الحقيقي ]
+        if not Player.Character or not Player.Character:FindFirstChild("HumanoidRootPart") then return nil end
+        local myPos = Player.Character.HumanoidRootPart.Position
+        
+        for _, plr in pairs(game.Players:GetPlayers()) do
+            if plr ~= Player and plr.Character and plr.Character:FindFirstChild(GhostAimbotState.LockPart) and plr.Character:FindFirstChild("Humanoid") and plr.Character.Humanoid.Health > 0 then
+                -- الحصول على الجزء المستهدف سواء كان الرأس أو الجذع
+                local targetPart = plr.Character:FindFirstChild("HumanoidRootPart") or plr.Character[GhostAimbotState.LockPart]
+                local dist = (targetPart.Position - myPos).Magnitude
+                
+                if dist < closestDist then
+                    closestDist = dist
+                    closest = plr
+                end
+            end
+        end
+    else
+        -- [ النظام القديم: الاعتماد على دايرة الـ FOV في الشاشة ]
+        local mouseLoc = UIS:GetMouseLocation()
+        for _, plr in pairs(game.Players:GetPlayers()) do
+            if plr ~= Player and plr.Character and plr.Character:FindFirstChild(GhostAimbotState.LockPart) and plr.Character:FindFirstChild("Humanoid") and plr.Character.Humanoid.Health > 0 then
+                local partPos, onScreen = workspace.CurrentCamera:WorldToViewportPoint(plr.Character[GhostAimbotState.LockPart].Position)
+                if onScreen then
+                    local screenDist = (Vector2.new(partPos.X, partPos.Y) - mouseLoc).Magnitude
+                    if screenDist <= GhostAimbotState.FOV then
+                        if screenDist < closestDist then
+                            closestDist = screenDist
+                            closest = plr
+                        end
                     end
                 end
             end
         end
     end
+    
     return closest
 end
 
@@ -745,7 +765,7 @@ inputEndedConnection = UIS.InputEnded:Connect(function(input, gpe)
     end
 end)
 
--- اللوب الرئيسي (بدون إجبار للماوس لعدم تعليق الكاميرا)
+-- اللوب الرئيسي
 aimbotConnection = RunService.RenderStepped:Connect(function()
     local mouseLoc = UIS:GetMouseLocation()
     if GhostAimbotState.ShowFOV then
