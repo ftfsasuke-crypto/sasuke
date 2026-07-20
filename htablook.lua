@@ -1,7 +1,7 @@
 -- ==========================================
 -- AIM LOOK / by Sasuke (STANDALONE FULL VERSION)
 -- Includes: VIP Rejoin Bypass, Bulletproof ESP, Anti-Duplicate, Perfect Mouse Unlock
--- Features: True Nvidia Gamma (ColorCorrection Only), Middle Click Toggle, Revertible FPS Boost
+-- Features: Middle Click Toggle, Revertible FPS Boost (No Gamma)
 -- ==========================================
 
 local Player = game.Players.LocalPlayer
@@ -35,38 +35,9 @@ local GhostAimbotState = {
     ESP = false,
     ESPColor = Color3.fromRGB(255, 215, 0), 
     ESPOutlineOnly = false,
-    GammaBoost = false,
-    GammaValue = 50, -- القيمة الافتراضية
     FPSBoost = false,
     FPSCap = 60
 }
-
--- [ نظام الجاما الاحترافي ]
-local function UpdateGamma()
-    pcall(function()
-        local Lighting = game:GetService("Lighting")
-        local cc = Lighting:FindFirstChild("GhostGammaEffect")
-        
-        if GhostAimbotState.GammaBoost then
-            if not cc then
-                cc = Instance.new("ColorCorrectionEffect")
-                cc.Name = "GhostGammaEffect"
-                cc.Parent = Lighting
-            end
-            
-            local val = GhostAimbotState.GammaValue / 100 
-            
-            cc.Brightness = val * 0.4    
-            cc.Contrast = val * 0.15     
-            cc.Saturation = val * 0.2    
-            cc.Enabled = true
-        else
-            if cc then
-                cc.Enabled = false
-            end
-        end
-    end)
-end
 
 -- [ فولدر الـ ESP المضاد للتبويظ ]
 local ESPFolder = CoreGui:FindFirstChild("GhostESPFolder_Standalone")
@@ -185,18 +156,9 @@ local function CleanUpAimbot()
     GhostAimbotState.FPSBoost = false
     GhostAimbotState.SmartTarget = false
     GhostAimbotState.DistanceLock = false
-    GhostAimbotState.GammaBoost = false
     
     pcall(function() if setfpscap then setfpscap(60) end end)
     
-    -- تنظيف فلتر الجاما
-    pcall(function()
-        local Lighting = game:GetService("Lighting")
-        if Lighting:FindFirstChild("GhostGammaEffect") then
-            Lighting.GhostGammaEffect:Destroy()
-        end
-    end)
-
     -- استرجاع تعديلات الـ FPS
     if fpsBoostLoop then fpsBoostLoop:Disconnect() fpsBoostLoop = nil end
     revertPotatoMode()
@@ -576,23 +538,13 @@ AddToggle("Lock Nearest Player (Middle Click)", "DistanceLock", function(state)
     end
 end)
 
-AddToggle("Gamma Boost (Nvidia Style)", "GammaBoost", function(state)
-    UpdateGamma()
-end)
-
-AddSlider("Gamma Level (Testing)", 0, 100, "GammaValue", function(val)
-    if GhostAimbotState.GammaBoost then
-        UpdateGamma()
-    end
-end)
-
 AddToggle("ESP (Players)", "ESP")
 AddColorBoard("ESP Color Board") 
 AddToggle("ESP Outline Only (White)", "ESPOutlineOnly") 
 
 local space = Instance.new("Frame"); space.Size = UDim2.new(1,0,0,5); space.BackgroundTransparency = 1; space.Parent = Scroll
 
--- [1. زر الريجوين - الخدعة البرمجية ]
+-- [1. زر الريجوين - الخدعة البرمجية (Bypass) للسيرفرات الـ VIP ]
 local rejoinBtn = Instance.new("TextButton")
 rejoinBtn.Size = UDim2.new(1, 0, 0, 50)
 rejoinBtn.BackgroundColor3 = aim_elementColor
@@ -723,14 +675,6 @@ quickSettingsBtn.MouseButton1Click:Connect(function()
     
     GhostAimbotState.DistanceLock = false
     if UIElements["DistanceLock"] then UIElements["DistanceLock"].BackgroundColor3 = Color3.fromRGB(20, 30, 50) end
-    
-    GhostAimbotState.GammaValue = 50
-    if UIElements["GammaValue_Lbl"] then UIElements["GammaValue_Lbl"].Text = "50/100" end
-    if UIElements["GammaValue_Fill"] then UIElements["GammaValue_Fill"].Size = UDim2.new(0.5, 0, 1, 0) end
-    
-    GhostAimbotState.GammaBoost = true
-    if UIElements["GammaBoost"] then UIElements["GammaBoost"].BackgroundColor3 = aim_accentColor end
-    UpdateGamma()
     
     quickSettingsBtn.Text = "تم التفعيل بنجاح!"
     task.wait(1)
