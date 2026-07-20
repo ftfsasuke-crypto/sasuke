@@ -1,7 +1,7 @@
 -- ==========================================
 -- PRIVATE SCRIPT INTERFACE (HUB + NEW FULL AIMBOT)
 -- Includes: VIP Rejoin Bypass, Bulletproof ESP, Anti-Duplicate, Perfect Mouse Unlock
--- Features: Middle Click Toggle, Revertible FPS Boost (No Gamma)
+-- Features: Middle Click Toggle, 100% Revertible & Safe FPS Boost (No Lighting/Shadow touch)
 -- ==========================================
 
 local Player = game.Players.LocalPlayer
@@ -362,29 +362,23 @@ local function LoadMainScript()
         local inputEndedConnection = nil
         local toggleUiConnection = nil
 
-        -- [ ذاكرة استرجاع الـ FPS Boost ]
-        local OriginalStates = {}
-        local HiddenElements = {}
+        -- [ ذاكرة استرجاع الـ FPS Boost الآمنة 100% ]
+        local ChangedMaterials = {}
+        local HiddenDecals = {}
         local TerrainOrig = {}
 
         local function revertPotatoMode()
-            for obj, data in pairs(OriginalStates) do
-                pcall(function()
-                    if obj then
-                        if data.Material then obj.Material = data.Material end
-                        if data.Reflectance then obj.Reflectance = data.Reflectance end
-                        if data.Enabled ~= nil then obj.Enabled = data.Enabled end
-                    end
-                end)
+            -- استرجاع الخامات
+            for obj, mat in pairs(ChangedMaterials) do
+                pcall(function() if obj then obj.Material = mat end end)
             end
-            OriginalStates = {}
+            ChangedMaterials = {}
 
-            for obj, parent in pairs(HiddenElements) do
-                pcall(function()
-                    if obj and parent then obj.Parent = parent end
-                end)
+            -- إظهار التفاصيل اللي كانت مخفية بشفافية
+            for obj, trans in pairs(HiddenDecals) do
+                pcall(function() if obj then obj.Transparency = trans end end)
             end
-            HiddenElements = {}
+            HiddenDecals = {}
         end
 
         local function CleanUpAimbot()
@@ -395,7 +389,6 @@ local function LoadMainScript()
             GhostAimbotState.DistanceLock = false
             
             pcall(function() if setfpscap then setfpscap(60) end end)
-            pcall(function() game:GetService("Lighting").GlobalShadows = true end)
             
             if fpsBoostLoop then fpsBoostLoop:Disconnect() fpsBoostLoop = nil end
             revertPotatoMode()
@@ -781,6 +774,7 @@ local function LoadMainScript()
 
         local space = Instance.new("Frame"); space.Size = UDim2.new(1,0,0,5); space.BackgroundTransparency = 1; space.Parent = Scroll
 
+        -- [1. زر الريجوين ]
         local rejoinBtn = Instance.new("TextButton")
         rejoinBtn.Size = UDim2.new(1, 0, 0, 50)
         rejoinBtn.BackgroundColor3 = aim_elementColor
@@ -821,6 +815,7 @@ local function LoadMainScript()
 
         local space2 = Instance.new("Frame"); space2.Size = UDim2.new(1,0,0,5); space2.BackgroundTransparency = 1; space2.Parent = Scroll
 
+        -- [2. زر السيرفر هوب]
         local hopBtn = Instance.new("TextButton")
         hopBtn.Size = UDim2.new(1, 0, 0, 50)
         hopBtn.BackgroundColor3 = aim_elementColor
@@ -861,6 +856,7 @@ local function LoadMainScript()
 
         local space3 = Instance.new("Frame"); space3.Size = UDim2.new(1,0,0,5); space3.BackgroundTransparency = 1; space3.Parent = Scroll
 
+        -- [3. زر الإعدادات الأسطورية السريعة]
         local quickSettingsBtn = Instance.new("TextButton")
         quickSettingsBtn.Size = UDim2.new(1, 0, 0, 50)
         quickSettingsBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 166)
@@ -915,29 +911,19 @@ local function LoadMainScript()
             quickSettingsBtn.Text = "⚡ إعدادات أسطورية"
         end)
 
+        -- [4. الـ FPS Boost الآمن 100% بدون أي مساس للظلال أو الإضاءة ]
         local function applyPotatoMode(v)
             pcall(function()
-                if v:IsA("BasePart") then
-                    if not OriginalStates[v] then
-                        OriginalStates[v] = {
-                            Material = v.Material,
-                            Reflectance = v.Reflectance,
-                            CastShadow = v.CastShadow
-                        }
+                if v:IsA("BasePart") and not v:IsA("Terrain") then
+                    if v.Material ~= Enum.Material.SmoothPlastic then
+                        ChangedMaterials[v] = v.Material
+                        v.Material = Enum.Material.SmoothPlastic
                     end
-                    v.Material = Enum.Material.SmoothPlastic
-                    v.Reflectance = 0
-                    v.CastShadow = false
-                elseif v:IsA("Decal") or v:IsA("Texture") or v:IsA("SurfaceAppearance") then
-                    if v.Parent then
-                        HiddenElements[v] = v.Parent
-                        v.Parent = nil
+                elseif v:IsA("Decal") or v:IsA("Texture") then
+                    if v.Transparency < 1 then
+                        HiddenDecals[v] = v.Transparency
+                        v.Transparency = 1 -- التخفي الآمن بدل الحذف
                     end
-                elseif v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Beam") or v:IsA("Fire") or v:IsA("Smoke") or v:IsA("Sparkles") then
-                    if not OriginalStates[v] then
-                        OriginalStates[v] = { Enabled = v.Enabled }
-                    end
-                    v.Enabled = false
                 end
             end)
         end
@@ -956,7 +942,6 @@ local function LoadMainScript()
                         Terrain.WaterWaveSize = 0
                         Terrain.WaterWaveSpeed = 0
                         Terrain.WaterReflectance = 0
-                        Terrain.WaterTransparency = 0
                         pcall(function() Terrain.Decoration = false end)
                     end)
                 end
