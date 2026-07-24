@@ -1,7 +1,7 @@
 -- ==========================================
 -- PRIVATE SCRIPT INTERFACE (HUB + NEW FULL AIMBOT)
 -- Includes: VIP Rejoin Bypass, Bulletproof ESP, Anti-Duplicate, Perfect Mouse Unlock
--- Features: Middle Click Toggle, Revertible FPS Boost, Flawless High-Tree Leaves Hider
+-- Features: Middle Click Toggle, Revertible FPS Boost, Flawless High-Tree Leaves Hider (Geometry Floating Filter)
 -- ==========================================
 
 local Player = game.Players.LocalPlayer
@@ -33,6 +33,63 @@ local function LoadMainScript()
     local tweenInfoFast = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
     local tweenInfoSmooth = TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
     local tweenInfoClose = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+
+    -- [ الفلتر الهندسي العبقري (مبني على فكرة اللاعب) ]
+    local OriginalLeaves = {}
+    local treeLeavesLoop = nil
+    local HideHomesteadLeaves = false
+    local WorkspaceScanned = false
+
+    local function checkAndCacheLeaf(v)
+        if not v:IsA("BasePart") then return false end
+        if v.Transparency >= 1 then return false end -- نتجاهل المخفي أصلاً
+        
+        -- 1. التأكد إن المجسم عبارة عن زرع (باللون أو الخامة أو الاسم)
+        local isGreen = false
+        if (v.Color.G > v.Color.R * 0.9 and v.Color.G > v.Color.B * 0.9) then isGreen = true end
+        if v.Material == Enum.Material.Grass or v.Material == Enum.Material.Leaf then isGreen = true end
+        if string.match(v.Name:lower(), "leaf") or string.match(v.Name:lower(), "leav") then isGreen = true end
+        
+        if not isGreen then return false end
+        
+        -- 2. الفكرة العبقرية: حساب "أسفل نقطة" في المجسم
+        local bottomY = v.Position.Y - (v.Size.Y / 2)
+        
+        -- لو أسفل نقطة طايرة في الهواء (أعلى من 12 ستد)، يبقى ده ورق شجر (يختفي)
+        -- لو أسفل نقطة قريبة من الأرض (أقل من 12)، يبقى دي شجيرة الـ Wallhop اللي في الأرض (تتحمي)
+        if bottomY > 12 then
+            if not OriginalLeaves[v] then
+                OriginalLeaves[v] = {
+                    Transparency = v.Transparency,
+                    CanCollide = v.CanCollide
+                }
+            end
+            return true
+        end
+        
+        return false
+    end
+
+    -- دالة الاسترجاع ومسح الذاكرة
+    local function RestoreLeaves(clearCache)
+        if treeLeavesLoop then treeLeavesLoop:Disconnect() treeLeavesLoop = nil end
+        for obj, data in pairs(OriginalLeaves) do
+            pcall(function()
+                if obj then
+                    obj.Transparency = data.Transparency
+                    if data.CanCollide ~= nil then
+                        obj.CanCollide = data.CanCollide
+                    end
+                end
+            end)
+        end
+        
+        if clearCache then
+            OriginalLeaves = {}
+            WorkspaceScanned = false
+        end
+        HideHomesteadLeaves = false
+    end
 
     local ToggleButton = Instance.new("TextButton")
     ToggleButton.Size = UDim2.new(0, 40, 0, 40)
@@ -246,8 +303,98 @@ local function LoadMainScript()
     AddCopyButton(ContentFrame_Keys, "نسخ مفتاج vd", "VONIXE-PREM-ULUYRU7ZGZXQ")
     AddCopyButton(ContentFrame_Keys, "كود مفتاح ftf", "11699551-b355-4525-9879-84446c50dd99")
 
+    local function CreateToggleButton(parent, text, callback)
+        local Btn = Instance.new("TextButton")
+        Btn.Size = UDim2.new(1, 0, 0, 35) 
+        Btn.BackgroundColor3 = elementColor
+        Btn.Text = text .. " : OFF"
+        Btn.TextColor3 = Color3.fromRGB(255, 80, 80)
+        Btn.Font = Enum.Font.GothamSemibold
+        Btn.TextSize = 13
+        Btn.AutoButtonColor = false
+        Btn.Parent = parent
+
+        local Corner = Instance.new("UICorner")
+        Corner.CornerRadius = UDim.new(0, 6)
+        Corner.Parent = Btn
+
+        local Stroke = Instance.new("UIStroke")
+        Stroke.Color = Color3.fromRGB(50, 50, 50)
+        Stroke.Thickness = 1
+        Stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        Stroke.Parent = Btn
+        
+        local state = false
+        Btn.MouseButton1Click:Connect(function()
+            state = not state
+            if state then
+                Btn.Text = text .. " : ON"
+                Btn.TextColor3 = Color3.fromRGB(80, 255, 80)
+            else
+                Btn.Text = text .. " : OFF"
+                Btn.TextColor3 = Color3.fromRGB(255, 80, 80)
+            end
+            callback(state)
+        end)
+        return Btn
+    end
+
+    -- [ زر إخفاء ورق الشجر المحدث ]
+    CreateToggleButton(ContentFrame_Scripts, "إخفاء شجر Homestead (للول هوب)", function(state)
+        HideHomesteadLeaves = state
+        
+        if state then
+            task.spawn(function()
+                if not WorkspaceScanned then
+                    local count = 0
+                    for _, v in ipairs(workspace:GetDescendants()) do
+                        if v:IsA("BasePart") then
+                            pcall(function()
+                                if checkAndCacheLeaf(v) and HideHomesteadLeaves then
+                                    v.Transparency = 1
+                                    v.CanCollide = false
+                                end
+                            end)
+                            count = count + 1
+                            if count % 250 == 0 then task.wait() end -- يريح عشان مفيش لاج
+                        end
+                    end
+                    WorkspaceScanned = true
+                else
+                    for obj, data in pairs(OriginalLeaves) do
+                        pcall(function()
+                            if obj and HideHomesteadLeaves then
+                                obj.Transparency = 1
+                                obj.CanCollide = false
+                            end
+                        end)
+                    end
+                end
+            end)
+
+            if not treeLeavesLoop then
+                treeLeavesLoop = workspace.DescendantAdded:Connect(function(v)
+                    if not HideHomesteadLeaves then return end
+                    if v:IsA("BasePart") then
+                        task.defer(function()
+                            pcall(function()
+                                if HideHomesteadLeaves and checkAndCacheLeaf(v) then
+                                    v.Transparency = 1
+                                    v.CanCollide = false
+                                end
+                            end)
+                        end)
+                    end
+                end)
+            end
+        else
+            RestoreLeaves(false)
+        end
+    end)
+
+
     -- =========================================================
-    -- واجهة الايمبوت المدمجة (النسخة النهائية الأسطورية)
+    -- واجهة الايمبوت المدمجة
     -- =========================================================
     local function LaunchAimbotGUI()
         
@@ -275,7 +422,6 @@ local function LoadMainScript()
             ESP = false,
             ESPColor = Color3.fromRGB(255, 215, 0), 
             ESPOutlineOnly = false,
-            HideTreeLeaves = false, -- ميزة العشب الجديدة
             FPSBoost = false,
             FPSCap = 60
         }
@@ -358,20 +504,15 @@ local function LoadMainScript()
         CloseBtn.Parent = TitleBar
 
         local fpsBoostLoop = nil 
-        local treeLeavesLoop = nil
         local aimbotConnection = nil
         local inputBeganConnection = nil
         local inputEndedConnection = nil
         local toggleUiConnection = nil
 
-        -- [ ذاكرة استرجاع الـ FPS Boost ]
         local OriginalStates = {}
         local HiddenElements = {}
         local TerrainOrig = {}
         
-        -- [ ذاكرة استرجاع ورق الشجر ]
-        local OriginalLeaves = {}
-
         local function revertPotatoMode()
             for obj, data in pairs(OriginalStates) do
                 pcall(function()
@@ -392,35 +533,17 @@ local function LoadMainScript()
             HiddenElements = {}
         end
 
-        local function revertTreeLeaves()
-            for obj, data in pairs(OriginalLeaves) do
-                pcall(function()
-                    if obj then
-                        obj.Transparency = data.Transparency
-                        if data.CanCollide ~= nil then
-                            obj.CanCollide = data.CanCollide
-                        end
-                    end
-                end)
-            end
-            OriginalLeaves = {}
-        end
-
         local function CleanUpAimbot()
             GhostAimbotState.Enabled = false
             GhostAimbotState.ESP = false
             GhostAimbotState.FPSBoost = false
             GhostAimbotState.SmartTarget = false
             GhostAimbotState.DistanceLock = false
-            GhostAimbotState.HideTreeLeaves = false
             
             pcall(function() if setfpscap then setfpscap(60) end end)
             
             if fpsBoostLoop then fpsBoostLoop:Disconnect() fpsBoostLoop = nil end
             revertPotatoMode()
-            
-            if treeLeavesLoop then treeLeavesLoop:Disconnect() treeLeavesLoop = nil end
-            revertTreeLeaves()
             
             local Terrain = workspace:FindFirstChildOfClass("Terrain")
             if Terrain then
@@ -771,7 +894,6 @@ local function LoadMainScript()
             end
         end
 
-        -- واجهة الإضافات
         AddToggle("Aimlock", "Enabled")
         AddDropdown("Mode", {"Hold", "Toggle"}, "Mode")
         AddKeybind("Aimlock Key", "Key")
@@ -803,54 +925,6 @@ local function LoadMainScript()
 
         local space = Instance.new("Frame"); space.Size = UDim2.new(1,0,0,5); space.BackgroundTransparency = 1; space.Parent = Scroll
 
-        -- [ دالة إخفاء الورق العالي (الخاص بالشجر فقط) ]
-        local function processTreeLeaf(v)
-            pcall(function()
-                if v:IsA("BasePart") then
-                    local name = v.Name:lower()
-                    local pName = (v.Parent and v.Parent.Name:lower()) or ""
-                    
-                    -- حماية قصوى: استثناء أي حاجة تبع المتاهة، الأرضية، الحيطان، الأسوار
-                    if name:match("maze") or pName:match("maze") or name:match("hedge") or pName:match("hedge") then return end
-                    if name:match("ground") or pName:match("ground") or name:match("floor") or pName:match("floor") then return end
-                    if name:match("wall") or pName:match("wall") then return end
-                    
-                    -- حماية إضافية للأسطح الكبيرة (مستحيل تكون ورق شجر)
-                    if v.Size.X > 80 or v.Size.Z > 80 then return end
-                    
-                    -- التأكد إن اللون لونه أخضر
-                    local isGreen = (v.Color.G > v.Color.R) and (v.Color.G > v.Color.B)
-                    
-                    -- السر هنا: الارتفاع! المتاهة والأرضية ارتفاعهم قليل، ورق الشجر بيكون عالي (أكثر من 14)
-                    if isGreen and v.Position.Y > 14 then
-                        if not OriginalLeaves[v] then
-                            OriginalLeaves[v] = {
-                                Transparency = v.Transparency,
-                                CanCollide = v.CanCollide
-                            }
-                        end
-                        v.Transparency = 1
-                        v.CanCollide = false
-                    end
-                end
-            end)
-        end
-
-        AddToggle("اخفاء العشب للشجر (Tree Leaves)", "HideTreeLeaves", function(state)
-            if state then
-                for _, v in pairs(workspace:GetDescendants()) do processTreeLeaf(v) end
-                treeLeavesLoop = workspace.DescendantAdded:Connect(function(v) 
-                    if GhostAimbotState.HideTreeLeaves then processTreeLeaf(v) end
-                end)
-            else
-                if treeLeavesLoop then treeLeavesLoop:Disconnect() treeLeavesLoop = nil end
-                revertTreeLeaves()
-            end
-        end)
-
-        local spaceX = Instance.new("Frame"); spaceX.Size = UDim2.new(1,0,0,5); spaceX.BackgroundTransparency = 1; spaceX.Parent = Scroll
-
-        -- [1. زر الريجوين ]
         local rejoinBtn = Instance.new("TextButton")
         rejoinBtn.Size = UDim2.new(1, 0, 0, 50)
         rejoinBtn.BackgroundColor3 = aim_elementColor
@@ -891,7 +965,6 @@ local function LoadMainScript()
 
         local space2 = Instance.new("Frame"); space2.Size = UDim2.new(1,0,0,5); space2.BackgroundTransparency = 1; space2.Parent = Scroll
 
-        -- [2. زر السيرفر هوب]
         local hopBtn = Instance.new("TextButton")
         hopBtn.Size = UDim2.new(1, 0, 0, 50)
         hopBtn.BackgroundColor3 = aim_elementColor
@@ -932,7 +1005,6 @@ local function LoadMainScript()
 
         local space3 = Instance.new("Frame"); space3.Size = UDim2.new(1,0,0,5); space3.BackgroundTransparency = 1; space3.Parent = Scroll
 
-        -- [3. زر الإعدادات الأسطورية السريعة]
         local quickSettingsBtn = Instance.new("TextButton")
         quickSettingsBtn.Size = UDim2.new(1, 0, 0, 50)
         quickSettingsBtn.BackgroundColor3 = Color3.fromRGB(46, 204, 166)
@@ -987,7 +1059,6 @@ local function LoadMainScript()
             quickSettingsBtn.Text = "⚡ إعدادات أسطورية"
         end)
 
-        -- [4. الـ FPS Boost الآمن 100% بدون أي مساس للظلال أو الإضاءة ]
         local function applyPotatoMode(v)
             pcall(function()
                 if v:IsA("BasePart") and not v:IsA("Terrain") then
@@ -1058,7 +1129,6 @@ local function LoadMainScript()
             pcall(function() if setfpscap then setfpscap(val) end end)
         end)
 
-        -- [ إخفاء وإظهار الواجهة + التبديل بين SmartTarget و DistanceLock ببكرة الماوس ]
         toggleUiConnection = UIS.InputBegan:Connect(function(input, gpe)
             if not gpe then
                 if input.KeyCode == Enum.KeyCode.RightControl then
@@ -1389,6 +1459,12 @@ local function LoadMainScript()
         })
         closeTween:Play()
         closeTween.Completed:Wait()
+        
+        -- إغلاق الميزة ومسح الذاكرة عشان الماب ترجع نضيفة زي الأول
+        if HideHomesteadLeaves then
+            RestoreLeaves(true)
+        end
+        
         ScreenGui:Destroy()
     end)
 
