@@ -236,7 +236,7 @@ local function LoadMainScript()
 
     local CategoryBtn_Scripts, AccentLine_Scripts = CreateCategoryButton("السكربتات", 1, true)
     local CategoryBtn_Keys, AccentLine_Keys = CreateCategoryButton("المفاتيح", 2, false)
-    local CategoryBtn_VD, AccentLine_VD = CreateCategoryButton("Violence District", 3, false) -- [ تمت إضافة القسم الجديد ]
+    local CategoryBtn_VD, AccentLine_VD = CreateCategoryButton("Violence District", 3, false) 
 
     local function CreateContentFrame(isVisible)
         local Frame = Instance.new("ScrollingFrame")
@@ -265,7 +265,7 @@ local function LoadMainScript()
 
     local ContentFrame_Scripts, Layout_Scripts = CreateContentFrame(true)
     local ContentFrame_Keys, Layout_Keys = CreateContentFrame(false)
-    local ContentFrame_VD, Layout_VD = CreateContentFrame(false) -- [ تمت إضافة الإطار الجديد ]
+    local ContentFrame_VD, Layout_VD = CreateContentFrame(false) 
 
     local function AddCopyButton(parent, title, copyText)
         local btn = Instance.new("TextButton")
@@ -336,7 +336,6 @@ local function LoadMainScript()
         return Btn
     end
 
-    -- [ زر إخفاء ورق الشجر المحدث ]
     CreateToggleButton(ContentFrame_Scripts, "إخفاء شجر Homestead (للول هوب)", function(state)
         HideHomesteadLeaves = state
         
@@ -391,21 +390,26 @@ local function LoadMainScript()
 
 
     -- =========================================================
-    -- قسم السكربتات الخاص بـ Violence District (الجديد)
+    -- قسم السكربتات الخاص بـ Violence District 
     -- =========================================================
     local AutoSkillCheckConn = nil
+    local InstantPerfectState = false
+    local CurrentRandomHit = nil
+    local SubToggleBtn
 
-    CreateToggleButton(ContentFrame_VD, "Auto Skill Check", function(state)
+    -- الزر الأساسي لعمل الـ Auto Skill Check الطبيعي (المنطقة السوداء العشوائية)
+    local MainToggleBtn = CreateToggleButton(ContentFrame_VD, "Auto Skill Check (Legit)", function(state)
         if state then
+            SubToggleBtn.Visible = true
+            TS:Create(SubToggleBtn, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(1, 0, 0, 35)}):Play()
+            
             if not AutoSkillCheckConn then
                 local VirtualInputManager = game:GetService("VirtualInputManager")
                 
-                -- نستخدم Heartbeat لمراقبة الشاشة بشكل مستمر بدون ما يسبب لاج
                 AutoSkillCheckConn = RunService.Heartbeat:Connect(function()
                     pcall(function()
                         local PG = Player:FindFirstChild("PlayerGui")
                         if PG then
-                            -- بنبحث عن واجهة التوليد والسكيل تشيك
                             local CheckGui = PG:FindFirstChild("SkillCheckPromptGui")
                             if CheckGui and CheckGui.Enabled then
                                 local BG = CheckGui:FindFirstChild("BG")
@@ -414,42 +418,68 @@ local function LoadMainScript()
                                     local Goal = BG:FindFirstChild("Goal")
                                     
                                     if Line and Goal then
-                                        -- حساب دوران الخط ودوران منطقة الهدف
                                         local lr = Line.Rotation % 360
                                         local gr = Goal.Rotation % 360
                                         
-                                        -- إضافة الإزاحة لمنطقة "Perfect"
-                                        local gs = (gr + 104) % 360
-                                        local ge = (gr + 114) % 360
-                                        
-                                        local inGoal = false
-                                        if gs > ge then 
-                                            inGoal = (lr >= gs or lr <= ge)
-                                        else 
-                                            inGoal = (lr >= gs and lr <= ge)
-                                        end
-                                        
-                                        -- لو الخط وصل لمنطقة البيرفكت، هنضغط Space تلقائياً
-                                        if inGoal then
+                                        if InstantPerfectState then
+                                            local perfectSpot = (gr + 109) % 360
+                                            Line.Rotation = perfectSpot
                                             VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Space, false, game)
                                             task.wait(0.01)
                                             VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Space, false, game)
-                                            task.wait(0.5) -- كول داون بسيط لمنع التكرار السريع وتخطي الفحص
+                                            task.wait(0.5) 
+                                        else
+                                            if not CurrentRandomHit then
+                                                local offsets = {math.random(75, 100), math.random(118, 140)}
+                                                local chosenOffset = offsets[math.random(1, 2)]
+                                                CurrentRandomHit = (gr + chosenOffset) % 360
+                                            end
+                                            
+                                            local targetHit = CurrentRandomHit
+                                            
+                                            local diff = math.abs(lr - targetHit)
+                                            if diff > 180 then diff = 360 - diff end
+                                            
+                                            if diff < 4 then
+                                                VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Space, false, game)
+                                                task.wait(0.01)
+                                                VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Space, false, game)
+                                                task.wait(0.5) 
+                                                CurrentRandomHit = nil 
+                                            end
                                         end
                                     end
                                 end
+                            else
+                                CurrentRandomHit = nil 
                             end
                         end
                     end)
                 end)
             end
         else
+            local hideTween = TS:Create(SubToggleBtn, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Size = UDim2.new(1, 0, 0, 0)})
+            hideTween:Play()
+            task.spawn(function()
+                hideTween.Completed:Wait()
+                SubToggleBtn.Visible = false
+            end)
+            
             if AutoSkillCheckConn then
                 AutoSkillCheckConn:Disconnect()
                 AutoSkillCheckConn = nil
             end
+            CurrentRandomHit = nil
         end
     end)
+
+    -- الزر الفرعي للوضع السريع اللي بيظهر بأنميشن
+    SubToggleBtn = CreateToggleButton(ContentFrame_VD, "Instant Perfect (Rage Mode)", function(state)
+        InstantPerfectState = state
+    end)
+    SubToggleBtn.Size = UDim2.new(1, 0, 0, 0)
+    SubToggleBtn.Visible = false
+    SubToggleBtn.ClipsDescendants = true 
 
     -- =========================================================
     -- واجهة الايمبوت المدمجة
@@ -1488,7 +1518,7 @@ local function LoadMainScript()
     local tabs = {
         {btn = CategoryBtn_Scripts, accent = AccentLine_Scripts, content = ContentFrame_Scripts, layout = Layout_Scripts},
         {btn = CategoryBtn_Keys, accent = AccentLine_Keys, content = ContentFrame_Keys, layout = Layout_Keys},
-        {btn = CategoryBtn_VD, accent = AccentLine_VD, content = ContentFrame_VD, layout = Layout_VD} -- [ تم دمج القسم الجديد هنا ]
+        {btn = CategoryBtn_VD, accent = AccentLine_VD, content = ContentFrame_VD, layout = Layout_VD} 
     }
 
     local function SwitchTab(activeTab)
@@ -1510,7 +1540,7 @@ local function LoadMainScript()
 
     CategoryBtn_Scripts.MouseButton1Click:Connect(function() SwitchTab(tabs[1]) end)
     CategoryBtn_Keys.MouseButton1Click:Connect(function() SwitchTab(tabs[2]) end)
-    CategoryBtn_VD.MouseButton1Click:Connect(function() SwitchTab(tabs[3]) end) -- [ تفعيل نقرة القسم الجديد ]
+    CategoryBtn_VD.MouseButton1Click:Connect(function() SwitchTab(tabs[3]) end) 
 
     CloseBtn.MouseButton1Click:Connect(function()
         local closeTween = TS:Create(MainFrame, tweenInfoClose, {
@@ -1520,12 +1550,10 @@ local function LoadMainScript()
         closeTween:Play()
         closeTween.Completed:Wait()
         
-        -- إغلاق الميزة ومسح الذاكرة عشان الماب ترجع نضيفة زي الأول
         if HideHomesteadLeaves then
             RestoreLeaves(true)
         end
         
-        -- مسح اتصال الـ Auto Skill Check
         if AutoSkillCheckConn then
             AutoSkillCheckConn:Disconnect()
             AutoSkillCheckConn = nil
