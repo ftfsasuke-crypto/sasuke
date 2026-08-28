@@ -396,6 +396,23 @@ local function LoadMainScript()
     local InstantPerfectState = false
     local CurrentRandomHit = nil
     local SubToggleBtn
+    
+    local function SafeHitSpace()
+        task.spawn(function()
+            local VIM = game:GetService("VirtualInputManager")
+            pcall(function()
+                if keypress and keyrelease then
+                    keypress(0x20)
+                    task.wait(0.05)
+                    keyrelease(0x20)
+                else
+                    VIM:SendKeyEvent(true, Enum.KeyCode.Space, false, game)
+                    task.wait(0.05)
+                    VIM:SendKeyEvent(false, Enum.KeyCode.Space, false, game)
+                end
+            end)
+        end)
+    end
 
     -- الزر الأساسي لعمل الـ Auto Skill Check الطبيعي (المنطقة السوداء العشوائية)
     local MainToggleBtn = CreateToggleButton(ContentFrame_VD, "Auto Skill Check (Legit)", function(state)
@@ -404,8 +421,6 @@ local function LoadMainScript()
             TS:Create(SubToggleBtn, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(1, 0, 0, 35)}):Play()
             
             if not AutoSkillCheckConn then
-                local VirtualInputManager = game:GetService("VirtualInputManager")
-                
                 AutoSkillCheckConn = RunService.Heartbeat:Connect(function()
                     pcall(function()
                         local PG = Player:FindFirstChild("PlayerGui")
@@ -422,28 +437,27 @@ local function LoadMainScript()
                                         local gr = Goal.Rotation % 360
                                         
                                         if InstantPerfectState then
-                                            local perfectSpot = (gr + 109) % 360
-                                            Line.Rotation = perfectSpot
-                                            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Space, false, game)
-                                            task.wait(0.01)
-                                            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Space, false, game)
-                                            task.wait(0.5) 
-                                        else
-                                            if not CurrentRandomHit then
-                                                local offsets = {math.random(75, 100), math.random(118, 140)}
-                                                local chosenOffset = offsets[math.random(1, 2)]
-                                                CurrentRandomHit = (gr + chosenOffset) % 360
-                                            end
-                                            
-                                            local targetHit = CurrentRandomHit
-                                            
-                                            local diff = math.abs(lr - targetHit)
+                                            -- ضرب في السنتر بالظبط
+                                            local diff = math.abs(lr - gr)
                                             if diff > 180 then diff = 360 - diff end
                                             
-                                            if diff < 4 then
-                                                VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Space, false, game)
-                                                task.wait(0.01)
-                                                VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Space, false, game)
+                                            if diff <= 6 then
+                                                SafeHitSpace()
+                                                task.wait(0.5) 
+                                            end
+                                        else
+                                            -- الوضع الطبيعي: نضرب بدري شوية عشوائي عشان نيجي في الزون الأسود
+                                            if not CurrentRandomHit then
+                                                -- نختار مسافة بدري من 15 ل 30 درجة
+                                                local earlyOffset = math.random(15, 30)
+                                                CurrentRandomHit = (gr - earlyOffset) % 360
+                                            end
+                                            
+                                            local diff = math.abs(lr - CurrentRandomHit)
+                                            if diff > 180 then diff = 360 - diff end
+                                            
+                                            if diff <= 6 then
+                                                SafeHitSpace()
                                                 task.wait(0.5) 
                                                 CurrentRandomHit = nil 
                                             end
