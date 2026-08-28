@@ -437,26 +437,27 @@ local function LoadMainScript()
                                         local gr = Goal.Rotation % 360
                                         
                                         if InstantPerfectState then
-                                            -- ضرب في السنتر بالظبط
-                                            local diff = math.abs(lr - gr)
+                                            -- ضرب في السنتر بالظبط للـ Rage Mode
+                                            local perfectSpot = (gr + 109) % 360
+                                            local diff = math.abs(lr - perfectSpot)
                                             if diff > 180 then diff = 360 - diff end
                                             
-                                            if diff <= 6 then
+                                            -- توسيع التوليرانس لـ 18 عشان نتجنب الـ Frame Skip اللي كان بيحصل
+                                            if diff <= 18 then 
                                                 SafeHitSpace()
                                                 task.wait(0.5) 
                                             end
                                         else
-                                            -- الوضع الطبيعي: نضرب بدري شوية عشوائي عشان نيجي في الزون الأسود
+                                            -- الوضع الطبيعي: نختار زاوية عشوائية في المنطقة السودا
                                             if not CurrentRandomHit then
-                                                -- نختار مسافة بدري من 15 ل 30 درجة
-                                                local earlyOffset = math.random(15, 30)
-                                                CurrentRandomHit = (gr - earlyOffset) % 360
+                                                local offsets = {math.random(70, 95), math.random(120, 145)}
+                                                CurrentRandomHit = (gr + offsets[math.random(1, 2)]) % 360
                                             end
                                             
                                             local diff = math.abs(lr - CurrentRandomHit)
                                             if diff > 180 then diff = 360 - diff end
                                             
-                                            if diff <= 6 then
+                                            if diff <= 18 then 
                                                 SafeHitSpace()
                                                 task.wait(0.5) 
                                                 CurrentRandomHit = nil 
