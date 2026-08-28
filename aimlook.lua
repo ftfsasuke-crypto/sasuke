@@ -42,9 +42,8 @@ local function LoadMainScript()
 
     local function checkAndCacheLeaf(v)
         if not v:IsA("BasePart") then return false end
-        if v.Transparency >= 1 then return false end -- نتجاهل المخفي أصلاً
+        if v.Transparency >= 1 then return false end 
         
-        -- 1. التأكد إن المجسم عبارة عن زرع (باللون أو الخامة أو الاسم)
         local isGreen = false
         if (v.Color.G > v.Color.R * 0.9 and v.Color.G > v.Color.B * 0.9) then isGreen = true end
         if v.Material == Enum.Material.Grass or v.Material == Enum.Material.Leaf then isGreen = true end
@@ -52,11 +51,8 @@ local function LoadMainScript()
         
         if not isGreen then return false end
         
-        -- 2. الفكرة العبقرية: حساب "أسفل نقطة" في المجسم
         local bottomY = v.Position.Y - (v.Size.Y / 2)
         
-        -- لو أسفل نقطة طايرة في الهواء (أعلى من 12 ستد)، يبقى ده ورق شجر (يختفي)
-        -- لو أسفل نقطة قريبة من الأرض (أقل من 12)، يبقى دي شجيرة الـ Wallhop اللي في الأرض (تتحمي)
         if bottomY > 12 then
             if not OriginalLeaves[v] then
                 OriginalLeaves[v] = {
@@ -70,7 +66,6 @@ local function LoadMainScript()
         return false
     end
 
-    -- دالة الاسترجاع ومسح الذاكرة
     local function RestoreLeaves(clearCache)
         if treeLeavesLoop then treeLeavesLoop:Disconnect() treeLeavesLoop = nil end
         for obj, data in pairs(OriginalLeaves) do
@@ -241,6 +236,7 @@ local function LoadMainScript()
 
     local CategoryBtn_Scripts, AccentLine_Scripts = CreateCategoryButton("السكربتات", 1, true)
     local CategoryBtn_Keys, AccentLine_Keys = CreateCategoryButton("المفاتيح", 2, false)
+    local CategoryBtn_VD, AccentLine_VD = CreateCategoryButton("Violence District", 3, false) -- [ تمت إضافة القسم الجديد ]
 
     local function CreateContentFrame(isVisible)
         local Frame = Instance.new("ScrollingFrame")
@@ -269,6 +265,7 @@ local function LoadMainScript()
 
     local ContentFrame_Scripts, Layout_Scripts = CreateContentFrame(true)
     local ContentFrame_Keys, Layout_Keys = CreateContentFrame(false)
+    local ContentFrame_VD, Layout_VD = CreateContentFrame(false) -- [ تمت إضافة الإطار الجديد ]
 
     local function AddCopyButton(parent, title, copyText)
         local btn = Instance.new("TextButton")
@@ -356,7 +353,7 @@ local function LoadMainScript()
                                 end
                             end)
                             count = count + 1
-                            if count % 250 == 0 then task.wait() end -- يريح عشان مفيش لاج
+                            if count % 250 == 0 then task.wait() end 
                         end
                     end
                     WorkspaceScanned = true
@@ -392,6 +389,67 @@ local function LoadMainScript()
         end
     end)
 
+
+    -- =========================================================
+    -- قسم السكربتات الخاص بـ Violence District (الجديد)
+    -- =========================================================
+    local AutoSkillCheckConn = nil
+
+    CreateToggleButton(ContentFrame_VD, "Auto Skill Check", function(state)
+        if state then
+            if not AutoSkillCheckConn then
+                local VirtualInputManager = game:GetService("VirtualInputManager")
+                
+                -- نستخدم Heartbeat لمراقبة الشاشة بشكل مستمر بدون ما يسبب لاج
+                AutoSkillCheckConn = RunService.Heartbeat:Connect(function()
+                    pcall(function()
+                        local PG = Player:FindFirstChild("PlayerGui")
+                        if PG then
+                            -- بنبحث عن واجهة التوليد والسكيل تشيك
+                            local CheckGui = PG:FindFirstChild("SkillCheckPromptGui")
+                            if CheckGui and CheckGui.Enabled then
+                                local BG = CheckGui:FindFirstChild("BG")
+                                if BG then
+                                    local Line = BG:FindFirstChild("Line")
+                                    local Goal = BG:FindFirstChild("Goal")
+                                    
+                                    if Line and Goal then
+                                        -- حساب دوران الخط ودوران منطقة الهدف
+                                        local lr = Line.Rotation % 360
+                                        local gr = Goal.Rotation % 360
+                                        
+                                        -- إضافة الإزاحة لمنطقة "Perfect"
+                                        local gs = (gr + 104) % 360
+                                        local ge = (gr + 114) % 360
+                                        
+                                        local inGoal = false
+                                        if gs > ge then 
+                                            inGoal = (lr >= gs or lr <= ge)
+                                        else 
+                                            inGoal = (lr >= gs and lr <= ge)
+                                        end
+                                        
+                                        -- لو الخط وصل لمنطقة البيرفكت، هنضغط Space تلقائياً
+                                        if inGoal then
+                                            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Space, false, game)
+                                            task.wait(0.01)
+                                            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Space, false, game)
+                                            task.wait(0.5) -- كول داون بسيط لمنع التكرار السريع وتخطي الفحص
+                                        end
+                                    end
+                                end
+                            end
+                        end
+                    end)
+                end)
+            end
+        else
+            if AutoSkillCheckConn then
+                AutoSkillCheckConn:Disconnect()
+                AutoSkillCheckConn = nil
+            end
+        end
+    end)
 
     -- =========================================================
     -- واجهة الايمبوت المدمجة
@@ -1429,7 +1487,8 @@ local function LoadMainScript()
 
     local tabs = {
         {btn = CategoryBtn_Scripts, accent = AccentLine_Scripts, content = ContentFrame_Scripts, layout = Layout_Scripts},
-        {btn = CategoryBtn_Keys, accent = AccentLine_Keys, content = ContentFrame_Keys, layout = Layout_Keys}
+        {btn = CategoryBtn_Keys, accent = AccentLine_Keys, content = ContentFrame_Keys, layout = Layout_Keys},
+        {btn = CategoryBtn_VD, accent = AccentLine_VD, content = ContentFrame_VD, layout = Layout_VD} -- [ تم دمج القسم الجديد هنا ]
     }
 
     local function SwitchTab(activeTab)
@@ -1451,6 +1510,7 @@ local function LoadMainScript()
 
     CategoryBtn_Scripts.MouseButton1Click:Connect(function() SwitchTab(tabs[1]) end)
     CategoryBtn_Keys.MouseButton1Click:Connect(function() SwitchTab(tabs[2]) end)
+    CategoryBtn_VD.MouseButton1Click:Connect(function() SwitchTab(tabs[3]) end) -- [ تفعيل نقرة القسم الجديد ]
 
     CloseBtn.MouseButton1Click:Connect(function()
         local closeTween = TS:Create(MainFrame, tweenInfoClose, {
@@ -1463,6 +1523,12 @@ local function LoadMainScript()
         -- إغلاق الميزة ومسح الذاكرة عشان الماب ترجع نضيفة زي الأول
         if HideHomesteadLeaves then
             RestoreLeaves(true)
+        end
+        
+        -- مسح اتصال الـ Auto Skill Check
+        if AutoSkillCheckConn then
+            AutoSkillCheckConn:Disconnect()
+            AutoSkillCheckConn = nil
         end
         
         ScreenGui:Destroy()
