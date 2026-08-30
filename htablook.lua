@@ -2938,7 +2938,7 @@ local success, err = pcall(function()
         end
 
         -- أزرار قسم سكربتات حطاب الايقوني
-        CreateScriptButton(ContentFrame_Hattab, "سكربت اللصقان", "loadstring(game:HttpGet('https://pastebin.com/raw/cNKmP2M6'))()")
+        CreateScriptButton(ContentFrame_Hattab, "سكربت الايمبوت", "BUILTIN_AIMBOT")
         CreateScriptButton(ContentFrame_Hattab, "سكربت ftf", "HATTAB_FTF")
 
         -- =========================================================
