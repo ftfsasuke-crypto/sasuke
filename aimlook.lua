@@ -107,8 +107,8 @@ local success, err = pcall(function()
         end
 
         local MainFrame = Instance.new("Frame")
-        MainFrame.Size = UDim2.new(0, 550, 0, 350)
-        MainFrame.Position = UDim2.new(0.5, -275, 0.5, -175)
+        MainFrame.Size = UDim2.new(0, 750, 0, 450)
+        MainFrame.Position = UDim2.new(0.5, -375, 0.5, -225)
         MainFrame.BackgroundColor3 = bgColor
         MainFrame.BorderSizePixel = 0
         MainFrame.Active = true
@@ -233,9 +233,8 @@ local success, err = pcall(function()
             return Btn, Accent
         end
 
-        local CategoryBtn_VD, AccentLine_VD = CreateCategoryButton("Violence District", 1, true)
-        local CategoryBtn_Scripts, AccentLine_Scripts = CreateCategoryButton("السكربتات", 2, false)
-        local CategoryBtn_Keys, AccentLine_Keys = CreateCategoryButton("المفاتيح", 3, false)
+        local CategoryBtn_Scripts, AccentLine_Scripts = CreateCategoryButton("السكربتات", 1, true)
+        local CategoryBtn_VD, AccentLine_VD = CreateCategoryButton("Violence District", 2, false)
 
         local function CreateContentFrame(isVisible)
             local Frame = Instance.new("ScrollingFrame")
@@ -262,42 +261,8 @@ local success, err = pcall(function()
             return Frame, Layout
         end
 
-        local ContentFrame_VD, Layout_VD = CreateContentFrame(true)
-        local ContentFrame_Scripts, Layout_Scripts = CreateContentFrame(false)
-        local ContentFrame_Keys, Layout_Keys = CreateContentFrame(false)
-
-        local function AddCopyButton(parent, title, copyText)
-            local btn = Instance.new("TextButton")
-            btn.Size = UDim2.new(1, 0, 0, 40)
-            btn.BackgroundColor3 = elementColor
-            btn.Text = title
-            btn.TextColor3 = textColor
-            btn.Font = Enum.Font.GothamBold
-            btn.TextSize = 13
-            Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
-            Instance.new("UIStroke", btn).Color = Color3.fromRGB(50, 50, 50)
-            btn.Parent = parent
-
-            btn.MouseEnter:Connect(function()
-                TS:Create(btn, tweenInfoFast, {BackgroundColor3 = hoverColor}):Play()
-            end)
-            btn.MouseLeave:Connect(function()
-                TS:Create(btn, tweenInfoFast, {BackgroundColor3 = elementColor}):Play()
-            end)
-
-            btn.MouseButton1Click:Connect(function()
-                pcall(function() setclipboard(copyText) end)
-                local oldText = btn.Text
-                btn.Text = "تم النسخ بنجاح!"
-                btn.TextColor3 = Color3.fromRGB(46, 204, 166)
-                task.wait(1.5)
-                btn.Text = oldText
-                btn.TextColor3 = textColor
-            end)
-        end
-
-        AddCopyButton(ContentFrame_Keys, "نسخ مفتاج vd", "VONIXE-PREM-ULUYRU7ZGZXQ")
-        AddCopyButton(ContentFrame_Keys, "كود مفتاح ftf", "11699551-b355-4525-9879-84446c50dd99")
+        local ContentFrame_Scripts, Layout_Scripts = CreateContentFrame(true)
+        local ContentFrame_VD, Layout_VD = CreateContentFrame(false)
 
         local function CreateToggleButton(parent, text, callback)
             local Btn = Instance.new("TextButton")
@@ -387,137 +352,6 @@ local success, err = pcall(function()
                 RestoreLeaves(false)
             end
         end)
-
-        -- =========================================================
-        -- VD SKILL CHECK (FIXED & BULLETPROOF)
-        -- =========================================================
-        local AutoSkillCheckConn = nil
-        local LegitMode = false
-        local RageMode = false
-        local isHitting = false
-
-        -- دالة لمحاكاة ضغطة الكيبورد الحقيقية (المسطرة)
-        local function RawHitSpace(spaceBtn)
-            if isHitting then return end
-            isHitting = true
-
-            task.spawn(function()
-                -- تأثير بصري سريع لتعرف إن السكربت ضغط
-                if spaceBtn then
-                    pcall(function()
-                        local oldColor = spaceBtn.BackgroundColor3
-                        spaceBtn.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-                        task.wait(0.15)
-                        spaceBtn.BackgroundColor3 = oldColor
-                    end)
-                end
-
-                -- 1. محاكاة ضغطة كيبورد حقيقية (أفضل وأقوى طريقة للإكسكيوترز)
-                if keypress then
-                    pcall(function()
-                        keypress(0x20) -- 0x20 هو كود زرار المسطرة
-                        task.wait(0.01)
-                        keyrelease(0x20)
-                    end)
-                else
-                    -- 2. بديل قوي في حال الإكسكيوتر مش بيدعم keypress
-                    local VIM = game:GetService("VirtualInputManager")
-                    pcall(function()
-                        VIM:SendKeyEvent(true, Enum.KeyCode.Space, false, nil)
-                        task.wait(0.01)
-                        VIM:SendKeyEvent(false, Enum.KeyCode.Space, false, nil)
-                    end)
-                end
-
-                -- تبريد (Cooldown) عشان ميضربش كذا مرة في نفس اللفة
-                task.wait(0.6)
-                isHitting = false
-            end)
-        end
-
-        local function StartSkillCheckLoop()
-            if AutoSkillCheckConn then return end
-            
-            -- استخدام Heartbeat عشان مشكلة الدروب فريم
-            AutoSkillCheckConn = RunService.Heartbeat:Connect(function()
-                pcall(function()
-                    local PG = Player:FindFirstChild("PlayerGui")
-                    if not PG then return end
-                    
-                    -- البحث عن واجهة الـ Skill Check
-                    local CheckGui = PG:FindFirstChild("SkillCheckPromptGui-con") or PG:FindFirstChild("SkillCheckPromptGui")
-                    if CheckGui and CheckGui.Enabled then
-                        
-                        local CheckFrame = CheckGui:FindFirstChild("Check")
-                        if not CheckFrame then return end
-                        
-                        local Line = CheckFrame:FindFirstChild("Line")
-                        local Goal = CheckFrame:FindFirstChild("Goal")
-                        local SpaceBtn = CheckFrame:FindFirstChild("Space")
-                        
-                        if Line and Goal and not isHitting then
-                            local lr = Line.Rotation % 360
-                            local gr = Goal.Rotation % 360
-                            
-                            -- حساب الفرق بين الخط والهدف
-                            local diff = math.abs(lr - gr)
-                            if diff > 180 then diff = 360 - diff end
-                            
-                            -- Instant Perfect (Rage Mode)
-                            if RageMode then
-                                -- السكربت هيستنى لحد ما الفرق يكون أقل من 3 (بيرفكت) ويضرب حقيقي
-                                if diff <= 3 then
-                                    RawHitSpace(SpaceBtn)
-                                end
-                                
-                            -- Legit Mode
-                            elseif LegitMode then
-                                -- السكربت هيضرب في نطاق أوسع شوية عشان يبان إنه لعب بشري
-                                if diff <= 14 and diff >= 4 then
-                                    RawHitSpace(SpaceBtn)
-                                end
-                            end
-                        end
-                    end
-                end)
-            end)
-            table.insert(GlobalConnections, AutoSkillCheckConn)
-        end
-
-        local SubToggleBtn 
-
-        local MainToggleBtn = CreateToggleButton(ContentFrame_VD, "Auto Skill Check (Legit)", function(state)
-            LegitMode = state
-            if state then
-                SubToggleBtn.Visible = true
-                TS:Create(SubToggleBtn, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Size = UDim2.new(1, 0, 0, 40)}):Play()
-                StartSkillCheckLoop()
-            else
-                local hideTween = TS:Create(SubToggleBtn, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Size = UDim2.new(1, 0, 0, 0)})
-                hideTween:Play()
-                task.spawn(function()
-                    hideTween.Completed:Wait()
-                    SubToggleBtn.Visible = false
-                end)
-                if not RageMode and AutoSkillCheckConn then
-                    AutoSkillCheckConn:Disconnect()
-                    AutoSkillCheckConn = nil
-                end
-            end
-        end)
-
-        SubToggleBtn = CreateToggleButton(ContentFrame_VD, "Instant Perfect (Rage Mode)", function(state)
-            RageMode = state
-            if state then
-                StartSkillCheckLoop()
-            elseif not LegitMode and AutoSkillCheckConn then
-                AutoSkillCheckConn:Disconnect()
-                AutoSkillCheckConn = nil
-            end
-        end)
-        SubToggleBtn.Size = UDim2.new(1, 0, 0, 0)
-        SubToggleBtn.Visible = false
-        SubToggleBtn.ClipsDescendants = true 
 
         -- =========================================================
         -- واجهة الايمبوت المدمجة (كاملة بدون نقص)
@@ -1526,8 +1360,10 @@ local success, err = pcall(function()
         end
 
         CreateScriptButton(ContentFrame_Scripts, "ايمبوت", "BUILTIN_AIMBOT")
-        CreateScriptButton(ContentFrame_Scripts, "سكربت vd مفتاح دائم", "https://vonixehub.my.id/api/loader")
-        CreateScriptButton(ContentFrame_Scripts, "سكربت ftf", "https://api.jnkie.com/api/v1/luascripts/public/2111fcae4f4bfc3fca6c1f01cbf7ad9607b040f7ab7df277e6e1b573d5722b08/download")
+        CreateScriptButton(ContentFrame_Scripts, "سكربت ftf", "https://pastebin.com/raw/CBMWdfqW")
+        
+        CreateScriptButton(ContentFrame_VD, "ViolenceDistrict Script", "https://raw.githubusercontent.com/lixxWW/ViolenceDistrict/refs/heads/main/ViolenceDistrict.lua")
+        CreateScriptButton(ContentFrame_VD, "TexRBLX Script", "https://raw.githubusercontent.com/TexRBLX/Roblox-stuff/refs/heads/main/violence-district/script.lua")
 
         -- =========================================================
         -- نظام التحكم في الماوس وظهور الواجهة
@@ -1554,7 +1390,6 @@ local success, err = pcall(function()
 
         local tabs = {
             {btn = CategoryBtn_Scripts, accent = AccentLine_Scripts, content = ContentFrame_Scripts, layout = Layout_Scripts},
-            {btn = CategoryBtn_Keys, accent = AccentLine_Keys, content = ContentFrame_Keys, layout = Layout_Keys},
             {btn = CategoryBtn_VD, accent = AccentLine_VD, content = ContentFrame_VD, layout = Layout_VD} 
         }
 
@@ -1576,8 +1411,7 @@ local success, err = pcall(function()
         end
 
         CategoryBtn_Scripts.MouseButton1Click:Connect(function() SwitchTab(tabs[1]) end)
-        CategoryBtn_Keys.MouseButton1Click:Connect(function() SwitchTab(tabs[2]) end)
-        CategoryBtn_VD.MouseButton1Click:Connect(function() SwitchTab(tabs[3]) end) 
+        CategoryBtn_VD.MouseButton1Click:Connect(function() SwitchTab(tabs[2]) end) 
 
         CloseBtn.MouseButton1Click:Connect(function()
             if _G.GhostMiniHubCleanup then
@@ -1635,7 +1469,7 @@ local success, err = pcall(function()
         
         -- فتح الواجهة فورا
         ToggleHub(true)
-        SwitchTab(tabs[3]) -- فتح قسم VD كافتراضي للتجربة
+        SwitchTab(tabs[1]) -- فتح قسم السكربتات كافتراضي للتجربة
     end
 
     LoadMainScript()
