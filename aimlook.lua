@@ -1382,7 +1382,7 @@ local success, err = pcall(function()
         end
 
         local hBind = UIS.InputBegan:Connect(function(input, gpe)
-            if not gpe and input.KeyCode == Enum.KeyCode.H then
+            if not gpe and input.KeyCode == Enum.KeyCode.RightShift then
                 ToggleHub(not isHubOpen)
             end
         end)
