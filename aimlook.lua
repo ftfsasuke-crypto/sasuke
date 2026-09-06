@@ -2,7 +2,7 @@
 -- PRIVATE SCRIPT INTERFACE (HUB + NEW FULL AIMBOT)
 -- Includes: VIP Rejoin Bypass, Bulletproof ESP, Anti-Duplicate, Perfect Mouse Unlock
 -- Features: Middle Click Toggle, Revertible FPS Boost, Flawless High-Tree Leaves Hider (Geometry Floating Filter)
--- VERSION: V16 (FULL SCRIPT RESTORED + Instant Rage Mode Fix)
+-- VERSION: V16 (Rock-Solid UI Fix + iOS Toggle Cards & Lighting Options & First Person Zoom)
 -- ==========================================
 
 local success, err = pcall(function()
@@ -50,9 +50,46 @@ local success, err = pcall(function()
         local textColor = Color3.fromRGB(240, 240, 240)
         local accentColor = Color3.fromRGB(255, 215, 0) 
 
-        local tweenInfoFast = TweenInfo.new(0.15, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-        local tweenInfoSmooth = TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
-        local tweenInfoClose = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In)
+        -- ==========================================
+        -- نظام حفظ وإدارة الإضاءة والزوم
+        -- ==========================================
+        local Lighting = game:GetService("Lighting")
+        local OriginalLighting = {}
+        local isLightingSaved = false
+        local flashLightLoop = nil
+        local noFogLoop = nil
+        
+        local OriginalMinZoom = 0.5
+        local OriginalMaxZoom = 128
+        
+        -- تأمين قراءة إعدادات الكاميرا عشان تمنع الكراش
+        pcall(function()
+            if Player then
+                OriginalMinZoom = Player.CameraMinZoomDistance
+                OriginalMaxZoom = Player.CameraMaxZoomDistance
+            end
+        end)
+        
+        local function SaveLighting()
+            if not isLightingSaved then
+                pcall(function()
+                    OriginalLighting.Ambient = Lighting.Ambient
+                    OriginalLighting.OutdoorAmbient = Lighting.OutdoorAmbient
+                    OriginalLighting.Brightness = Lighting.Brightness
+                    OriginalLighting.ColorShift_Bottom = Lighting.ColorShift_Bottom
+                    OriginalLighting.ColorShift_Top = Lighting.ColorShift_Top
+                    OriginalLighting.GlobalShadows = Lighting.GlobalShadows
+                    OriginalLighting.FogEnd = Lighting.FogEnd
+                    OriginalLighting.FogStart = Lighting.FogStart
+                    
+                    local atmo = Lighting:FindFirstChildOfClass("Atmosphere")
+                    if atmo then
+                        OriginalLighting.AtmosphereDensity = atmo.Density
+                    end
+                end)
+                isLightingSaved = true
+            end
+        end
 
         -- [ الفلتر الهندسي العبقري (مبني على فكرة اللاعب) ]
         local OriginalLeaves = {}
@@ -149,7 +186,7 @@ local success, err = pcall(function()
         Title.Size = UDim2.new(0, 200, 1, 0)
         Title.Position = UDim2.new(0, 15, 0, 0)
         Title.BackgroundTransparency = 1
-        Title.Text = "واجهة السكربت الخاصه بيا V16"
+        Title.Text = "واجهة السكربت الخاصه بيا"
         Title.TextColor3 = textColor
         Title.Font = Enum.Font.GothamBold
         Title.TextSize = 14
@@ -258,49 +295,92 @@ local success, err = pcall(function()
             Padding.PaddingRight = UDim.new(0, 10)
             Padding.Parent = Frame
 
+            -- تحديث السكرول تلقائياً بدون تعليق
+            Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+                Frame.CanvasSize = UDim2.new(0, 0, 0, Layout.AbsoluteContentSize.Y + 20)
+            end)
+
             return Frame, Layout
         end
 
         local ContentFrame_Scripts, Layout_Scripts = CreateContentFrame(true)
         local ContentFrame_VD, Layout_VD = CreateContentFrame(false)
 
-        local function CreateToggleButton(parent, text, callback)
-            local Btn = Instance.new("TextButton")
-            Btn.Size = UDim2.new(1, 0, 0, 40) 
-            Btn.BackgroundColor3 = elementColor
-            Btn.Text = text .. " : OFF"
-            Btn.TextColor3 = Color3.fromRGB(255, 80, 80)
-            Btn.Font = Enum.Font.GothamSemibold
-            Btn.TextSize = 13
-            Btn.AutoButtonColor = false
-            Btn.Parent = parent
-
-            local Corner = Instance.new("UICorner")
-            Corner.CornerRadius = UDim.new(0, 6)
-            Corner.Parent = Btn
+        -- =========================================================
+        -- أزرار الواجهة والتبويبات
+        -- =========================================================
+        
+        -- [دالة التصميم المشابهة لسكربت جوست (iOS On/Off Style) بتدعم الضغط في أي مكان في المربع]
+        local function CreateToggleCard(parent, titleText, descText, onToggleCallback)
+            local Card = Instance.new("Frame")
+            Card.Size = UDim2.new(1, 0, 0, 60)
+            Card.BackgroundColor3 = elementColor
+            Card.Parent = parent
+            Instance.new("UICorner", Card).CornerRadius = UDim.new(0, 6)
 
             local Stroke = Instance.new("UIStroke")
             Stroke.Color = Color3.fromRGB(50, 50, 50)
             Stroke.Thickness = 1
             Stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-            Stroke.Parent = Btn
+            Stroke.Parent = Card
             
-            local state = false
-            Btn.MouseButton1Click:Connect(function()
-                state = not state
-                if state then
-                    Btn.Text = text .. " : ON"
-                    Btn.TextColor3 = Color3.fromRGB(80, 255, 80)
-                else
-                    Btn.Text = text .. " : OFF"
-                    Btn.TextColor3 = Color3.fromRGB(255, 80, 80)
-                end
-                callback(state)
-            end)
-            return Btn
+            local Title = Instance.new("TextLabel")
+            Title.Size = UDim2.new(1, -70, 0, 25)
+            Title.Position = UDim2.new(0, 10, 0, 5)
+            Title.BackgroundTransparency = 1
+            Title.Text = titleText
+            Title.TextColor3 = textColor
+            Title.Font = Enum.Font.GothamBold
+            Title.TextSize = 13
+            Title.TextXAlignment = Enum.TextXAlignment.Left
+            Title.Parent = Card
+            
+            local Desc = Instance.new("TextLabel")
+            Desc.Size = UDim2.new(1, -70, 0, 25)
+            Desc.Position = UDim2.new(0, 10, 0, 25)
+            Desc.BackgroundTransparency = 1
+            Desc.Text = descText
+            Desc.TextColor3 = Color3.fromRGB(180, 180, 180)
+            Desc.Font = Enum.Font.Gotham
+            Desc.TextSize = 10
+            Desc.TextXAlignment = Enum.TextXAlignment.Left
+            Desc.TextWrapped = true
+            Desc.Parent = Card
+            
+            local ToggleBtn = Instance.new("TextButton")
+            ToggleBtn.Size = UDim2.new(0, 45, 0, 25)
+            ToggleBtn.Position = UDim2.new(1, -55, 0.5, -12.5)
+            ToggleBtn.BackgroundColor3 = Color3.fromRGB(255, 80, 80) 
+            ToggleBtn.Text = "OFF"
+            ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            ToggleBtn.Font = Enum.Font.GothamBold
+            ToggleBtn.TextSize = 11
+            ToggleBtn.Parent = Card
+            Instance.new("UICorner", ToggleBtn).CornerRadius = UDim.new(0, 4)
+            
+            -- زر مخفي يغطي البطاقة بالكامل لسهولة الضغط
+            local ClickArea = Instance.new("TextButton")
+            ClickArea.Size = UDim2.new(1, 0, 1, 0)
+            ClickArea.Position = UDim2.new(0, 0, 0, 0)
+            ClickArea.BackgroundTransparency = 1
+            ClickArea.Text = ""
+            ClickArea.ZIndex = 10
+            ClickArea.Parent = Card
+            
+            local isToggled = false
+            local function fireToggle()
+                isToggled = not isToggled
+                ToggleBtn.Text = isToggled and "ON" or "OFF"
+                ToggleBtn.BackgroundColor3 = isToggled and Color3.fromRGB(80, 255, 80) or Color3.fromRGB(255, 80, 80)
+                pcall(function() onToggleCallback(isToggled) end)
+            end
+            
+            ClickArea.MouseButton1Click:Connect(fireToggle)
+            
+            return Card
         end
 
-        CreateToggleButton(ContentFrame_Scripts, "إخفاء شجر Homestead (للول هوب)", function(state)
+        CreateToggleCard(ContentFrame_Scripts, "إخفاء شجر Homestead", "يخفي أوراق الشجر المزعجة في الماب لزيادة الأداء والرؤية.", function(state)
             HideHomesteadLeaves = state
             
             if state then
@@ -351,6 +431,67 @@ local success, err = pcall(function()
             else
                 RestoreLeaves(false)
             end
+        end)
+
+        -- [التفعيلات الخاصة بالإضاءة والزوم بطريقة الـ iOS Style]
+        CreateToggleCard(ContentFrame_Scripts, "Flashlight", "يزيد إضاءة الماب بشكل قوي لرؤية واضحة في الأماكن المظلمة.", function(state)
+            if state then
+                SaveLighting()
+                flashLightLoop = RunService.RenderStepped:Connect(function()
+                    Lighting.Ambient = Color3.fromRGB(220, 220, 220)
+                    Lighting.OutdoorAmbient = Color3.fromRGB(220, 220, 220)
+                    Lighting.Brightness = 4
+                    Lighting.GlobalShadows = false
+                end)
+            else
+                if flashLightLoop then flashLightLoop:Disconnect() flashLightLoop = nil end
+                if isLightingSaved then
+                    pcall(function()
+                        Lighting.Ambient = OriginalLighting.Ambient
+                        Lighting.OutdoorAmbient = OriginalLighting.OutdoorAmbient
+                        Lighting.Brightness = OriginalLighting.Brightness
+                        Lighting.GlobalShadows = OriginalLighting.GlobalShadows
+                    end)
+                end
+            end
+        end)
+
+        CreateToggleCard(ContentFrame_Scripts, "No Fog", "يزيل الضباب والغيوم من اللعبة لزيادة مدى الرؤية والوضوح.", function(state)
+            if state then
+                SaveLighting()
+                noFogLoop = RunService.RenderStepped:Connect(function()
+                    Lighting.FogEnd = 100000
+                    Lighting.FogStart = 0
+                    local atmo = Lighting:FindFirstChildOfClass("Atmosphere")
+                    if atmo then atmo.Density = 0 end
+                end)
+            else
+                if noFogLoop then noFogLoop:Disconnect() noFogLoop = nil end
+                if isLightingSaved then
+                    pcall(function()
+                        Lighting.FogEnd = OriginalLighting.FogEnd
+                        Lighting.FogStart = OriginalLighting.FogStart
+                        local atmo = Lighting:FindFirstChildOfClass("Atmosphere")
+                        if atmo and OriginalLighting.AtmosphereDensity then 
+                            atmo.Density = OriginalLighting.AtmosphereDensity 
+                        end
+                    end)
+                end
+            end
+        end)
+        
+        CreateToggleCard(ContentFrame_Scripts, "Infinity Zoom", "يسمح لك بالتبعيد لمدى لا نهائي والدخول في منظور الشخص الأول (First Person).", function(state)
+            pcall(function()
+                if state then
+                    OriginalMinZoom = Player.CameraMinZoomDistance
+                    OriginalMaxZoom = Player.CameraMaxZoomDistance
+                    Player.CameraMinZoomDistance = 0.5
+                    Player.CameraMaxZoomDistance = 100000
+                else
+                    Player.CameraMinZoomDistance = OriginalMinZoom
+                    Player.CameraMaxZoomDistance = OriginalMaxZoom
+                end
+            end)
         end)
 
         -- =========================================================
@@ -1313,19 +1454,14 @@ local success, err = pcall(function()
             Stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
             Stroke.Parent = Btn
 
-            Btn.MouseEnter:Connect(function()
-                TS:Create(Btn, tweenInfoFast, {BackgroundColor3 = hoverColor}):Play()
-            end)
-            Btn.MouseLeave:Connect(function()
-                TS:Create(Btn, tweenInfoFast, {BackgroundColor3 = elementColor}):Play()
-            end)
-
+            local pulseConnection = nil
             Btn.MouseButton1Click:Connect(function()
-                local pulse = TS:Create(Btn, TweenInfo.new(0.1, Enum.EasingStyle.Linear), {Size = UDim2.new(0.98, 0, 0, 38)})
-                local pulseBack = TS:Create(Btn, TweenInfo.new(0.1, Enum.EasingStyle.Linear), {Size = UDim2.new(1, 0, 0, 40)})
-                pulse:Play()
-                pulse.Completed:Wait()
-                pulseBack:Play()
+                if pulseConnection then pulseConnection:Disconnect() end
+                pcall(function()
+                    Btn.Size = UDim2.new(0.98, 0, 0, 38)
+                    task.wait(0.1)
+                    Btn.Size = UDim2.new(1, 0, 0, 40)
+                end)
 
                 if scriptUrl == "BUILTIN_AIMBOT" then
                     LaunchAimbotGUI()
@@ -1363,7 +1499,6 @@ local success, err = pcall(function()
         CreateScriptButton(ContentFrame_Scripts, "سكربت ftf", "https://pastebin.com/raw/CBMWdfqW")
         
         CreateScriptButton(ContentFrame_VD, "ViolenceDistrict Script", "https://raw.githubusercontent.com/lixxWW/ViolenceDistrict/refs/heads/main/ViolenceDistrict.lua")
-        CreateScriptButton(ContentFrame_VD, "TexRBLX Script", "https://raw.githubusercontent.com/TexRBLX/Roblox-stuff/refs/heads/main/violence-district/script.lua")
 
         -- =========================================================
         -- نظام التحكم في الماوس وظهور الواجهة
@@ -1393,21 +1528,24 @@ local success, err = pcall(function()
             {btn = CategoryBtn_VD, accent = AccentLine_VD, content = ContentFrame_VD, layout = Layout_VD} 
         }
 
+        -- التعديل الجذري: تبديل الأقسام بدون Tweens عشان نمنع أي كراش
         local function SwitchTab(activeTab)
-            for _, tab in ipairs(tabs) do
-                tab.btn.BackgroundTransparency = 1
-                tab.btn.TextColor3 = Color3.fromRGB(150, 150, 150)
-                tab.accent.Visible = false
-                tab.content.Visible = false
-            end
-            
-            TS:Create(activeTab.btn, tweenInfoFast, {BackgroundTransparency = 0, TextColor3 = textColor}):Play()
-            activeTab.accent.Visible = true
-            activeTab.accent.Size = UDim2.new(0, 0, 0.6, 0)
-            TS:Create(activeTab.accent, tweenInfoFast, {Size = UDim2.new(0, 3, 0.6, 0)}):Play()
-            activeTab.content.Visible = true
-            
-            activeTab.content.CanvasSize = UDim2.new(0, 0, 0, activeTab.layout.AbsoluteContentSize.Y + 20)
+            pcall(function()
+                for _, tab in ipairs(tabs) do
+                    tab.btn.BackgroundTransparency = 1
+                    tab.btn.TextColor3 = Color3.fromRGB(150, 150, 150)
+                    tab.accent.Visible = false
+                    tab.content.Visible = false
+                end
+                
+                if activeTab then
+                    activeTab.btn.BackgroundTransparency = 0
+                    activeTab.btn.TextColor3 = textColor
+                    activeTab.accent.Visible = true
+                    activeTab.accent.Size = UDim2.new(0, 3, 0.6, 0)
+                    activeTab.content.Visible = true
+                end
+            end)
         end
 
         CategoryBtn_Scripts.MouseButton1Click:Connect(function() SwitchTab(tabs[1]) end)
@@ -1422,14 +1560,6 @@ local success, err = pcall(function()
         MinimizeBtn.MouseButton1Click:Connect(function()
             ToggleHub(false)
         end)
-
-        local function AddTopBarHover(button, color)
-            button.MouseEnter:Connect(function() TS:Create(button, tweenInfoFast, {TextColor3 = color}):Play() end)
-            button.MouseLeave:Connect(function() TS:Create(button, tweenInfoFast, {TextColor3 = Color3.fromRGB(200, 200, 200)}):Play() end)
-        end
-
-        AddTopBarHover(CloseBtn, Color3.fromRGB(255, 50, 50))
-        AddTopBarHover(MinimizeBtn, Color3.fromRGB(255, 255, 255))
 
         local function MakeDraggable(dragPart, targetFrame)
             local dragging, dragInput, dragStart, startPos
@@ -1455,6 +1585,32 @@ local success, err = pcall(function()
             for _, conn in ipairs(GlobalConnections) do
                 if conn then pcall(function() conn:Disconnect() end) end
             end
+            
+            -- [تنظيف الإضاءة وإرجاع الماب لأصله لو قفلت السكربت خالص]
+            if flashLightLoop then flashLightLoop:Disconnect() flashLightLoop = nil end
+            if noFogLoop then noFogLoop:Disconnect() noFogLoop = nil end
+            if isLightingSaved then
+                local Lighting = game:GetService("Lighting")
+                pcall(function()
+                    Lighting.Ambient = OriginalLighting.Ambient
+                    Lighting.OutdoorAmbient = OriginalLighting.OutdoorAmbient
+                    Lighting.Brightness = OriginalLighting.Brightness
+                    Lighting.GlobalShadows = OriginalLighting.GlobalShadows
+                    Lighting.FogEnd = OriginalLighting.FogEnd
+                    Lighting.FogStart = OriginalLighting.FogStart
+                    local atmo = Lighting:FindFirstChildOfClass("Atmosphere")
+                    if atmo and OriginalLighting.AtmosphereDensity then 
+                        atmo.Density = OriginalLighting.AtmosphereDensity 
+                    end
+                end)
+            end
+            
+            -- [تنظيف الزوم وإرجاعه للطبيعي لو قفلت السكربت]
+            pcall(function() 
+                if OriginalMinZoom then Player.CameraMinZoomDistance = OriginalMinZoom end
+                if OriginalMaxZoom then Player.CameraMaxZoomDistance = OriginalMaxZoom end
+            end)
+
             if CoreGui:FindFirstChild("GhostMiniHub") then
                 CoreGui.GhostMiniHub:Destroy()
             end
@@ -1469,7 +1625,7 @@ local success, err = pcall(function()
         
         -- فتح الواجهة فورا
         ToggleHub(true)
-        SwitchTab(tabs[1]) -- فتح قسم السكربتات كافتراضي للتجربة
+        SwitchTab(tabs[1])
     end
 
     LoadMainScript()
@@ -1479,5 +1635,5 @@ end)
 if not success then
     warn("Ghost Hub Error: " .. tostring(err))
 else
-    print("Ghost Hub V16 Loaded Successfully!")
+    print("Ghost Hub Loaded Successfully!")
 end
